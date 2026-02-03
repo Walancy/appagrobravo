@@ -1,0 +1,34 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Estilo e Formatação
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    always_use_package_imports: true # Evita imports relativos confusos
+    require_trailing_commas: true # Melhora leitura em diffs
+
+    # Boas Práticas e Evitar Erros
+    avoid_print: true # Use logs apropriados, não print
+    avoid_empty_else: true
+    cancel_subscriptions: true # Evita memory leaks
+    close_sinks: true # Evita memory leaks
+    unnecessary_this: true
+    prefer_final_locals: true # Imutabilidade local
+    prefer_final_in_for_each: true
+    prefer_if_null_operators: true
+    
+    # Arquitetura e Limpeza
+    file_names: true
+    camel_case_types: true
+    package_names: true
+    
+analyzer:
+  exclude:
+    - "**/*.g.dart" # Ignorar arquivos gerados
+    - "**/*.freezed.dart"
+  errors:
+    missing_return: error
+    dead_code: warning
+    todo: info
