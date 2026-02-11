@@ -9,9 +9,9 @@ abstract class UserModel with _$UserModel {
   const factory UserModel({
     required String id,
     required String email,
-    required String nome, // Maps to 'nome' in DB
-    @JsonKey(name: 'tipouser')
-    required List<String> roles, // Maps to 'tipouser' in DB
+    required String nome,
+    String? foto,
+    @JsonKey(name: 'tipouser') required List<String> roles,
   }) = _UserModel;
 
   const UserModel._();
@@ -19,6 +19,11 @@ abstract class UserModel with _$UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
-  UserEntity toEntity() =>
-      UserEntity(id: id, email: email, name: nome, roles: roles);
+  UserEntity toEntity() => UserEntity(
+    id: id,
+    email: email,
+    name: nome,
+    avatarUrl: foto,
+    roles: roles,
+  );
 }

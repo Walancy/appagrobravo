@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/router/app_router.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/core/constants/supabase_constants.dart';
@@ -32,25 +34,28 @@ class AgroBravoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'AgroBravo',
-      debugShowCheckedModeBanner: false,
+    return BlocProvider(
+      create: (context) => getIt<AuthCubit>()..checkAuthStatus(),
+      child: MaterialApp.router(
+        title: 'AgroBravo',
+        debugShowCheckedModeBanner: false,
 
-      // DevicePreview settings
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
+        // DevicePreview settings
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
 
-      theme: ThemeData(
-        primaryColor: AppColors.primary,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          primary: AppColors.primary,
-          secondary: AppColors.secondary,
+        theme: ThemeData(
+          primaryColor: AppColors.primary,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primary,
+            primary: AppColors.primary,
+            secondary: AppColors.secondary,
+          ),
+          useMaterial3: true,
+          scaffoldBackgroundColor: AppColors.background,
         ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.background,
+        routerConfig: appRouter,
       ),
-      routerConfig: appRouter,
     );
   }
 }

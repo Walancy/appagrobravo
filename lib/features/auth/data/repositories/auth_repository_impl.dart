@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/features/auth/domain/entities/user_entity.dart';
@@ -132,6 +133,50 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(Exception(e.message));
     } catch (e) {
       return Left(Exception('Erro ao solicitar redefinição de senha.'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> updatePassword(String newPassword) async {
+    try {
+      await _supabaseClient.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(Exception(e.message));
+    } catch (e) {
+      return Left(Exception('Erro ao atualizar a senha.'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> signInWithGoogle() async {
+    try {
+      await _supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb ? null : 'io.supabase.agrobravo://login-callback/',
+      );
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(Exception(e.message));
+    } catch (e) {
+      return Left(Exception('Erro ao fazer login com Google.'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> signInWithApple() async {
+    try {
+      await _supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.apple,
+        redirectTo: kIsWeb ? null : 'io.supabase.agrobravo://login-callback/',
+      );
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(Exception(e.message));
+    } catch (e) {
+      return Left(Exception('Erro ao fazer login com Apple.'));
     }
   }
 }

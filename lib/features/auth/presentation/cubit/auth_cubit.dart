@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 
-@injectable
+@LazySingleton()
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
 
@@ -70,6 +70,40 @@ class AuthCubit extends Cubit<AuthState> {
       (error) => emit(AuthState.error(error.toString())),
       (_) => emit(const AuthState.passwordResetEmailSent()),
     );
+  }
+
+  Future<void> updatePassword(String password, String confirmPassword) async {
+    if (password != confirmPassword) {
+      emit(const AuthState.error('As senhas não conferem.'));
+      return;
+    }
+
+    if (password.length < 6) {
+      emit(const AuthState.error('A senha deve ter pelo menos 6 caracteres.'));
+      return;
+    }
+
+    emit(const AuthState.loading());
+    final result = await _authRepository.updatePassword(password);
+    result.fold(
+      (error) => emit(AuthState.error(error.toString())),
+      (_) => emit(const AuthState.passwordUpdated()),
+    );
+  }
+
+  Future<void> loginWithGoogle() async {
+    emit(const AuthState.loading());
+    final result = await _authRepository.signInWithGoogle();
+    result.fold((error) => emit(AuthState.error(error.toString())), (_) {
+      // Since it's OAuth, the browser will redirect.
+      // We stay in loading state until the app is resumed and Supabase triggers auth state change.
+    });
+  }
+
+  Future<void> loginWithApple() async {
+    emit(const AuthState.loading());
+    final result = await _authRepository.signInWithApple();
+    result.fold((error) => emit(AuthState.error(error.toString())), (_) {});
   }
 
   Future<void> logout() async {

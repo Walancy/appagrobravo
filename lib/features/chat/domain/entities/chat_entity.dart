@@ -34,3 +34,23 @@ abstract class ChatData with _$ChatData {
     @Default([]) List<ChatEntity> history,
   }) = _ChatData;
 }
+
+@freezed
+abstract class GroupMemberEntity with _$GroupMemberEntity {
+  const factory GroupMemberEntity({
+    required String id,
+    required String name,
+    required String role,
+    required bool isGuide,
+    @Default(false) bool isMe,
+    String? avatarUrl,
+  }) = _GroupMemberEntity;
+}
+
+@freezed
+abstract class GroupDetailEntity with _$GroupDetailEntity {
+  const factory GroupDetailEntity({
+    required List<GroupMemberEntity> members,
+    required List<String> mediaUrls,
+  }) = _GroupDetailEntity;
+}

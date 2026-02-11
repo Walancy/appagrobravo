@@ -8,6 +8,7 @@ abstract class UserEntity with _$UserEntity {
     required String id,
     required String email,
     required String name,
+    String? avatarUrl,
     required List<String> roles, // Mapped from 'tipouser'
   }) = _UserEntity;
 

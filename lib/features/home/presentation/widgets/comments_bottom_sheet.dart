@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/home/domain/entities/comment_entity.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
-import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 
 class CommentsBottomSheet extends StatefulWidget {
   final String postId;
@@ -39,11 +44,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   }
 
   Future<void> _loadInitialData() async {
-    final userResult = await getIt<AuthRepository>().getCurrentUser();
-    userResult.fold(
-      () => null,
-      (user) => setState(() => _currentUserId = user.id),
-    );
     _loadComments();
   }
 
@@ -121,6 +121,23 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
       _rootCommentIdForReply = null;
     });
     _focusNode.requestFocus();
+  }
+
+  String _getTimeAgo(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inSeconds < 60) {
+      return 'agora';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    } else {
+      return DateFormat('dd/MM/yy').format(date);
+    }
   }
 
   @override
@@ -217,9 +234,28 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   ),
                 Row(
                   children: [
-                    const CircleAvatar(
-                      radius: 18,
-                      child: Icon(Icons.person, size: 20),
+                    BlocBuilder<AuthCubit, AuthState>(
+                      builder: (context, state) {
+                        final avatarUrl = state.maybeWhen(
+                          authenticated: (user) => user.avatarUrl,
+                          orElse: () => null,
+                        );
+
+                        return CircleAvatar(
+                          radius: 18,
+                          backgroundImage: avatarUrl != null
+                              ? NetworkImage(avatarUrl)
+                              : null,
+                          backgroundColor: AppColors.primary.withAlpha(50),
+                          child: avatarUrl == null
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: AppColors.primary,
+                                )
+                              : null,
+                        );
+                      },
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
@@ -290,14 +326,18 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: comment.userAvatar != null
-                    ? NetworkImage(comment.userAvatar!)
-                    : null,
-                child: comment.userAvatar == null
-                    ? const Icon(Icons.person, size: 18)
-                    : null,
+              GestureDetector(
+                onTap: () => context.push('/profile/${comment.userId}'),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.grey[100],
+                  backgroundImage: comment.userAvatar != null
+                      ? NetworkImage(comment.userAvatar!)
+                      : null,
+                  child: comment.userAvatar == null
+                      ? const Icon(Icons.person, size: 18)
+                      : null,
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -312,6 +352,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                         children: [
                           TextSpan(
                             text: '${comment.userName} ',
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () =>
+                                  context.push('/profile/${comment.userId}'),
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: isReply ? 13 : 12,
@@ -319,12 +362,12 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                           ),
                           WidgetSpan(child: SizedBox(width: isReply ? 12 : 4)),
                           TextSpan(
-                            text: '1min',
+                            text: _getTimeAgo(comment.createdAt),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 10,
                             ),
-                          ), // Dummy time for now
+                          ),
                         ],
                       ),
                     ),

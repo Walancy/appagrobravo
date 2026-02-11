@@ -21,19 +21,15 @@ class DaySlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final days = _getDaysInBetween(startDate, endDate);
 
-    return Container(
-      height: 120, // Increased from 100 to prevent overflow
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+    return SizedBox(
+      height: 90,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+        clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         itemCount: days.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final date = days[index];
           final isSelected =
@@ -41,39 +37,20 @@ class DaySlider extends StatelessWidget {
 
           return GestureDetector(
             onTap: () => onDateSelected(date),
-            child: Container(
-              width: 55,
-              padding: const EdgeInsets.symmetric(
-                vertical: 6,
-              ), // Reduced from 8
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 50,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
+                color: isSelected ? AppColors.primary : Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : Colors.grey.shade100,
+                  width: 1,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    DateFormat('MMM', 'pt_BR').format(date).capitalize(),
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: isSelected
-                          ? Colors.white
-                          : AppColors.textSecondary,
-                      fontSize: 12, // Keep 12
-                      height: 1.2, // Tighter line height
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    date.day.toString(),
-                    style: AppTextStyles.h3.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
                   Text(
                     DateFormat(
                       'E',
@@ -83,8 +60,19 @@ class DaySlider extends StatelessWidget {
                       color: isSelected
                           ? Colors.white
                           : AppColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
+                      fontSize: 10,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    date.day.toString(),
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
                     ),
                   ),
                 ],

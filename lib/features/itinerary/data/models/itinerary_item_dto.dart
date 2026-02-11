@@ -24,6 +24,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
     @JsonKey(name: 'para') String? toCity,
     @JsonKey(name: 'motorista') String? driverName,
     @JsonKey(name: 'duracao') String? durationString,
+    @JsonKey(name: 'tempo_deslocamento') String? travelTime,
   }) = _ItineraryItemDto;
 
   const ItineraryItemDto._();
@@ -68,8 +69,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
         if (typeString.toUpperCase() == 'FLIGHT') {
           type = ItineraryType.flight;
         } else if (typeString.toUpperCase() == 'RETURN') {
-          // Case seen in DB
-          type = ItineraryType.transfer; // Return often implies transfer
+          type = ItineraryType.returnType;
         } else {
           type = ItineraryType.other;
         }
@@ -119,6 +119,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       toCity: toCity,
       driverName: driverName,
       durationString: durationString,
+      travelTime: travelTime,
     );
   }
 }

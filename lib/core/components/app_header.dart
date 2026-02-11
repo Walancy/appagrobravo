@@ -13,6 +13,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final Widget? logo;
   final List<Widget>? actions;
   final VoidCallback? onBack;
+  final VoidCallback? onTitleTap;
 
   const AppHeader({
     super.key,
@@ -22,6 +23,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.logo,
     this.actions,
     this.onBack,
+    this.onTitleTap,
   });
 
   @override
@@ -72,33 +74,45 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         children: [
           IconButton(
             onPressed: onBack ?? () => Navigator.maybePop(context),
-            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: AppColors.textPrimary,
+              size: 20,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: AppSpacing.md),
+          if (logo != null) ...[logo!, const SizedBox(width: AppSpacing.md)],
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (title != null)
-                  Text(
-                    title!,
-                    style: AppTextStyles.h3.copyWith(fontSize: 18, height: 1.2),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                      height: 1.2,
+            child: GestureDetector(
+              onTap: onTitleTap,
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (title != null)
+                    Text(
+                      title!,
+                      style: AppTextStyles.h3.copyWith(
+                        fontSize: 18,
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-              ],
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
             ),
           ),
           if (actions != null) Row(children: actions!),

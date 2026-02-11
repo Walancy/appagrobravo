@@ -854,4 +854,548 @@ $ChatEntityCopyWith<$Res>? get currentMission {
 }
 }
 
+/// @nodoc
+mixin _$GroupMemberEntity {
+
+ String get id; String get name; String get role; bool get isGuide; bool get isMe; String? get avatarUrl;
+/// Create a copy of GroupMemberEntity
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GroupMemberEntityCopyWith<GroupMemberEntity> get copyWith => _$GroupMemberEntityCopyWithImpl<GroupMemberEntity>(this as GroupMemberEntity, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl);
+
+@override
+String toString() {
+  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GroupMemberEntityCopyWith<$Res>  {
+  factory $GroupMemberEntityCopyWith(GroupMemberEntity value, $Res Function(GroupMemberEntity) _then) = _$GroupMemberEntityCopyWithImpl;
+@useResult
+$Res call({
+ String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl
+});
+
+
+
+
+}
+/// @nodoc
+class _$GroupMemberEntityCopyWithImpl<$Res>
+    implements $GroupMemberEntityCopyWith<$Res> {
+  _$GroupMemberEntityCopyWithImpl(this._self, this._then);
+
+  final GroupMemberEntity _self;
+  final $Res Function(GroupMemberEntity) _then;
+
+/// Create a copy of GroupMemberEntity
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,isGuide: null == isGuide ? _self.isGuide : isGuide // ignore: cast_nullable_to_non_nullable
+as bool,isMe: null == isMe ? _self.isMe : isMe // ignore: cast_nullable_to_non_nullable
+as bool,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GroupMemberEntity].
+extension GroupMemberEntityPatterns on GroupMemberEntity {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GroupMemberEntity value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GroupMemberEntity() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GroupMemberEntity value)  $default,){
+final _that = this;
+switch (_that) {
+case _GroupMemberEntity():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GroupMemberEntity value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GroupMemberEntity() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GroupMemberEntity() when $default != null:
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)  $default,) {final _that = this;
+switch (_that) {
+case _GroupMemberEntity():
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)?  $default,) {final _that = this;
+switch (_that) {
+case _GroupMemberEntity() when $default != null:
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _GroupMemberEntity implements GroupMemberEntity {
+  const _GroupMemberEntity({required this.id, required this.name, required this.role, required this.isGuide, this.isMe = false, this.avatarUrl});
+  
+
+@override final  String id;
+@override final  String name;
+@override final  String role;
+@override final  bool isGuide;
+@override@JsonKey() final  bool isMe;
+@override final  String? avatarUrl;
+
+/// Create a copy of GroupMemberEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GroupMemberEntityCopyWith<_GroupMemberEntity> get copyWith => __$GroupMemberEntityCopyWithImpl<_GroupMemberEntity>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl);
+
+@override
+String toString() {
+  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GroupMemberEntityCopyWith<$Res> implements $GroupMemberEntityCopyWith<$Res> {
+  factory _$GroupMemberEntityCopyWith(_GroupMemberEntity value, $Res Function(_GroupMemberEntity) _then) = __$GroupMemberEntityCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl
+});
+
+
+
+
+}
+/// @nodoc
+class __$GroupMemberEntityCopyWithImpl<$Res>
+    implements _$GroupMemberEntityCopyWith<$Res> {
+  __$GroupMemberEntityCopyWithImpl(this._self, this._then);
+
+  final _GroupMemberEntity _self;
+  final $Res Function(_GroupMemberEntity) _then;
+
+/// Create a copy of GroupMemberEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,}) {
+  return _then(_GroupMemberEntity(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,isGuide: null == isGuide ? _self.isGuide : isGuide // ignore: cast_nullable_to_non_nullable
+as bool,isMe: null == isMe ? _self.isMe : isMe // ignore: cast_nullable_to_non_nullable
+as bool,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$GroupDetailEntity {
+
+ List<GroupMemberEntity> get members; List<String> get mediaUrls;
+/// Create a copy of GroupDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GroupDetailEntityCopyWith<GroupDetailEntity> get copyWith => _$GroupDetailEntityCopyWithImpl<GroupDetailEntity>(this as GroupDetailEntity, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupDetailEntity&&const DeepCollectionEquality().equals(other.members, members)&&const DeepCollectionEquality().equals(other.mediaUrls, mediaUrls));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(members),const DeepCollectionEquality().hash(mediaUrls));
+
+@override
+String toString() {
+  return 'GroupDetailEntity(members: $members, mediaUrls: $mediaUrls)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GroupDetailEntityCopyWith<$Res>  {
+  factory $GroupDetailEntityCopyWith(GroupDetailEntity value, $Res Function(GroupDetailEntity) _then) = _$GroupDetailEntityCopyWithImpl;
+@useResult
+$Res call({
+ List<GroupMemberEntity> members, List<String> mediaUrls
+});
+
+
+
+
+}
+/// @nodoc
+class _$GroupDetailEntityCopyWithImpl<$Res>
+    implements $GroupDetailEntityCopyWith<$Res> {
+  _$GroupDetailEntityCopyWithImpl(this._self, this._then);
+
+  final GroupDetailEntity _self;
+  final $Res Function(GroupDetailEntity) _then;
+
+/// Create a copy of GroupDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? members = null,Object? mediaUrls = null,}) {
+  return _then(_self.copyWith(
+members: null == members ? _self.members : members // ignore: cast_nullable_to_non_nullable
+as List<GroupMemberEntity>,mediaUrls: null == mediaUrls ? _self.mediaUrls : mediaUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GroupDetailEntity].
+extension GroupDetailEntityPatterns on GroupDetailEntity {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GroupDetailEntity value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GroupDetailEntity() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GroupDetailEntity value)  $default,){
+final _that = this;
+switch (_that) {
+case _GroupDetailEntity():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GroupDetailEntity value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GroupDetailEntity() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupMemberEntity> members,  List<String> mediaUrls)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GroupDetailEntity() when $default != null:
+return $default(_that.members,_that.mediaUrls);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupMemberEntity> members,  List<String> mediaUrls)  $default,) {final _that = this;
+switch (_that) {
+case _GroupDetailEntity():
+return $default(_that.members,_that.mediaUrls);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupMemberEntity> members,  List<String> mediaUrls)?  $default,) {final _that = this;
+switch (_that) {
+case _GroupDetailEntity() when $default != null:
+return $default(_that.members,_that.mediaUrls);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _GroupDetailEntity implements GroupDetailEntity {
+  const _GroupDetailEntity({required final  List<GroupMemberEntity> members, required final  List<String> mediaUrls}): _members = members,_mediaUrls = mediaUrls;
+  
+
+ final  List<GroupMemberEntity> _members;
+@override List<GroupMemberEntity> get members {
+  if (_members is EqualUnmodifiableListView) return _members;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_members);
+}
+
+ final  List<String> _mediaUrls;
+@override List<String> get mediaUrls {
+  if (_mediaUrls is EqualUnmodifiableListView) return _mediaUrls;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_mediaUrls);
+}
+
+
+/// Create a copy of GroupDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GroupDetailEntityCopyWith<_GroupDetailEntity> get copyWith => __$GroupDetailEntityCopyWithImpl<_GroupDetailEntity>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupDetailEntity&&const DeepCollectionEquality().equals(other._members, _members)&&const DeepCollectionEquality().equals(other._mediaUrls, _mediaUrls));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_members),const DeepCollectionEquality().hash(_mediaUrls));
+
+@override
+String toString() {
+  return 'GroupDetailEntity(members: $members, mediaUrls: $mediaUrls)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GroupDetailEntityCopyWith<$Res> implements $GroupDetailEntityCopyWith<$Res> {
+  factory _$GroupDetailEntityCopyWith(_GroupDetailEntity value, $Res Function(_GroupDetailEntity) _then) = __$GroupDetailEntityCopyWithImpl;
+@override @useResult
+$Res call({
+ List<GroupMemberEntity> members, List<String> mediaUrls
+});
+
+
+
+
+}
+/// @nodoc
+class __$GroupDetailEntityCopyWithImpl<$Res>
+    implements _$GroupDetailEntityCopyWith<$Res> {
+  __$GroupDetailEntityCopyWithImpl(this._self, this._then);
+
+  final _GroupDetailEntity _self;
+  final $Res Function(_GroupDetailEntity) _then;
+
+/// Create a copy of GroupDetailEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? members = null,Object? mediaUrls = null,}) {
+  return _then(_GroupDetailEntity(
+members: null == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
+as List<GroupMemberEntity>,mediaUrls: null == mediaUrls ? _self._mediaUrls : mediaUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
 // dart format on

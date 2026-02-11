@@ -23,9 +23,17 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       (failure) async => emit(ItineraryState.error(failure.toString())),
       (group) async {
         final itemsResult = await _repository.getItinerary(groupId);
+        final travelResult = await _repository.getTravelTimes(groupId);
+
         itemsResult.fold(
           (failure) => emit(ItineraryState.error(failure.toString())),
-          (items) => emit(ItineraryState.loaded(group, items)),
+          (items) {
+            travelResult.fold(
+              (failure) => emit(ItineraryState.error(failure.toString())),
+              (travelTimes) =>
+                  emit(ItineraryState.loaded(group, items, travelTimes)),
+            );
+          },
         );
       },
     );

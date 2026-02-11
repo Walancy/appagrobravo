@@ -38,8 +38,12 @@ class ItineraryPage extends StatelessWidget {
             return state.maybeWhen(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (msg) => Center(child: Text('Erro: $msg')),
-              loaded: (group, items) {
-                return _ItineraryContent(group: group, items: items);
+              loaded: (group, items, travelTimes) {
+                return _ItineraryContent(
+                  group: group,
+                  items: items,
+                  travelTimes: travelTimes,
+                );
               },
               orElse: () => const SizedBox.shrink(),
             );
@@ -53,8 +57,13 @@ class ItineraryPage extends StatelessWidget {
 class _ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
+  final List<Map<String, dynamic>> travelTimes;
 
-  const _ItineraryContent({required this.group, required this.items});
+  const _ItineraryContent({
+    required this.group,
+    required this.items,
+    required this.travelTimes,
+  });
 
   @override
   State<_ItineraryContent> createState() => _ItineraryContentState();
@@ -87,6 +96,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
         Expanded(
           child: ItineraryList(
             items: widget.items,
+            travelTimes: widget.travelTimes,
             selectedDate: _selectedDate,
           ),
         ),

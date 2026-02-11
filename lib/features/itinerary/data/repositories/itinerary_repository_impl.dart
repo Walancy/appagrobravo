@@ -35,11 +35,12 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     String groupId,
   ) async {
     try {
-      // Direct table query since helper function is buggy
       final response = await _supabaseClient
-          .from('eventos') // Changed from 'gruposAtividades'
+          .from('eventos')
           .select()
-          .eq('grupo_id', groupId);
+          .eq('grupo_id', groupId)
+          .order('data')
+          .order('hora_inicio');
 
       final List<dynamic> data = response as List<dynamic>;
       final items = data
@@ -49,6 +50,23 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return Right(items);
     } catch (e) {
       return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<Map<String, dynamic>>>> getTravelTimes(
+    String groupId,
+  ) async {
+    try {
+      final response = await _supabaseClient.rpc(
+        'buscar_itinerario_grupo_deslocamento',
+        params: {'p_grupo_id': groupId},
+      );
+
+      final List<dynamic> data = response as List<dynamic>;
+      return Right(List<Map<String, dynamic>>.from(data));
+    } catch (e) {
+      return Left(Exception('Erro ao buscar tempos de deslocamento: $e'));
     }
   }
 

@@ -9,5 +9,8 @@ abstract class ItineraryRepository {
   Future<Either<Exception, List<ItineraryItemEntity>>> getItinerary(
     String groupId,
   );
+  Future<Either<Exception, List<Map<String, dynamic>>>> getTravelTimes(
+    String groupId,
+  );
   Future<Either<Exception, String?>> getUserGroupId();
 }

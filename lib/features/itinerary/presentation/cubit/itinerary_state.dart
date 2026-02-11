@@ -7,6 +7,7 @@ class ItineraryState with _$ItineraryState {
   const factory ItineraryState.loaded(
     ItineraryGroupEntity group,
     List<ItineraryItemEntity> items,
+    List<Map<String, dynamic>> travelTimes,
   ) = _Loaded;
   const factory ItineraryState.error(String message) = _Error;
 }

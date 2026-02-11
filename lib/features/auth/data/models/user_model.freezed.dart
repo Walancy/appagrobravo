@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String get id; String get email; String get nome;// Maps to 'nome' in DB
-@JsonKey(name: 'tipouser') List<String> get roles;
+ String get id; String get email; String get nome; String? get foto;@JsonKey(name: 'tipouser') List<String> get roles;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +28,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.nome, nome) || other.nome == nome)&&const DeepCollectionEquality().equals(other.roles, roles));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.nome, nome) || other.nome == nome)&&(identical(other.foto, foto) || other.foto == foto)&&const DeepCollectionEquality().equals(other.roles, roles));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,nome,const DeepCollectionEquality().hash(roles));
+int get hashCode => Object.hash(runtimeType,id,email,nome,foto,const DeepCollectionEquality().hash(roles));
 
 @override
 String toString() {
-  return 'UserModel(id: $id, email: $email, nome: $nome, roles: $roles)';
+  return 'UserModel(id: $id, email: $email, nome: $nome, foto: $foto, roles: $roles)';
 }
 
 
@@ -49,7 +48,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String nome,@JsonKey(name: 'tipouser') List<String> roles
+ String id, String email, String nome, String? foto,@JsonKey(name: 'tipouser') List<String> roles
 });
 
 
@@ -66,12 +65,13 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? nome = null,Object? roles = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? nome = null,Object? foto = freezed,Object? roles = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,nome: null == nome ? _self.nome : nome // ignore: cast_nullable_to_non_nullable
-as String,roles: null == roles ? _self.roles : roles // ignore: cast_nullable_to_non_nullable
+as String,foto: freezed == foto ? _self.foto : foto // ignore: cast_nullable_to_non_nullable
+as String?,roles: null == roles ? _self.roles : roles // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }
@@ -157,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String nome, @JsonKey(name: 'tipouser')  List<String> roles)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String nome,  String? foto, @JsonKey(name: 'tipouser')  List<String> roles)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
+return $default(_that.id,_that.email,_that.nome,_that.foto,_that.roles);case _:
   return orElse();
 
 }
@@ -178,10 +178,10 @@ return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String nome, @JsonKey(name: 'tipouser')  List<String> roles)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String nome,  String? foto, @JsonKey(name: 'tipouser')  List<String> roles)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
+return $default(_that.id,_that.email,_that.nome,_that.foto,_that.roles);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +198,10 @@ return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String nome, @JsonKey(name: 'tipouser')  List<String> roles)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String nome,  String? foto, @JsonKey(name: 'tipouser')  List<String> roles)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
+return $default(_that.id,_that.email,_that.nome,_that.foto,_that.roles);case _:
   return null;
 
 }
@@ -213,15 +213,14 @@ return $default(_that.id,_that.email,_that.nome,_that.roles);case _:
 @JsonSerializable()
 
 class _UserModel extends UserModel {
-  const _UserModel({required this.id, required this.email, required this.nome, @JsonKey(name: 'tipouser') required final  List<String> roles}): _roles = roles,super._();
+  const _UserModel({required this.id, required this.email, required this.nome, this.foto, @JsonKey(name: 'tipouser') required final  List<String> roles}): _roles = roles,super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String id;
 @override final  String email;
 @override final  String nome;
-// Maps to 'nome' in DB
+@override final  String? foto;
  final  List<String> _roles;
-// Maps to 'nome' in DB
 @override@JsonKey(name: 'tipouser') List<String> get roles {
   if (_roles is EqualUnmodifiableListView) return _roles;
   // ignore: implicit_dynamic_type
@@ -242,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.nome, nome) || other.nome == nome)&&const DeepCollectionEquality().equals(other._roles, _roles));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.nome, nome) || other.nome == nome)&&(identical(other.foto, foto) || other.foto == foto)&&const DeepCollectionEquality().equals(other._roles, _roles));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,nome,const DeepCollectionEquality().hash(_roles));
+int get hashCode => Object.hash(runtimeType,id,email,nome,foto,const DeepCollectionEquality().hash(_roles));
 
 @override
 String toString() {
-  return 'UserModel(id: $id, email: $email, nome: $nome, roles: $roles)';
+  return 'UserModel(id: $id, email: $email, nome: $nome, foto: $foto, roles: $roles)';
 }
 
 
@@ -262,7 +261,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String nome,@JsonKey(name: 'tipouser') List<String> roles
+ String id, String email, String nome, String? foto,@JsonKey(name: 'tipouser') List<String> roles
 });
 
 
@@ -279,12 +278,13 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? nome = null,Object? roles = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? nome = null,Object? foto = freezed,Object? roles = null,}) {
   return _then(_UserModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,nome: null == nome ? _self.nome : nome // ignore: cast_nullable_to_non_nullable
-as String,roles: null == roles ? _self._roles : roles // ignore: cast_nullable_to_non_nullable
+as String,foto: freezed == foto ? _self.foto : foto // ignore: cast_nullable_to_non_nullable
+as String?,roles: null == roles ? _self._roles : roles // ignore: cast_nullable_to_non_nullable
 as List<String>,
   ));
 }

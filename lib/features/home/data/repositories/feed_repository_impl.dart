@@ -212,9 +212,9 @@ class FeedRepositoryImpl implements FeedRepository {
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) return Left(Exception('Usuário não autenticado'));
 
-      List<String> imageUrls = [];
+      final List<String> imageUrls = [];
 
-      for (var path in imagePaths) {
+      for (final path in imagePaths) {
         final file = File(path);
         // Clean filename to avoid issues with special chars
         final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -291,9 +291,9 @@ class FeedRepositoryImpl implements FeedRepository {
         return Left(Exception('Você não tem permissão para editar este post.'));
       }
 
-      List<String> finalImageUrls = [];
+      final List<String> finalImageUrls = [];
 
-      for (var path in images) {
+      for (final path in images) {
         // If it starts with http, it's an existing URL, keep it.
         if (path.startsWith('http')) {
           finalImageUrls.add(path);
@@ -450,7 +450,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
         final existingIds = missions.map((m) => m.id).toSet();
 
-        for (var row in directMissionsResponse as List) {
+        for (final row in directMissionsResponse as List) {
           final missaoData = row['missoes'] ?? row['missoes_id'];
           if (missaoData is Map<String, dynamic>) {
             final id = missaoData['id']?.toString();

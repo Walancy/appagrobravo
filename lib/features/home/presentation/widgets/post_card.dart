@@ -11,6 +11,7 @@ class PostCard extends StatelessWidget {
   final VoidCallback onComment;
   final VoidCallback? onDelete;
   final VoidCallback? onEdit;
+  final VoidCallback? onProfileTap;
   final bool isOwner;
 
   const PostCard({
@@ -20,6 +21,7 @@ class PostCard extends StatelessWidget {
     required this.onComment,
     this.onDelete,
     this.onEdit,
+    this.onProfileTap,
     this.isOwner = false,
   });
 
@@ -35,44 +37,51 @@ class PostCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: post.userAvatar == null
-                      ? Colors.grey[100]
-                      : Colors.transparent,
-                  backgroundImage: post.userAvatar != null
-                      ? NetworkImage(post.userAvatar!)
-                      : null,
-                  child: post.userAvatar == null
-                      ? const Icon(
-                          Icons.person_outline_rounded,
-                          size: 20,
-                          color: Colors.grey,
-                        )
-                      : null,
+                GestureDetector(
+                  onTap: onProfileTap,
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: post.userAvatar == null
+                        ? Colors.grey[100]
+                        : Colors.transparent,
+                    backgroundImage: post.userAvatar != null
+                        ? NetworkImage(post.userAvatar!)
+                        : null,
+                    child: post.userAvatar == null
+                        ? const Icon(
+                            Icons.person_outline_rounded,
+                            size: 20,
+                            color: Colors.grey,
+                          )
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.userName,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (post.missionName != null)
+                  child: GestureDetector(
+                    onTap: onProfileTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          post.missionName!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.7,
-                            ),
-                            fontSize: 11,
+                          post.userName,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                    ],
+                        if (post.missionName != null)
+                          Text(
+                            post.missionName!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.7,
+                              ),
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 if (isOwner)
@@ -176,21 +185,27 @@ class PostCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '${post.userName} ',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                GestureDetector(
+                  onTap: onProfileTap,
+                  child: RichText(
+                    text: TextSpan(
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textPrimary,
                       ),
-                      TextSpan(text: post.caption),
-                    ],
+                      children: [
+                        TextSpan(
+                          text: '${post.userName} ',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(
+                          text: post.caption,
+                          style: const TextStyle(fontWeight: FontWeight.normal),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -361,6 +376,23 @@ class _PostImageSliderState extends State<_PostImageSlider>
               );
             },
           ),
+          if (widget.images.length > 1)
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.layers_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
           if (_isLoading)
             const Center(child: CircularProgressIndicator(strokeWidth: 2)),
 

@@ -2,7 +2,16 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'itinerary_item.freezed.dart';
 
-enum ItineraryType { flight, visit, hotel, food, leisure, transfer, other }
+enum ItineraryType {
+  flight,
+  visit,
+  hotel,
+  food,
+  leisure,
+  transfer,
+  returnType,
+  other,
+}
 
 @freezed
 abstract class ItineraryItemEntity with _$ItineraryItemEntity {
@@ -23,6 +32,7 @@ abstract class ItineraryItemEntity with _$ItineraryItemEntity {
     // Transfer specific
     String? driverName,
     String? durationString,
+    String? travelTime,
   }) = _ItineraryItemEntity;
 
   const ItineraryItemEntity._();

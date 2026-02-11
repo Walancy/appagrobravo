@@ -11,6 +11,8 @@ import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/presentation/cubit/chat_cubit.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_group_card.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/guide_card.dart';
+import 'package:agrobravo/features/chat/presentation/pages/chat_detail_page.dart';
+import 'package:agrobravo/features/chat/presentation/pages/individual_chat_page.dart';
 import 'package:intl/intl.dart';
 
 class ChatPage extends StatelessWidget {
@@ -89,9 +91,14 @@ class ChatPage extends StatelessWidget {
                               g.avatarUrl ??
                               'https://i.pravatar.cc/150', // Fallback
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Abrir chat com: ${g.name}'),
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        IndividualChatPage(guide: g),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
                               ),
                             );
                           },
@@ -150,10 +157,15 @@ class ChatPage extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // Navigate to Chat Detail
-        ScaffoldMessenger.of(
+        Navigator.push(
           context,
-        ).showSnackBar(SnackBar(content: Text('Abrir chat: ${mission.title}')));
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ChatDetailPage(chat: mission),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
       },
       child: ChatGroupCard(
         title: mission.title,

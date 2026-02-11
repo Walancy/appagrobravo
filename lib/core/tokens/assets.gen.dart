@@ -21,6 +21,10 @@ class $AssetsImagesGen {
   AssetGenImage get background =>
       const AssetGenImage('assets/images/background.png');
 
+  /// File path: assets/images/chat_pattern.png
+  AssetGenImage get chatPattern =>
+      const AssetGenImage('assets/images/chat_pattern.png');
+
   /// File path: assets/images/google_logo.svg
   String get googleLogo => 'assets/images/google_logo.svg';
 
@@ -34,6 +38,7 @@ class $AssetsImagesGen {
   List<dynamic> get values => [
     appleLogo,
     background,
+    chatPattern,
     googleLogo,
     logoBranca,
     logoColorida,

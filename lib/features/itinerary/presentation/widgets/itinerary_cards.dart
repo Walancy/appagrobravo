@@ -11,17 +11,11 @@ class GenericEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,40 +23,31 @@ class GenericEventCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.1),
-                ),
-                child: Icon(
-                  _getIconForType(item.type),
-                  color: AppColors.primary,
-                ),
+              Icon(
+                _getIconForType(item.type),
+                color: AppColors.primary,
+                size: 20,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.name, style: AppTextStyles.h3),
+                    Text(
+                      item.name,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     if (item.location != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              item.location!,
-                              style: AppTextStyles.bodySmall,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        item.location!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize: 11,
+                          color: AppColors.textSecondary.withOpacity(0.7),
+                        ),
                       ),
                     ],
                   ],
@@ -71,31 +56,40 @@ class GenericEventCard extends StatelessWidget {
               if (item.startDateTime != null)
                 Text(
                   DateFormat('HH:mm').format(item.startDateTime!),
-                  style: AppTextStyles.h2.copyWith(fontSize: 18),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
             ],
           ),
           if (item.description != null && item.description!.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(item.description!, style: AppTextStyles.bodyMedium),
+            Text(
+              item.description!,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontSize: 12,
+                color: AppColors.textPrimary.withOpacity(0.8),
+              ),
+            ),
           ],
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                elevation: 0,
-              ),
+            child: TextButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.location_on, color: Colors.white),
-              label: const Text(
-                'Ver no Mapa',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+              icon: const Icon(Icons.location_on_outlined, size: 16),
+              label: const Text('Ver no Mapa'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary.withOpacity(0.05),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                textStyle: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -107,15 +101,17 @@ class GenericEventCard extends StatelessWidget {
   IconData _getIconForType(ItineraryType type) {
     switch (type) {
       case ItineraryType.food:
-        return Icons.restaurant;
+        return Icons.restaurant_outlined;
       case ItineraryType.hotel:
-        return Icons.hotel;
+        return Icons.hotel_outlined;
       case ItineraryType.visit:
-        return Icons.business;
+        return Icons.business_outlined;
       case ItineraryType.leisure:
-        return Icons.shopping_bag;
+        return Icons.shopping_bag_outlined;
+      case ItineraryType.returnType:
+        return Icons.keyboard_return;
       default:
-        return Icons.event;
+        return Icons.event_outlined;
     }
   }
 }
@@ -132,30 +128,17 @@ class FlightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
       child: Column(
         children: [
           // Header: Airline + Time
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.airplane_ticket_outlined,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+              Icon(
+                Icons.airplane_ticket_outlined,
+                color: AppColors.primary,
+                size: 20,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -163,42 +146,31 @@ class FlightCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Voo',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                      'Voo ${item.name}',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                    Text(
-                      item.name, // e.g. Azul AD 4587
-                      style: AppTextStyles.h3.copyWith(fontSize: 16),
                     ),
                     if (item.location != null)
                       Text(
                         item.location!,
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 12),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize: 11,
+                          color: AppColors.textSecondary.withOpacity(0.7),
+                        ),
                       ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Chegue as',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
-                    ),
+              if (item.endDateTime != null)
+                Text(
+                  DateFormat('HH:mm').format(item.endDateTime!),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
-                  Text(
-                    item.endDateTime != null
-                        ? DateFormat('HH:mm').format(item.endDateTime!)
-                        : '--:--',
-                    style: AppTextStyles.h3.copyWith(fontSize: 16),
-                  ),
-                ],
-              ),
+                ),
             ],
           ),
 
@@ -208,61 +180,35 @@ class FlightCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.fromCode ?? 'ORG', style: AppTextStyles.h1),
-                  Text(
-                    'Duração: ${item.durationString ?? "--"}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+              Text(
+                item.fromCode ?? 'ORG',
+                style: AppTextStyles.h2.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.flight_takeoff,
-                            color: AppColors.primary,
-                            size: 24,
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: Colors.grey.shade300,
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        Icons.flight_takeoff,
+                        color: AppColors.primary.withOpacity(0.5),
+                        size: 20,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'de ${item.fromCity ?? ''}',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontSize: 10,
-                            ),
-                          ),
-                          Text(
-                            'para ${item.toCity ?? ''}',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
+                      Container(height: 1, color: Colors.grey.shade200),
                     ],
                   ),
                 ),
               ),
-              Text(item.toCode ?? 'DES', style: AppTextStyles.h1),
+              Text(
+                item.toCode ?? 'DES',
+                style: AppTextStyles.h2.copyWith(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
 
@@ -399,78 +345,38 @@ class TransferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.directions_bus, color: AppColors.primary),
+          Icon(
+            item.type == ItineraryType.returnType
+                ? Icons.keyboard_return
+                : Icons.directions_bus_outlined,
+            color: AppColors.primary,
+            size: 18,
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.startDateTime != null
-                    ? DateFormat('HH:mm').format(item.startDateTime!)
-                    : '--:--',
-                style: AppTextStyles.h3.copyWith(fontSize: 14),
+          Text(
+            item.name,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const Spacer(),
+          if (item.startDateTime != null)
+            Text(
+              DateFormat('HH:mm').format(item.startDateTime!),
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
-              Text('Transfer', style: AppTextStyles.bodyMedium),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Motorista',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 10,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  item.driverName ?? 'A definir',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              minimumSize: Size.zero,
-            ),
-            child: const Text(
-              'Checklist',
-              style: TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
         ],
       ),
     );
@@ -484,19 +390,25 @@ class TravelTimeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
+          const SizedBox(width: 4), // 24px - 20px padding
           Container(
             height: 40,
-            width: 3, // Initial logic was 2, making thicker
-            margin: const EdgeInsets.only(left: 12), // Align with icon
+            width: 2,
             child: CustomPaint(
               painter: DashedLinePainter(color: AppColors.primary),
             ),
           ),
-          const SizedBox(width: 24),
-          Text('Tempo de viagem: $duration', style: AppTextStyles.h3),
+          const SizedBox(width: 32),
+          Text(
+            'Tempo de viagem: $duration',
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Poppins',
+            ),
+          ),
         ],
       ),
     );

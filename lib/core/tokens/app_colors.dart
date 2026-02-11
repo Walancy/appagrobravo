@@ -15,6 +15,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF757575); // Cinza Médio
   static const Color error = Color(0xFFD32F2F); // Vermelho
   static const Color backgroundLight = Color(0xFFEEEEEE); // Cinza Claro Fundo
+  static const Color chatBackground = Color(0xFFE5F0EB); // Fundo Chat
 
   // Glassmorphism / Liquid Glass
   static Color glassBackground = const Color(0xFFFFFFFF).withValues(alpha: 0.1);

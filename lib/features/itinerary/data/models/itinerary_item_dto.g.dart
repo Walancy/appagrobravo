@@ -27,6 +27,7 @@ _ItineraryItemDto _$ItineraryItemDtoFromJson(Map<String, dynamic> json) =>
       toCity: json['para'] as String?,
       driverName: json['motorista'] as String?,
       durationString: json['duracao'] as String?,
+      travelTime: json['tempo_deslocamento'] as String?,
     );
 
 Map<String, dynamic> _$ItineraryItemDtoToJson(_ItineraryItemDto instance) =>
@@ -48,4 +49,5 @@ Map<String, dynamic> _$ItineraryItemDtoToJson(_ItineraryItemDto instance) =>
       'para': instance.toCity,
       'motorista': instance.driverName,
       'duracao': instance.durationString,
+      'tempo_deslocamento': instance.travelTime,
     };

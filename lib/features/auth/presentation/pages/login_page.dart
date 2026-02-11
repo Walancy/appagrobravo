@@ -6,7 +6,6 @@ import 'package:agrobravo/core/tokens/assets.gen.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
-import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/components/social_button.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
@@ -14,7 +13,9 @@ import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final AuthMode initialAuthMode;
+
+  const LoginPage({super.key, this.initialAuthMode = AuthMode.login});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -28,11 +29,12 @@ class _LoginPageState extends State<LoginPage>
   late Animation<double> _formFadeAnimation;
   late Animation<Offset> _formSlideAnimation;
 
-  AuthMode _authMode = AuthMode.login;
+  late AuthMode _authMode;
 
   @override
   void initState() {
     super.initState();
+    _authMode = widget.initialAuthMode;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -111,240 +113,257 @@ class _LoginPageState extends State<LoginPage>
     final title = _getTitle();
     final bool isSuccess = _authMode == AuthMode.success;
 
-    return BlocProvider(
-      create: (context) => getIt<AuthCubit>(),
-      child: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
-          state.whenOrNull(
-            authenticated: (user) {
-              if (user.isGuide) {
-                // Navegar para Home do Guia
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Bem-vindo, Guia ${user.name}!')),
-                );
-              } else {
-                // Navegar para Home do Viajante
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Bem-vindo, ${user.name}!')),
-                );
-              }
-              context.go('/home');
-            },
-            error: (message) {
-              // Feedback agora é exibido apenas via texto vermelho noLoginForm
-            },
-            passwordResetEmailSent: () {
-              _switchMode(AuthMode.emailVerification);
-            },
-          );
-        },
-        child: Scaffold(
-          body: Stack(
-            children: [
-              // Background
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/background.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-              // Overlay Escuro Simples
-              Positioned.fill(
-                child: Container(color: Colors.black.withOpacity(0.3)),
-              ),
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        state.whenOrNull(
+          authenticated: (user) {
+            if (_authMode == AuthMode.resetPassword) return;
 
-              // Logo Animada
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Align(
-                    alignment: _logoAlignmentAnimation.value,
-                    child: Opacity(
-                      opacity: _logoFadeAnimation.value,
-                      child: SvgPicture.asset(
-                        Assets.images.logoBranca,
-                        width: 150,
-                      ),
+            if (user.isGuide) {
+              // Navegar para Home do Guia
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Bem-vindo, Guia ${user.name}!')),
+              );
+            } else {
+              // Navegar para Home do Viajante
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Bem-vindo, ${user.name}!')),
+              );
+            }
+            context.go('/home');
+          },
+          error: (message) {
+            // Feedback agora é exibido apenas via texto vermelho noLoginForm
+          },
+          passwordResetEmailSent: () {
+            _switchMode(AuthMode.emailVerification);
+          },
+          passwordUpdated: () {
+            _switchMode(AuthMode.success);
+          },
+        );
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Background
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Overlay Escuro Simples
+            Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.3)),
+            ),
+
+            // Logo Animada
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Align(
+                  alignment: _logoAlignmentAnimation.value,
+                  child: Opacity(
+                    opacity: _logoFadeAnimation.value,
+                    child: SvgPicture.asset(
+                      Assets.images.logoBranca,
+                      width: 110,
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
+            ),
 
-              // Conteúdo Principal
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  if (_formFadeAnimation.value == 0)
-                    return const SizedBox.shrink();
+            // Conteúdo Principal
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                if (_formFadeAnimation.value == 0)
+                  return const SizedBox.shrink();
 
-                  final showSocials =
-                      _authMode == AuthMode.login ||
-                      _authMode == AuthMode.register;
+                final showSocials =
+                    _authMode == AuthMode.login ||
+                    _authMode == AuthMode.register;
 
-                  return Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSpacing.lg,
-                        right: AppSpacing.lg,
-                        bottom: 40,
-                      ),
-                      child: Opacity(
-                        opacity: _formFadeAnimation.value,
-                        child: SlideTransition(
-                          position: _formSlideAnimation,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 20),
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.md,
+                      right: AppSpacing.md,
+                      bottom: 40,
+                    ),
+                    child: Opacity(
+                      opacity: _formFadeAnimation.value,
+                      child: SlideTransition(
+                        position: _formSlideAnimation,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 20),
 
-                                // Título dinâmico
-                                isSuccess
-                                    ? Text(
-                                        'Senha alterada com sucesso!',
-                                        textAlign: TextAlign.center,
-                                        style: AppTextStyles.h2.copyWith(
-                                          color: AppColors.surface,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 24,
+                              // Título dinâmico
+                              isSuccess
+                                  ? Text(
+                                      'Senha alterada com sucesso!',
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.h2.copyWith(
+                                        color: AppColors.surface.withOpacity(
+                                          0.9,
                                         ),
-                                      )
-                                    : Text(
-                                        title,
-                                        style: AppTextStyles.h2.copyWith(
-                                          color: AppColors.surface,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 28,
-                                        ),
+                                        fontWeight: FontWeight.w200,
+                                        fontSize: 22,
                                       ),
+                                    )
+                                  : Text(
+                                      title,
+                                      style: AppTextStyles.h2.copyWith(
+                                        color: AppColors.surface.withOpacity(
+                                          0.9,
+                                        ),
+                                        fontWeight: FontWeight.w200,
+                                        fontSize: 24,
+                                      ),
+                                    ),
 
-                                const SizedBox(height: AppSpacing.md),
+                              const SizedBox(height: AppSpacing.sm),
 
-                                // Card do Formulário
-                                BlocBuilder<AuthCubit, AuthState>(
-                                  builder: (context, state) {
-                                    final isLoading = state.maybeWhen(
-                                      loading: () => true,
-                                      orElse: () => false,
-                                    );
+                              // Card do Formulário
+                              BlocBuilder<AuthCubit, AuthState>(
+                                builder: (context, state) {
+                                  final isLoading = state.maybeWhen(
+                                    loading: () => true,
+                                    orElse: () => false,
+                                  );
 
-                                    final errorMessage = state.maybeWhen(
-                                      error: (message) => message,
-                                      orElse: () => null,
-                                    );
+                                  final errorMessage = state.maybeWhen(
+                                    error: (message) => message,
+                                    orElse: () => null,
+                                  );
 
-                                    return Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Opacity(
-                                          opacity: isLoading ? 0.5 : 1.0,
-                                          child: AbsorbPointer(
-                                            absorbing: isLoading,
-                                            child: LoginForm(
-                                              authMode: _authMode,
-                                              errorMessage: errorMessage,
-                                              onForgotPasswordNavigation: () =>
-                                                  _switchMode(
-                                                    AuthMode.forgotPassword,
-                                                  ),
-                                              onLoginNavigation: () =>
-                                                  _switchMode(AuthMode.login),
-                                              onRegisterNavigation: () =>
-                                                  _switchMode(
-                                                    AuthMode.register,
-                                                  ),
-                                              onLoginAction: (email, password) {
-                                                context.read<AuthCubit>().login(
+                                  return Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Opacity(
+                                        opacity: isLoading ? 0.5 : 1.0,
+                                        child: AbsorbPointer(
+                                          absorbing: isLoading,
+                                          child: LoginForm(
+                                            authMode: _authMode,
+                                            errorMessage: errorMessage,
+                                            onForgotPasswordNavigation: () =>
+                                                _switchMode(
+                                                  AuthMode.forgotPassword,
+                                                ),
+                                            onLoginNavigation: () =>
+                                                _switchMode(AuthMode.login),
+                                            onRegisterNavigation: () =>
+                                                _switchMode(AuthMode.register),
+                                            onLoginAction: (email, password) {
+                                              context.read<AuthCubit>().login(
+                                                email,
+                                                password,
+                                              );
+                                            },
+                                            onRegisterAction:
+                                                (
+                                                  name,
                                                   email,
                                                   password,
-                                                );
-                                              },
-                                              onRegisterAction:
-                                                  (
-                                                    name,
-                                                    email,
-                                                    password,
-                                                    confirm,
-                                                  ) {
-                                                    context
-                                                        .read<AuthCubit>()
-                                                        .register(
-                                                          name,
-                                                          email,
-                                                          password,
-                                                          confirm,
-                                                        );
-                                                  },
-                                              onRecoverPasswordAction: (email) {
-                                                context
-                                                    .read<AuthCubit>()
-                                                    .recoverPassword(email);
-                                              },
-                                            ),
+                                                  confirm,
+                                                ) {
+                                                  context
+                                                      .read<AuthCubit>()
+                                                      .register(
+                                                        name,
+                                                        email,
+                                                        password,
+                                                        confirm,
+                                                      );
+                                                },
+                                            onRecoverPasswordAction: (email) {
+                                              context
+                                                  .read<AuthCubit>()
+                                                  .recoverPassword(email);
+                                            },
+                                            onResetPasswordAction:
+                                                (password, confirm) {
+                                                  context
+                                                      .read<AuthCubit>()
+                                                      .updatePassword(
+                                                        password,
+                                                        confirm,
+                                                      );
+                                                },
                                           ),
                                         ),
-                                        if (isLoading)
-                                          const CircularProgressIndicator(
-                                            color: AppColors.primary,
-                                          ),
-                                      ],
-                                    );
-                                  },
-                                ),
-
-                                const SizedBox(height: AppSpacing.xl),
-
-                                if (showSocials) ...[
-                                  Text(
-                                    'Ou continue com:',
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: AppColors.surface.withOpacity(0.8),
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.md),
-                                  Row(
-                                    children: [
-                                      SocialButton(
-                                        label: 'Google',
-                                        icon: SvgPicture.asset(
-                                          'assets/images/google_logo.svg',
-                                          width: 20,
-                                          height: 20,
-                                        ),
-                                        onPressed: () {},
                                       ),
-                                      const SizedBox(width: AppSpacing.md),
-                                      SocialButton(
-                                        label: 'Apple ID',
-                                        icon: SvgPicture.asset(
-                                          'assets/images/apple_logo.svg',
-                                          width: 20,
-                                          height: 24,
+                                      if (isLoading)
+                                        const CircularProgressIndicator(
+                                          color: AppColors.primary,
                                         ),
-                                        onPressed: () {},
-                                      ),
                                     ],
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: AppSpacing.md),
+
+                              if (showSocials) ...[
+                                Text(
+                                  'Ou continue com:',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.surface.withOpacity(0.8),
                                   ),
-                                ],
-
-                                const SizedBox(height: AppSpacing.xxl),
-
-                                // Footer Link Dinâmico
-                                _buildFooterLink(),
-
-                                const SizedBox(height: AppSpacing.lg),
+                                ),
+                                const SizedBox(height: AppSpacing.sm),
+                                Row(
+                                  children: [
+                                    SocialButton(
+                                      label: 'Google',
+                                      icon: SvgPicture.asset(
+                                        'assets/images/google_logo.svg',
+                                        width: 20,
+                                        height: 20,
+                                      ),
+                                      onPressed: () => context
+                                          .read<AuthCubit>()
+                                          .loginWithGoogle(),
+                                    ),
+                                    const SizedBox(width: AppSpacing.md),
+                                    SocialButton(
+                                      label: 'Apple ID',
+                                      icon: SvgPicture.asset(
+                                        'assets/images/apple_logo.svg',
+                                        width: 20,
+                                        height: 24,
+                                      ),
+                                      onPressed: () => context
+                                          .read<AuthCubit>()
+                                          .loginWithApple(),
+                                    ),
+                                  ],
+                                ),
                               ],
-                            ),
+
+                              const SizedBox(height: AppSpacing.lg),
+
+                              // Footer Link Dinâmico
+                              _buildFooterLink(),
+
+                              const SizedBox(height: AppSpacing.lg),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

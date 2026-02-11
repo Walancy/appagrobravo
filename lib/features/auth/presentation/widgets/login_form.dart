@@ -75,8 +75,8 @@ class _LoginFormState extends State<LoginForm> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.lg,
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.1),
@@ -89,7 +89,7 @@ class _LoginFormState extends State<LoginForm> {
             children: [
               ..._buildContent(),
               if (widget.errorMessage != null) ...[
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   widget.errorMessage!,
                   style: AppTextStyles.bodySmall.copyWith(
@@ -132,7 +132,7 @@ class _LoginFormState extends State<LoginForm> {
         hint: 'example@gmail.com',
         controller: _emailController,
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'Senha:',
         hint: '**********',
@@ -173,7 +173,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
         ],
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Entrar',
         onPressed: () {
@@ -193,13 +193,13 @@ class _LoginFormState extends State<LoginForm> {
         hint: 'Seu nome e sobrenome',
         controller: _nameController,
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'Senha:',
         hint: '**********',
@@ -207,7 +207,7 @@ class _LoginFormState extends State<LoginForm> {
         controller: _passwordController,
         suffixIcon: _buildVisibilityIcon(true),
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'Confirmar senha:',
         hint: '**********',
@@ -248,7 +248,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
         ],
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Criar',
         onPressed: () {
@@ -278,13 +278,13 @@ class _LoginFormState extends State<LoginForm> {
           fontSize: 14,
         ),
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Enviar',
         onPressed: () {
@@ -303,7 +303,7 @@ class _LoginFormState extends State<LoginForm> {
           fontSize: 14,
         ),
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'Nova senha:',
         hint: '**********',
@@ -311,7 +311,7 @@ class _LoginFormState extends State<LoginForm> {
         controller: _passwordController,
         suffixIcon: _buildVisibilityIcon(true),
       ),
-      const SizedBox(height: AppSpacing.md),
+      const SizedBox(height: AppSpacing.sm),
       AppTextField(
         label: 'Confirmar senha:',
         hint: '**********',
@@ -319,7 +319,7 @@ class _LoginFormState extends State<LoginForm> {
         controller: _confirmPasswordController,
         suffixIcon: _buildVisibilityIcon(false),
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Salvar',
         onPressed: () {
@@ -343,7 +343,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
         textAlign: TextAlign.center,
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Voltar para login',
         onPressed: widget.onLoginNavigation,
@@ -362,7 +362,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
         textAlign: TextAlign.center,
       ),
-      const SizedBox(height: AppSpacing.lg),
+      const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Voltar para login',
         onPressed: widget.onLoginNavigation,

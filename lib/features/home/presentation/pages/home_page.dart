@@ -18,6 +18,13 @@ import 'package:agrobravo/features/chat/presentation/pages/chat_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/itinerary_tab.dart';
+import 'package:agrobravo/features/profile/presentation/pages/profile_tab.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
+import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
+import 'package:agrobravo/features/home/presentation/widgets/itinerary_microcards.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,8 +38,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<FeedCubit>()..loadFeed(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<FeedCubit>()..loadFeed()),
+        BlocProvider(
+          create: (context) => getIt<DocumentsCubit>()..loadDocuments(),
+        ),
+        BlocProvider(
+          create: (context) => getIt<NotificationsCubit>()..loadNotifications(),
+        ),
+        BlocProvider(
+          create: (context) => getIt<ItineraryCubit>()..loadUserItinerary(),
+        ),
+      ],
       child: Scaffold(
         backgroundColor: Colors.white,
         extendBodyBehindAppBar: true,
@@ -48,30 +66,88 @@ class _HomePageState extends State<HomePage> {
       mode: HeaderMode.home,
       logo: SvgPicture.asset(Assets.images.logoColorida, height: 32),
       actions: [
-        BlocBuilder<FeedCubit, FeedState>(
-          builder: (context, state) {
-            final canPost = state.maybeWhen(
-              loaded: (_, canPost) => canPost,
-              orElse: () => false,
-            );
+        if (_selectedIndex == 0)
+          BlocBuilder<FeedCubit, FeedState>(
+            builder: (context, state) {
+              final canPost = state.maybeWhen(
+                loaded: (_, canPost) => canPost,
+                orElse: () => false,
+              );
 
+              return IconButton(
+                onPressed: canPost ? () => _handleNewPost(context) : null,
+                icon: Icon(
+                  Icons.add_circle_outline_rounded,
+                  size: 28,
+                  color: canPost ? AppColors.textPrimary : Colors.grey,
+                ),
+              );
+            },
+          ),
+        if (_selectedIndex == 3)
+          BlocBuilder<DocumentsCubit, DocumentsState>(
+            builder: (context, state) {
+              final hasPending = state.hasPendingAction;
+              return IconButton(
+                onPressed: () => context.push('/settings'),
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(
+                      Icons.settings_outlined,
+                      size: 28,
+                      color: AppColors.textPrimary,
+                    ),
+                    if (hasPending)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            final hasUnread = state.hasUnread;
             return IconButton(
-              onPressed: canPost ? () => _handleNewPost(context) : null,
-              icon: Icon(
-                Icons.add_circle_outline_rounded,
-                size: 28,
-                color: canPost ? AppColors.textPrimary : Colors.grey,
+              onPressed: () => context.push('/notifications'),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(
+                    Icons.notifications_none_rounded,
+                    size: 28,
+                    color: AppColors.textPrimary,
+                  ),
+                  if (hasUnread)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             );
           },
-        ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.notifications_none_rounded,
-            size: 28,
-            color: AppColors.textPrimary,
-          ),
         ),
       ],
     );
@@ -86,18 +162,8 @@ class _HomePageState extends State<HomePage> {
       return const ItineraryTab();
     }
 
-    if (_selectedIndex != 0) {
-      return Container(
-        padding: const EdgeInsets.only(top: 100),
-        child: Center(
-          child: Text(
-            'Conteúdo da Página ${_selectedIndex == 3 ? "Perfil" : ""}',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
-      );
+    if (_selectedIndex == 3) {
+      return const ProfileTab();
     }
 
     return BlocBuilder<FeedCubit, FeedState>(
@@ -108,10 +174,25 @@ class _HomePageState extends State<HomePage> {
           error: (message) => Center(child: Text(message)),
           loaded: (posts, _) {
             if (posts.isEmpty) {
-              return Center(
-                child: Text(
-                  'Nenhuma publicação encontrada.',
-                  style: AppTextStyles.bodyMedium,
+              return RefreshIndicator(
+                edgeOffset: 120,
+                onRefresh: () => context.read<FeedCubit>().loadFeed(),
+                child: ListView(
+                  padding: const EdgeInsets.only(
+                    top: 130,
+                    bottom: AppSpacing.md,
+                  ),
+                  children: [
+                    ItineraryMicrocards(
+                      onSeeAll: () => setState(() => _selectedIndex = 2),
+                    ),
+                    Center(
+                      child: Text(
+                        'Nenhuma publicação encontrada.',
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -120,9 +201,15 @@ class _HomePageState extends State<HomePage> {
               onRefresh: () => context.read<FeedCubit>().loadFeed(),
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 130, bottom: AppSpacing.md),
-                itemCount: posts.length,
+                itemCount: posts.length + 1,
                 itemBuilder: (context, index) {
-                  final post = posts[index];
+                  if (index == 0) {
+                    return ItineraryMicrocards(
+                      onSeeAll: () => setState(() => _selectedIndex = 2),
+                    );
+                  }
+
+                  final post = posts[index - 1];
                   final currentUserId = getIt<FeedRepository>()
                       .getCurrentUserId();
                   final isOwner = post.userId == currentUserId;
@@ -133,6 +220,7 @@ class _HomePageState extends State<HomePage> {
                     onLike: () => context.read<FeedCubit>().toggleLike(post.id),
                     onComment: () => _showComments(context, post.id),
                     onDelete: () => _confirmDeletePost(context, post.id),
+                    onProfileTap: () => context.push('/profile/${post.userId}'),
                     onEdit: () async {
                       final result = await context.push<bool>(
                         '/create-post',
@@ -158,6 +246,7 @@ class _HomePageState extends State<HomePage> {
 
   void _showComments(BuildContext context, String postId) {
     final feedCubit = context.read<FeedCubit>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -267,12 +356,16 @@ class _HomePageState extends State<HomePage> {
               Icons.explore_rounded,
               'Itinerário',
             ),
-            _buildNavItem(
-              3,
-              Icons.person_outline_rounded,
-              Icons.person_rounded,
-              'Perfil',
-              hasBadge: true,
+            BlocBuilder<DocumentsCubit, DocumentsState>(
+              builder: (context, state) {
+                return _buildNavItem(
+                  3,
+                  Icons.person_outline_rounded,
+                  Icons.person_rounded,
+                  'Perfil',
+                  hasBadge: state.hasPendingAction,
+                );
+              },
             ),
           ],
         ),

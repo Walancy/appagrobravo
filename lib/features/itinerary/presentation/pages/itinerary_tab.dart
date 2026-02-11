@@ -30,8 +30,12 @@ class ItineraryTab extends StatelessWidget {
                   child: Text('Erro: $msg', textAlign: TextAlign.center),
                 ),
               ),
-              loaded: (group, items) {
-                return ItineraryContent(group: group, items: items);
+              loaded: (group, items, travelTimes) {
+                return ItineraryContent(
+                  group: group,
+                  items: items,
+                  travelTimes: travelTimes,
+                );
               },
               orElse: () => const SizedBox.shrink(),
             );
@@ -45,8 +49,14 @@ class ItineraryTab extends StatelessWidget {
 class ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
+  final List<Map<String, dynamic>> travelTimes;
 
-  const ItineraryContent({super.key, required this.group, required this.items});
+  const ItineraryContent({
+    super.key,
+    required this.group,
+    required this.items,
+    required this.travelTimes,
+  });
 
   @override
   State<ItineraryContent> createState() => _ItineraryContentState();
@@ -118,13 +128,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Row(
                     children: [
@@ -154,6 +158,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
           Expanded(
             child: ItineraryList(
               items: widget.items,
+              travelTimes: widget.travelTimes,
               selectedDate: _selectedDate,
             ),
           ),

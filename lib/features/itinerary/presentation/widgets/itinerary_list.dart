@@ -4,11 +4,13 @@ import 'itinerary_cards.dart';
 
 class ItineraryList extends StatelessWidget {
   final List<ItineraryItemEntity> items;
+  final List<Map<String, dynamic>> travelTimes;
   final DateTime? selectedDate;
 
   const ItineraryList({
     super.key,
     required this.items,
+    required this.travelTimes,
     required this.selectedDate,
   });
 
@@ -21,10 +23,25 @@ class ItineraryList extends StatelessWidget {
       return _isSameDay(item.startDateTime!, selectedDate!);
     }).toList();
 
-    // Sort
+    // Sort: por horário, e se for igual, transfer fica por último
     displayedItems.sort((a, b) {
       if (a.startDateTime == null || b.startDateTime == null) return 0;
-      return a.startDateTime!.compareTo(b.startDateTime!);
+
+      final dateCompare = a.startDateTime!.compareTo(b.startDateTime!);
+      if (dateCompare != 0) return dateCompare;
+
+      // Se o horário for igual, tipos 'transfer' ou 'returnType' devem vir depois dos outros
+      final bool isAExtra =
+          a.type == ItineraryType.transfer ||
+          a.type == ItineraryType.returnType;
+      final bool isBExtra =
+          b.type == ItineraryType.transfer ||
+          b.type == ItineraryType.returnType;
+
+      if (isAExtra && !isBExtra) return 1;
+      if (!isAExtra && isBExtra) return -1;
+
+      return 0;
     });
 
     if (displayedItems.isEmpty) {
@@ -38,6 +55,14 @@ class ItineraryList extends StatelessWidget {
       itemCount: displayedItems.length,
       itemBuilder: (context, index) {
         final item = displayedItems[index];
+        final bool isLast = index == displayedItems.length - 1;
+        final bool isExtra =
+            item.type == ItineraryType.transfer ||
+            item.type == ItineraryType.returnType;
+        final bool nextIsExtra =
+            !isLast &&
+            (displayedItems[index + 1].type == ItineraryType.transfer ||
+                displayedItems[index + 1].type == ItineraryType.returnType);
 
         Widget card;
         if (item.type == ItineraryType.flight) {
@@ -48,10 +73,30 @@ class ItineraryList extends StatelessWidget {
           card = GenericEventCard(item: item);
         }
 
-        // Check if next item implies a travel time or just spacing
-        final bool isLast = index == displayedItems.length - 1;
+        // Try to find travel time:
+        // We look for the travel time to reach the NEXT item
+        String? travelDuration;
 
-        // Custom widget for timeline line
+        final bool nextIsTransfer =
+            !isLast && displayedItems[index + 1].type == ItineraryType.transfer;
+
+        if (!isLast && !nextIsTransfer) {
+          final nextItem = displayedItems[index + 1];
+          // Prioritize the property in the next item (displacement TO that item)
+          travelDuration = nextItem.travelTime;
+
+          // Fallback to the pair-matching logic
+          if (travelDuration == null || travelDuration.isEmpty) {
+            try {
+              final travel = travelTimes.firstWhere(
+                (t) =>
+                    t['id_origem'] == item.id && t['id_destino'] == nextItem.id,
+              );
+              travelDuration = travel['tempo_deslocamento'];
+            } catch (_) {}
+          }
+        }
+
         return Stack(
           children: [
             // Timeline line
@@ -62,7 +107,7 @@ class ItineraryList extends StatelessWidget {
                 bottom: -2,
                 child: Container(
                   width: 2,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.transparent, // Background
                   ),
                   child: CustomPaint(
@@ -76,23 +121,12 @@ class ItineraryList extends StatelessWidget {
             Column(
               children: [
                 card,
-                // If transfer, show travel time
-                if (item.type == ItineraryType.transfer &&
-                    !isLast &&
-                    item.durationString != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    alignment: Alignment.centerLeft,
-                    margin: const EdgeInsets.only(left: 48), // Indent past line
-                    child: Text(
-                      "Tempo de viagem: ${item.durationString}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  )
-                else
+                if (travelDuration != null)
+                  TravelTimeWidget(duration: travelDuration),
+                if (!isLast &&
+                    travelDuration == null &&
+                    !isExtra &&
+                    !nextIsExtra)
                   const SizedBox(height: 20),
               ],
             ),
