@@ -16,6 +16,8 @@ abstract class CommentModel with _$CommentModel {
     // Joined data
     @JsonKey(includeToJson: false) String? userName,
     @JsonKey(includeToJson: false) String? userAvatar,
+    @JsonKey(includeToJson: false) @Default(0) int likesCount,
+    @JsonKey(includeToJson: false) @Default(false) bool isLiked,
   }) = _CommentModel;
 
   const CommentModel._();
@@ -32,5 +34,7 @@ abstract class CommentModel with _$CommentModel {
         text: text,
         createdAt: createdAt,
         replies: replies,
+        likesCount: likesCount,
+        isLiked: isLiked,
       );
 }

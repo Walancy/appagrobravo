@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -196,16 +196,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Exception, String>> updateProfilePhoto(String filePath) async {
+  Future<Either<Exception, String>> updateProfilePhoto(
+    Uint8List bytes,
+    String extension,
+  ) async {
     try {
-      final file = File(filePath);
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
       final userId = _supabaseClient.auth.currentUser!.id;
       final path = 'avatars/$userId/$fileName';
 
-      await _supabaseClient.storage.from('app').upload(path, file);
+      await _supabaseClient.storage.from('files').uploadBinary(path, bytes);
 
-      final url = _supabaseClient.storage.from('app').getPublicUrl(path);
+      final url = _supabaseClient.storage.from('files').getPublicUrl(path);
 
       await _supabaseClient
           .from('users')
@@ -219,16 +221,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Exception, String>> updateCoverPhoto(String filePath) async {
+  Future<Either<Exception, String>> updateCoverPhoto(
+    Uint8List bytes,
+    String extension,
+  ) async {
     try {
-      final file = File(filePath);
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_cover.$extension';
       final userId = _supabaseClient.auth.currentUser!.id;
       final path = 'covers/$userId/$fileName';
 
-      await _supabaseClient.storage.from('app').upload(path, file);
+      await _supabaseClient.storage.from('files').uploadBinary(path, bytes);
 
-      final url = _supabaseClient.storage.from('app').getPublicUrl(path);
+      final url = _supabaseClient.storage.from('files').getPublicUrl(path);
 
       await _supabaseClient
           .from('users')

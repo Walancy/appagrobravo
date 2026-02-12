@@ -8,6 +8,8 @@ abstract class FeedRepository {
   Future<Either<Exception, List<CommentEntity>>> getComments(String postId);
   Future<Either<Exception, Unit>> likePost(String postId);
   Future<Either<Exception, Unit>> unlikePost(String postId);
+  Future<Either<Exception, Unit>> likeComment(String commentId);
+  Future<Either<Exception, Unit>> unlikeComment(String commentId);
   Future<Either<Exception, CommentEntity>> addComment(
     String postId,
     String text, {
@@ -30,6 +32,7 @@ abstract class FeedRepository {
   });
   Future<Either<Exception, bool>> canUserPost();
   Future<Either<Exception, List<MissionEntity>>> getUserMissions();
+  Future<Either<Exception, MissionEntity?>> getLatestMissionAlert();
   Future<Either<Exception, Unit>> deletePost(String postId);
   String? getCurrentUserId();
 }

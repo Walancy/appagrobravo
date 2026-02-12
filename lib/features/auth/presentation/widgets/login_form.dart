@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:agrobravo/core/components/app_text_field.dart';
 import 'package:agrobravo/core/components/primary_button.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
@@ -15,7 +16,8 @@ class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterNavigation; // Navegação para Registro
 
   // Ações de Submissão com Dados
-  final void Function(String email, String password)? onLoginAction;
+  final void Function(String email, String password, bool rememberMe)?
+  onLoginAction;
   final void Function(
     String name,
     String email,
@@ -57,6 +59,29 @@ class _LoginFormState extends State<LoginForm> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _termsAccepted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    if (widget.authMode == AuthMode.login) {
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString('remembered_email');
+      final password = prefs.getString('remembered_password');
+      if (email != null && mounted) {
+        setState(() {
+          _emailController.text = email;
+          if (password != null) {
+            _passwordController.text = password;
+          }
+          _rememberMe = true;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -180,6 +205,7 @@ class _LoginFormState extends State<LoginForm> {
           widget.onLoginAction?.call(
             _emailController.text,
             _passwordController.text,
+            _rememberMe,
           );
         },
       ),

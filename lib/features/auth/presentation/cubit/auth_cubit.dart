@@ -1,13 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton()
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
 
-  AuthCubit(this._authRepository) : super(const AuthState.initial());
+  AuthCubit(this._authRepository) : super(const AuthState.initial()) {
+    _authRepository.onAuthStateChange.listen((event) {
+      if (event == AuthChangeEvent.passwordRecovery) {
+        emit(const AuthState.passwordRecovery());
+      }
+    });
+  }
 
   Future<void> checkAuthStatus() async {
     emit(const AuthState.loading());
@@ -18,8 +26,22 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(
+    String email,
+    String password, {
+    bool rememberMe = false,
+  }) async {
     emit(const AuthState.loading());
+
+    final prefs = await SharedPreferences.getInstance();
+    if (rememberMe) {
+      await prefs.setString('remembered_email', email);
+      await prefs.setString('remembered_password', password);
+    } else {
+      await prefs.remove('remembered_email');
+      await prefs.remove('remembered_password');
+    }
+
     final result = await _authRepository.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -30,6 +52,11 @@ class AuthCubit extends Cubit<AuthState> {
           emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (user) => emit(AuthState.authenticated(user)),
     );
+  }
+
+  Future<String?> getRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('remembered_email');
   }
 
   Future<void> register(

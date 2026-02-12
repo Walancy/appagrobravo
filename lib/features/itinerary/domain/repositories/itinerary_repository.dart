@@ -13,4 +13,5 @@ abstract class ItineraryRepository {
     String groupId,
   );
   Future<Either<Exception, String?>> getUserGroupId();
+  Future<Either<Exception, List<String>>> getUserPendingDocuments();
 }

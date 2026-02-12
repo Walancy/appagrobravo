@@ -118,13 +118,31 @@ class GenericEventCard extends StatelessWidget {
 
 class FlightCard extends StatelessWidget {
   final ItineraryItemEntity item;
-  const FlightCard({super.key, required this.item});
+  final List<String> pendingDocs;
+
+  const FlightCard({
+    super.key,
+    required this.item,
+    this.pendingDocs = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
+    final connections = item.connections ?? [];
+    final hasConnections = connections.isNotEmpty;
+
+    // Filter relevant docs for flight
+    final relevantDocs = pendingDocs.where((doc) {
+      final d = doc.toLowerCase();
+      return d.contains('passaporte') ||
+          d.contains('visto') ||
+          d.contains('vacina') ||
+          d.contains('menores');
+    }).toList();
+
     return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(bottom: 0), // Connected to timeline
+      padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
+      margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -132,220 +150,488 @@ class FlightCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header: Airline + Time
+          if (relevantDocs.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.orange.shade800,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Pendente: ${relevantDocs.join(", ")}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.orange.shade900,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          // Header: Icon + Airline/Flight Name
           Row(
             children: [
               Icon(
-                Icons.airplane_ticket_outlined,
+                Icons.flight_takeoff_outlined,
                 color: AppColors.primary,
-                size: 20,
+                size: 24,
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Voo ${item.name}',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Voo',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
                     ),
-                    if (item.location != null)
-                      Text(
-                        item.location!,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontSize: 11,
-                          color: AppColors.textSecondary.withOpacity(0.7),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (item.endDateTime != null)
-                Text(
-                  DateFormat('HH:mm').format(item.endDateTime!),
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
+                  Text(
+                    item.name, // e.g., LATAM LA 3400
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              // NO PRICE TAG as requested
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // Route: MGF -> GRU
+          // Route: Origin -> Destination with Times and Cities
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                item.fromCode ?? 'ORG',
-                style: AppTextStyles.h2.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+              // Origin
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.fromCode ?? 'ORG',
+                    style: AppTextStyles.h2.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (item.startDateTime != null)
+                    Text(
+                      DateFormat('HH:mm').format(item.startDateTime!),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  if (item.fromCity != null)
+                    Text(
+                      'de ${item.fromCity}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textSecondary.withOpacity(0.7),
+                      ),
+                    ),
+                ],
               ),
+
+              // Center Graphic
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.flight_takeoff,
-                        color: AppColors.primary.withOpacity(0.5),
-                        size: 20,
+                      if (item.durationString != null)
+                        Text(
+                          _formatDuration(item.durationString!),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Icon(
+                              Icons.flight_takeoff,
+                              color: AppColors.primary,
+                              size: 16,
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                        ],
                       ),
-                      Container(height: 1, color: Colors.grey.shade200),
                     ],
                   ),
                 ),
               ),
-              Text(
-                item.toCode ?? 'DES',
-                style: AppTextStyles.h2.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+
+              // Destination
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    item.toCode ?? 'DES',
+                    style: AppTextStyles.h2.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Builder(
+                    builder: (context) {
+                      String timeText = '';
+                      if (item.endDateTime != null) {
+                        timeText = DateFormat(
+                          'HH:mm',
+                        ).format(item.endDateTime!);
+                      } else if (hasConnections) {
+                        final lastConn = connections.last;
+                        final destMap = lastConn['destination'] is Map
+                            ? lastConn['destination']
+                            : null;
+                        timeText =
+                            destMap?['time']?.toString() ??
+                            lastConn['hora_chegada']?.toString() ??
+                            '';
+                      } else if (item.startDateTime != null &&
+                          item.durationString != null) {
+                        try {
+                          final duration = _parseDuration(item.durationString!);
+                          if (duration != null) {
+                            timeText = DateFormat(
+                              'HH:mm',
+                            ).format(item.startDateTime!.add(duration));
+                          }
+                        } catch (_) {}
+                      }
+
+                      if (timeText.isNotEmpty) {
+                        return Text(
+                          timeText,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  if (item.toCity != null)
+                    Text(
+                      'para ${item.toCity}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textSecondary.withOpacity(0.7),
+                      ),
+                    ),
+                ],
               ),
             ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Times Section
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                _buildTimeBlock('Partida', item.startDateTime),
-                const VerticalDivider(width: 32, thickness: 1),
-                _buildTimeBlock('Chegada', item.endDateTime),
-              ],
-            ),
           ),
 
           const SizedBox(height: 16),
-          Divider(color: Colors.grey.shade200),
-          const SizedBox(height: 12),
 
-          Text(
-            'Atualizado há 5 min',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 11,
+          // Connections Dropdown
+          if (hasConnections)
+            Theme(
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(bottom: 12),
+                title: Text(
+                  'Escalas (${connections.length})',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                children: connections
+                    .map((conn) => _buildConnectionItem(conn))
+                    .toList(),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  Text(
+                    'Voo direto',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Mapa'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text(
-                    'Ver cartão de embarque',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildTimeBlock(String label, DateTime? time) {
-    if (time == null) return const SizedBox.shrink();
+  Widget _buildConnectionItem(Map<String, dynamic> conn) {
+    // Parse fields handling both flat and nested structures
+    final originMap = conn['origin'] is Map ? conn['origin'] : null;
+    final destMap = conn['destination'] is Map ? conn['destination'] : null;
+
+    final originCode =
+        originMap?['code']?.toString() ?? conn['origem']?.toString() ?? '';
+    final originTime =
+        originMap?['time']?.toString() ?? conn['hora_saida']?.toString() ?? '';
+
+    final destCode =
+        destMap?['code']?.toString() ?? conn['destino']?.toString() ?? '';
+    final destTime =
+        destMap?['time']?.toString() ?? conn['hora_chegada']?.toString() ?? '';
+
+    final flightDuration =
+        conn['duration']?.toString() ?? conn['duracao']?.toString() ?? '';
+    final airlineName =
+        conn['airline']?.toString() ??
+        conn['companhia_codigo']?.toString() ??
+        'Voo';
+    final flightNum =
+        conn['flightNumber']?.toString() ?? conn['voo']?.toString() ?? '';
+
+    final layoverTime =
+        conn['layoverDuration']?.toString() ??
+        conn['tempo_conexao']?.toString();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            fontSize: 10,
-            color: AppColors.textSecondary,
+        if (layoverTime != null && layoverTime.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6, left: 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Tempo de conexão: $layoverTime',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(DateFormat('HH:mm').format(time), style: AppTextStyles.h2),
-        Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Terminal',
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
-                ),
-                Text(
-                  'A7',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.bold,
+        Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade100),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Flight Name
+              Row(
+                children: [
+                  Icon(Icons.flight, size: 16, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$airlineName $flightNum',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Portão',
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
-                ),
-                Text(
-                  '12',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.bold,
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Origin
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        originCode,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        originTime,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
+
+                  // Duration/Plane
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        children: [
+                          Text(
+                            _formatDuration(flightDuration),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontSize: 9,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(color: Colors.grey.shade300),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Icon(
+                                  Icons.flight_takeoff,
+                                  size: 14,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(color: Colors.grey.shade300),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Dest
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        destCode,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        destTime,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
+  }
+
+  Duration? _parseDuration(String dStr) {
+    if (dStr.isEmpty) return null;
+    try {
+      // 1. "HH:MM" format
+      if (dStr.contains(':')) {
+        final parts = dStr.split(':');
+        if (parts.length >= 2) {
+          return Duration(
+            hours: int.tryParse(parts[0]) ?? 0,
+            minutes: int.tryParse(parts[1]) ?? 0,
+          );
+        }
+      }
+
+      // 2. "1h 40min" or similar format
+      if (dStr.toLowerCase().contains('h')) {
+        final regex = RegExp(r'(\d+)h\s*(\d*)');
+        final match = regex.firstMatch(dStr.toLowerCase());
+        if (match != null) {
+          final h = int.parse(match.group(1)!);
+          final m = int.tryParse(match.group(2) ?? '0') ?? 0;
+          return Duration(hours: h, minutes: m);
+        }
+      }
+
+      // 3. Plain minutes "90"
+      final numberRegex = RegExp(r'(\d+)');
+      final match = numberRegex.firstMatch(dStr);
+      if (match != null) {
+        final minutes = int.parse(match.group(1)!);
+        return Duration(minutes: minutes);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  String _formatDuration(String duration) {
+    final d = _parseDuration(duration);
+    if (d == null) return duration;
+
+    final hours = d.inHours;
+    final mins = d.inMinutes % 60;
+
+    if (hours > 0) {
+      if (mins > 0) {
+        return '${hours}h ${mins}min';
+      }
+      return '${hours}h';
+    } else {
+      return '${mins}min';
+    }
   }
 }
 
 class TransferCard extends StatelessWidget {
   final ItineraryItemEntity item;
-  const TransferCard({super.key, required this.item});
+  final bool showNextDayTag;
+
+  const TransferCard({
+    super.key,
+    required this.item,
+    this.showNextDayTag = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -358,25 +644,61 @@ class TransferCard extends StatelessWidget {
                 ? Icons.keyboard_return
                 : Icons.directions_bus_outlined,
             color: AppColors.primary,
-            size: 18,
+            size: 20,
           ),
           const SizedBox(width: 12),
-          Text(
-            item.name,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (item.startDateTime != null)
+                      Text(
+                        DateFormat('HH:mm').format(item.startDateTime!),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    if (showNextDayTag) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.1),
+                          ),
+                        ),
+                        child: Text(
+                          'Dia seguinte ao voo',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontSize: 10,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  item.name,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
-          const Spacer(),
-          if (item.startDateTime != null)
-            Text(
-              DateFormat('HH:mm').format(item.startDateTime!),
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
         ],
       ),
     );
@@ -384,54 +706,34 @@ class TransferCard extends StatelessWidget {
 }
 
 class TravelTimeWidget extends StatelessWidget {
-  final String duration;
-  const TravelTimeWidget({super.key, required this.duration});
+  final String? duration;
+  const TravelTimeWidget({super.key, this.duration});
 
   @override
   Widget build(BuildContext context) {
+    final bool hasDuration = duration != null && duration!.isNotEmpty;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
-          const SizedBox(width: 4), // 24px - 20px padding
-          Container(
-            height: 40,
-            width: 2,
-            child: CustomPaint(
-              painter: DashedLinePainter(color: AppColors.primary),
-            ),
-          ),
-          const SizedBox(width: 32),
-          Text(
-            'Tempo de viagem: $duration',
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
+          const SizedBox(
+            width: 45,
+          ), // Espaço para alinhar após a linha tracejada (30px da linha - 20px padding + offset)
+          Expanded(
+            child: Text(
+              hasDuration
+                  ? 'Tempo de viagem: $duration'
+                  : 'Não foi possível calcular o tempo de deslocamento',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+                color: hasDuration ? AppColors.textPrimary : AppColors.error,
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class DashedLinePainter extends CustomPainter {
-  final Color color;
-  DashedLinePainter({required this.color});
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    double startY = 0;
-    while (startY < size.height) {
-      canvas.drawLine(Offset(0, startY), Offset(0, startY + 4), paint);
-      startY += 8;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

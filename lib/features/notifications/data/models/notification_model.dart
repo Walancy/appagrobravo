@@ -86,7 +86,7 @@ abstract class NotificationModel with _$NotificationModel {
       type = NotificationType.missionUpdate;
     }
 
-    String finalUserName = userName ?? 'AgroBravo';
+    String finalUserName = userName ?? titulo ?? 'AgroBravo';
     String finalMessage = messageContent;
 
     // Name parsing for Post interactions if name is 'AgroBravo'

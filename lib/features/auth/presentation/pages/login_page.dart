@@ -80,6 +80,16 @@ class _LoginPageState extends State<LoginPage>
   }
 
   @override
+  void didUpdateWidget(LoginPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialAuthMode != oldWidget.initialAuthMode) {
+      setState(() {
+        _authMode = widget.initialAuthMode;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -137,6 +147,9 @@ class _LoginPageState extends State<LoginPage>
           },
           passwordResetEmailSent: () {
             _switchMode(AuthMode.emailVerification);
+          },
+          passwordRecovery: () {
+            _switchMode(AuthMode.resetPassword);
           },
           passwordUpdated: () {
             _switchMode(AuthMode.success);
@@ -261,12 +274,16 @@ class _LoginPageState extends State<LoginPage>
                                                 _switchMode(AuthMode.login),
                                             onRegisterNavigation: () =>
                                                 _switchMode(AuthMode.register),
-                                            onLoginAction: (email, password) {
-                                              context.read<AuthCubit>().login(
-                                                email,
-                                                password,
-                                              );
-                                            },
+                                            onLoginAction:
+                                                (email, password, rememberMe) {
+                                                  context
+                                                      .read<AuthCubit>()
+                                                      .login(
+                                                        email,
+                                                        password,
+                                                        rememberMe: rememberMe,
+                                                      );
+                                                },
                                             onRegisterAction:
                                                 (
                                                   name,

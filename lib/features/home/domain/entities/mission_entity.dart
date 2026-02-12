@@ -8,6 +8,11 @@ abstract class MissionEntity with _$MissionEntity {
     required String id,
     required String name,
     String? logo,
+    String? location,
+    DateTime? startDate,
+    String? groupName,
+    String? groupLogo,
+    int? pendingDocsCount,
   }) = _MissionEntity;
 
   const MissionEntity._();

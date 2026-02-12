@@ -25,6 +25,8 @@ import 'package:agrobravo/features/notifications/presentation/cubit/notification
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
 import 'package:agrobravo/features/home/presentation/widgets/itinerary_microcards.dart';
+import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
+import 'package:agrobravo/features/home/presentation/widgets/mission_alert_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,6 +37,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+
+  void _showMissionAlert(BuildContext context, MissionEntity mission) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => MissionAlertDialog(
+        mission: mission,
+        onDismiss: (permanently) {
+          context.read<FeedCubit>().acknowledgeMissionAlert(
+            mission.id,
+            permanently: permanently,
+          );
+        },
+        onDocumentsTap: () {
+          Navigator.pop(dialogContext);
+          context.push('/documents');
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +73,24 @@ class _HomePageState extends State<HomePage> {
           create: (context) => getIt<ItineraryCubit>()..loadUserItinerary(),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        extendBodyBehindAppBar: true,
-        appBar: _buildHeader(context),
-        body: _buildBody(),
-        bottomNavigationBar: _buildBottomNav(),
+      child: BlocListener<FeedCubit, FeedState>(
+        listener: (context, state) {
+          state.maybeMap(
+            loaded: (s) {
+              if (s.missionToAlert != null) {
+                _showMissionAlert(context, s.missionToAlert!);
+              }
+            },
+            orElse: () {},
+          );
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          extendBodyBehindAppBar: true,
+          appBar: _buildHeader(context),
+          body: _buildBody(),
+          bottomNavigationBar: _buildBottomNav(),
+        ),
       ),
     );
   }
@@ -70,7 +104,7 @@ class _HomePageState extends State<HomePage> {
           BlocBuilder<FeedCubit, FeedState>(
             builder: (context, state) {
               final canPost = state.maybeWhen(
-                loaded: (_, canPost) => canPost,
+                loaded: (_, canPost, __) => canPost,
                 orElse: () => false,
               );
 
@@ -172,7 +206,7 @@ class _HomePageState extends State<HomePage> {
           initial: () => const SizedBox.shrink(),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (message) => Center(child: Text(message)),
-          loaded: (posts, _) {
+          loaded: (posts, _, __) {
             if (posts.isEmpty) {
               return RefreshIndicator(
                 edgeOffset: 120,

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
@@ -5,8 +6,14 @@ import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
 abstract class ProfileRepository {
   Future<Either<Exception, ProfileEntity>> getProfile(String userId);
   Future<Either<Exception, List<PostEntity>>> getUserPosts(String userId);
-  Future<Either<Exception, String>> updateProfilePhoto(String filePath);
-  Future<Either<Exception, String>> updateCoverPhoto(String filePath);
+  Future<Either<Exception, String>> updateProfilePhoto(
+    Uint8List bytes,
+    String extension,
+  );
+  Future<Either<Exception, String>> updateCoverPhoto(
+    Uint8List bytes,
+    String extension,
+  );
   Future<Either<Exception, List<ProfileEntity>>> getConnections(String userId);
   Future<Either<Exception, List<ProfileEntity>>> getRequests(String userId);
   Future<Either<Exception, void>> requestConnection(String userId);

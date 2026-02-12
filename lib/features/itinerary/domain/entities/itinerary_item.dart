@@ -33,6 +33,7 @@ abstract class ItineraryItemEntity with _$ItineraryItemEntity {
     String? driverName,
     String? durationString,
     String? travelTime,
+    List<Map<String, dynamic>>? connections,
   }) = _ItineraryItemEntity;
 
   const ItineraryItemEntity._();

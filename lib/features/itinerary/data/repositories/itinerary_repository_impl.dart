@@ -89,4 +89,32 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return Left(Exception(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Exception, List<String>>> getUserPendingDocuments() async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      final response = await _supabaseClient
+          .from('documentos')
+          .select('tipo, nome_documento')
+          .eq('user_id', userId)
+          .eq('status', 'PENDENTE');
+
+      final List<dynamic> data = response as List<dynamic>;
+      final docTypes = data.map((doc) {
+        final type = doc['tipo']?.toString();
+        // Capitalize first letter for display
+        if (type != null && type.isNotEmpty) {
+          return type[0].toUpperCase() + type.substring(1).toLowerCase();
+        }
+        return doc['nome_documento']?.toString() ?? 'Documento';
+      }).toList();
+
+      return Right(docTypes);
+    } catch (e) {
+      return Left(Exception(e.toString()));
+    }
+  }
 }

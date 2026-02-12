@@ -17,7 +17,7 @@ class ItineraryMicrocards extends StatelessWidget {
     return BlocBuilder<ItineraryCubit, ItineraryState>(
       builder: (context, state) {
         return state.maybeWhen(
-          loaded: (group, items, _) {
+          loaded: (group, items, _, __) {
             final now = DateTime.now();
             // Filter events from today onwards, or recently passed (last 2 hours)
             final upcomingItems = items
@@ -62,9 +62,9 @@ class ItineraryMicrocards extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.xs),
                 SizedBox(
-                  height: 100,
+                  height: 70,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(
@@ -77,7 +77,7 @@ class ItineraryMicrocards extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
               ],
             );
           },
@@ -120,18 +120,17 @@ class ItineraryMicrocards extends StatelessWidget {
         : '';
 
     return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
+      width: 130,
+      margin: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -141,34 +140,27 @@ class ItineraryMicrocards extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(20),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 14, color: AppColors.primary),
-              ),
-              const SizedBox(width: 8),
+              Icon(icon, size: 12, color: AppColors.primary),
+              const SizedBox(width: 4),
               Text(
                 time,
                 style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.primary,
-                  fontSize: 12,
+                  fontSize: 11,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             item.name,
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontSize: 12,
               color: AppColors.textPrimary,
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],

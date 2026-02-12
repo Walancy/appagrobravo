@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
@@ -55,10 +56,15 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> updateProfilePhoto(String filePath) async {
+  Future<void> updateProfilePhoto(XFile file) async {
     state.maybeMap(
       loaded: (currentState) async {
-        final result = await _profileRepository.updateProfilePhoto(filePath);
+        final bytes = await file.readAsBytes();
+        final extension = file.path.split('.').last;
+        final result = await _profileRepository.updateProfilePhoto(
+          bytes,
+          extension,
+        );
 
         result.fold((error) => emit(ProfileState.error(error.toString())), (
           newUrl,
@@ -74,10 +80,15 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-  Future<void> updateCoverPhoto(String filePath) async {
+  Future<void> updateCoverPhoto(XFile file) async {
     state.maybeMap(
       loaded: (currentState) async {
-        final result = await _profileRepository.updateCoverPhoto(filePath);
+        final bytes = await file.readAsBytes();
+        final extension = file.path.split('.').last;
+        final result = await _profileRepository.updateCoverPhoto(
+          bytes,
+          extension,
+        );
 
         result.fold((error) => emit(ProfileState.error(error.toString())), (
           newUrl,

@@ -8,6 +8,7 @@ import '../../../../core/tokens/app_text_styles.dart';
 import '../cubit/itinerary_cubit.dart';
 import '../widgets/day_slider.dart';
 import '../widgets/itinerary_list.dart';
+import '../widgets/itinerary_filter_modal.dart';
 
 /// Standalone Widget to be used as a Tab
 class ItineraryTab extends StatelessWidget {
@@ -30,11 +31,12 @@ class ItineraryTab extends StatelessWidget {
                   child: Text('Erro: $msg', textAlign: TextAlign.center),
                 ),
               ),
-              loaded: (group, items, travelTimes) {
+              loaded: (group, items, travelTimes, pendingDocs) {
                 return ItineraryContent(
                   group: group,
                   items: items,
                   travelTimes: travelTimes,
+                  pendingDocs: pendingDocs,
                 );
               },
               orElse: () => const SizedBox.shrink(),
@@ -51,11 +53,14 @@ class ItineraryContent extends StatefulWidget {
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
 
+  final List<String> pendingDocs;
+
   const ItineraryContent({
     super.key,
     required this.group,
     required this.items,
     required this.travelTimes,
+    required this.pendingDocs,
   });
 
   @override
@@ -64,6 +69,7 @@ class ItineraryContent extends StatefulWidget {
 
 class _ItineraryContentState extends State<ItineraryContent> {
   DateTime? _selectedDate;
+  ItineraryFilters _filters = const ItineraryFilters();
 
   @override
   void initState() {
@@ -71,6 +77,36 @@ class _ItineraryContentState extends State<ItineraryContent> {
     // Default to first day if valid range
     if (widget.group.startDate.year > 0) {
       _selectedDate = widget.group.startDate;
+    }
+  }
+
+  void _showFilterModal() async {
+    // Generate dates between start and end
+    final availableDates = List.generate(
+      widget.group.endDate.difference(widget.group.startDate).inDays + 1,
+      (i) => widget.group.startDate.add(Duration(days: i)),
+    );
+
+    final result = await showDialog<ItineraryFilters>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: ItineraryFilterModal(
+          initialFilters: _filters,
+          availableDates: availableDates,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _filters = result;
+        if (result.date != null) {
+          _selectedDate = result.date;
+        }
+      });
     }
   }
 
@@ -102,7 +138,14 @@ class _ItineraryContentState extends State<ItineraryContent> {
             endDate: widget.group.endDate,
             selectedDate: _selectedDate,
             onDateSelected: (date) {
-              setState(() => _selectedDate = date);
+              setState(() {
+                _selectedDate = date;
+                // If filter had a different date, we clear it or sync it
+                if (_filters.date != null &&
+                    !_isSameDay(_filters.date!, date)) {
+                  _filters = _filters.copyWith(date: date);
+                }
+              });
             },
           ),
 
@@ -115,37 +158,57 @@ class _ItineraryContentState extends State<ItineraryContent> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Sem filtros aplicados',
+                  _filters.isActive
+                      ? '${_filters.count} filtros aplicados'
+                      : 'Sem filtros aplicados',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: _filters.isActive
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    fontWeight: _filters.isActive
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.filter_list,
-                        size: 16,
-                        color: AppColors.primary,
+                GestureDetector(
+                  onTap: _showFilterModal,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10, // Increased for better tap area
+                    ),
+                    decoration: BoxDecoration(
+                      color: _filters.isActive
+                          ? AppColors.primary.withOpacity(0.1)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _filters.isActive
+                            ? AppColors.primary
+                            : Colors.grey.shade200,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Filtrar',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 16,
+                          color: _filters.isActive
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          'Filtrar',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: _filters.isActive
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -160,10 +223,16 @@ class _ItineraryContentState extends State<ItineraryContent> {
               items: widget.items,
               travelTimes: widget.travelTimes,
               selectedDate: _selectedDate,
+              filters: _filters,
+              pendingDocs: widget.pendingDocs,
             ),
           ),
         ],
       ),
     );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

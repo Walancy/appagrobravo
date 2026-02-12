@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<PostEntity> posts,  bool canPost)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<PostEntity> posts,  bool canPost,  MissionEntity? missionToAlert)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.posts,_that.canPost);case _Error() when error != null:
+return loaded(_that.posts,_that.canPost,_that.missionToAlert);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<PostEntity> posts,  bool canPost)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<PostEntity> posts,  bool canPost,  MissionEntity? missionToAlert)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.posts,_that.canPost);case _Error():
+return loaded(_that.posts,_that.canPost,_that.missionToAlert);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<PostEntity> posts,  bool canPost)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<PostEntity> posts,  bool canPost,  MissionEntity? missionToAlert)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.posts,_that.canPost);case _Error() when error != null:
+return loaded(_that.posts,_that.canPost,_that.missionToAlert);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,7 +257,7 @@ String toString() {
 
 
 class _Loaded implements FeedState {
-  const _Loaded(final  List<PostEntity> posts, this.canPost): _posts = posts;
+  const _Loaded(final  List<PostEntity> posts, this.canPost, {this.missionToAlert}): _posts = posts;
   
 
  final  List<PostEntity> _posts;
@@ -268,6 +268,7 @@ class _Loaded implements FeedState {
 }
 
  final  bool canPost;
+ final  MissionEntity? missionToAlert;
 
 /// Create a copy of FeedState
 /// with the given fields replaced by the non-null parameter values.
@@ -279,16 +280,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._posts, _posts)&&(identical(other.canPost, canPost) || other.canPost == canPost));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._posts, _posts)&&(identical(other.canPost, canPost) || other.canPost == canPost)&&(identical(other.missionToAlert, missionToAlert) || other.missionToAlert == missionToAlert));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_posts),canPost);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_posts),canPost,missionToAlert);
 
 @override
 String toString() {
-  return 'FeedState.loaded(posts: $posts, canPost: $canPost)';
+  return 'FeedState.loaded(posts: $posts, canPost: $canPost, missionToAlert: $missionToAlert)';
 }
 
 
@@ -299,11 +300,11 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $FeedStateCopyWith<$Res> 
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- List<PostEntity> posts, bool canPost
+ List<PostEntity> posts, bool canPost, MissionEntity? missionToAlert
 });
 
 
-
+$MissionEntityCopyWith<$Res>? get missionToAlert;
 
 }
 /// @nodoc
@@ -316,15 +317,28 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of FeedState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? posts = null,Object? canPost = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? posts = null,Object? canPost = null,Object? missionToAlert = freezed,}) {
   return _then(_Loaded(
 null == posts ? _self._posts : posts // ignore: cast_nullable_to_non_nullable
 as List<PostEntity>,null == canPost ? _self.canPost : canPost // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,missionToAlert: freezed == missionToAlert ? _self.missionToAlert : missionToAlert // ignore: cast_nullable_to_non_nullable
+as MissionEntity?,
   ));
 }
 
+/// Create a copy of FeedState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MissionEntityCopyWith<$Res>? get missionToAlert {
+    if (_self.missionToAlert == null) {
+    return null;
+  }
 
+  return $MissionEntityCopyWith<$Res>(_self.missionToAlert!, (value) {
+    return _then(_self.copyWith(missionToAlert: value));
+  });
+}
 }
 
 /// @nodoc

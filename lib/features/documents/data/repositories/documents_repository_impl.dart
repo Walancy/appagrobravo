@@ -52,8 +52,10 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
           '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
       final path = 'documents/$userId/$fileName';
 
-      await _supabaseClient.storage.from('app').upload(path, file);
-      final publicUrl = _supabaseClient.storage.from('app').getPublicUrl(path);
+      await _supabaseClient.storage.from('files').upload(path, file);
+      final publicUrl = _supabaseClient.storage
+          .from('files')
+          .getPublicUrl(path);
 
       // 2. Check if document already exists to update or insert
       final existingDoc = await _supabaseClient

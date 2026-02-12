@@ -175,8 +175,10 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Right(null);
     } on AuthException catch (e) {
       return Left(Exception(e.message));
-    } catch (e) {
-      return Left(Exception('Erro ao fazer login com Apple.'));
     }
   }
+
+  @override
+  Stream<AuthChangeEvent> get onAuthStateChange =>
+      _supabaseClient.auth.onAuthStateChange.map((data) => data.event);
 }

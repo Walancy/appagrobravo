@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MissionEntity {
 
- String get id; String get name; String? get logo;
+ String get id; String get name; String? get logo; String? get location; DateTime? get startDate; String? get groupName; String? get groupLogo; int? get pendingDocsCount;
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $MissionEntityCopyWith<MissionEntity> get copyWith => _$MissionEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,logo);
+int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount);
 
 @override
 String toString() {
-  return 'MissionEntity(id: $id, name: $name, logo: $logo)';
+  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $MissionEntityCopyWith<$Res>  {
   factory $MissionEntityCopyWith(MissionEntity value, $Res Function(MissionEntity) _then) = _$MissionEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? logo
+ String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount
 });
 
 
@@ -62,12 +62,17 @@ class _$MissionEntityCopyWithImpl<$Res>
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? logo = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,logo: freezed == logo ? _self.logo : logo // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String?,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String?,groupLogo: freezed == groupLogo ? _self.groupLogo : groupLogo // ignore: cast_nullable_to_non_nullable
+as String?,pendingDocsCount: freezed == pendingDocsCount ? _self.pendingDocsCount : pendingDocsCount // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -152,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? logo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MissionEntity() when $default != null:
-return $default(_that.id,_that.name,_that.logo);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
   return orElse();
 
 }
@@ -173,10 +178,10 @@ return $default(_that.id,_that.name,_that.logo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? logo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)  $default,) {final _that = this;
 switch (_that) {
 case _MissionEntity():
-return $default(_that.id,_that.name,_that.logo);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +198,10 @@ return $default(_that.id,_that.name,_that.logo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? logo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)?  $default,) {final _that = this;
 switch (_that) {
 case _MissionEntity() when $default != null:
-return $default(_that.id,_that.name,_that.logo);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
   return null;
 
 }
@@ -208,12 +213,17 @@ return $default(_that.id,_that.name,_that.logo);case _:
 
 
 class _MissionEntity extends MissionEntity {
-  const _MissionEntity({required this.id, required this.name, this.logo}): super._();
+  const _MissionEntity({required this.id, required this.name, this.logo, this.location, this.startDate, this.groupName, this.groupLogo, this.pendingDocsCount}): super._();
   
 
 @override final  String id;
 @override final  String name;
 @override final  String? logo;
+@override final  String? location;
+@override final  DateTime? startDate;
+@override final  String? groupName;
+@override final  String? groupLogo;
+@override final  int? pendingDocsCount;
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +235,16 @@ _$MissionEntityCopyWith<_MissionEntity> get copyWith => __$MissionEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,logo);
+int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount);
 
 @override
 String toString() {
-  return 'MissionEntity(id: $id, name: $name, logo: $logo)';
+  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount)';
 }
 
 
@@ -245,7 +255,7 @@ abstract mixin class _$MissionEntityCopyWith<$Res> implements $MissionEntityCopy
   factory _$MissionEntityCopyWith(_MissionEntity value, $Res Function(_MissionEntity) _then) = __$MissionEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? logo
+ String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount
 });
 
 
@@ -262,12 +272,17 @@ class __$MissionEntityCopyWithImpl<$Res>
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? logo = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,}) {
   return _then(_MissionEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,logo: freezed == logo ? _self.logo : logo // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String?,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String?,groupLogo: freezed == groupLogo ? _self.groupLogo : groupLogo // ignore: cast_nullable_to_non_nullable
+as String?,pendingDocsCount: freezed == pendingDocsCount ? _self.pendingDocsCount : pendingDocsCount // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

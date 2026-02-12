@@ -14,6 +14,7 @@ import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_she
 import 'package:go_router/go_router.dart';
 
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 
 class ProfileTab extends StatelessWidget {
   final String? userId;
@@ -40,23 +41,11 @@ class ProfileTab extends StatelessWidget {
                   final picker = ImagePicker();
                   final source = await showModalBottomSheet<ImageSource>(
                     context: context,
-                    builder: (context) => SafeArea(
-                      child: Wrap(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.camera_alt),
-                            title: const Text('Câmera'),
-                            onTap: () =>
-                                Navigator.pop(context, ImageSource.camera),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.photo_library),
-                            title: const Text('Galeria'),
-                            onTap: () =>
-                                Navigator.pop(context, ImageSource.gallery),
-                          ),
-                        ],
-                      ),
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => ImageSourceBottomSheet(
+                      title: isAvatar
+                          ? 'Alterar foto de perfil'
+                          : 'Alterar capa',
                     ),
                   );
 
@@ -64,13 +53,9 @@ class ProfileTab extends StatelessWidget {
                     final image = await picker.pickImage(source: source);
                     if (image != null && context.mounted) {
                       if (isAvatar) {
-                        context.read<ProfileCubit>().updateProfilePhoto(
-                          image.path,
-                        );
+                        context.read<ProfileCubit>().updateProfilePhoto(image);
                       } else {
-                        context.read<ProfileCubit>().updateCoverPhoto(
-                          image.path,
-                        );
+                        context.read<ProfileCubit>().updateCoverPhoto(image);
                       }
                     }
                   }

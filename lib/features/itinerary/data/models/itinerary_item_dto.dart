@@ -25,6 +25,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
     @JsonKey(name: 'motorista') String? driverName,
     @JsonKey(name: 'duracao') String? durationString,
     @JsonKey(name: 'tempo_deslocamento') String? travelTime,
+    @JsonKey(name: 'conexoes') List<Map<String, dynamic>>? connections,
   }) = _ItineraryItemDto;
 
   const ItineraryItemDto._();
@@ -77,23 +78,48 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
 
     // Date Logic
     DateTime? start;
-    if (dateString != null && timeString != null) {
-      try {
-        // Parse "YYYY-MM-DD" and "HH:MM:SS"
-        final datePart = DateTime.parse(dateString!);
-        final timeParts = timeString!.split(':').map(int.parse).toList();
-        start = DateTime(
-          datePart.year,
-          datePart.month,
-          datePart.day,
-          timeParts[0],
-          timeParts[1],
-          timeParts.length > 2 ? timeParts[2] : 0,
-        );
-      } catch (_) {
-        start = startDateTimeOld;
+    DateTime? end;
+
+    if (dateString != null) {
+      final datePart = DateTime.parse(dateString!);
+
+      if (timeString != null) {
+        try {
+          final timeParts = timeString!.split(':').map(int.parse).toList();
+          start = DateTime(
+            datePart.year,
+            datePart.month,
+            datePart.day,
+            timeParts[0],
+            timeParts[1],
+            timeParts.length > 2 ? timeParts[2] : 0,
+          );
+        } catch (_) {}
       }
-    } else {
+
+      if (endTimeString != null) {
+        try {
+          final endParts = endTimeString!.split(':').map(int.parse).toList();
+          // Temporary end date constructed with same day
+          DateTime tempEnd = DateTime(
+            datePart.year,
+            datePart.month,
+            datePart.day,
+            endParts[0],
+            endParts[1],
+            endParts.length > 2 ? endParts[2] : 0,
+          );
+
+          // Check for day crossing (next day arrival)
+          if (start != null && tempEnd.isBefore(start)) {
+            tempEnd = tempEnd.add(const Duration(days: 1));
+          }
+          end = tempEnd;
+        } catch (_) {}
+      }
+    }
+
+    if (start == null) {
       start = startDateTimeOld;
     }
 
@@ -109,7 +135,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       name: title ?? oldName ?? 'Evento sem nome',
       type: type,
       startDateTime: start,
-      endDateTime: null, // Logic for end time could be similar if needed
+      endDateTime: end,
       description: description,
       location: location,
       imageUrl: imageUrl,
@@ -120,6 +146,7 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       driverName: driverName,
       durationString: durationString,
       travelTime: travelTime,
+      connections: connections,
     );
   }
 }

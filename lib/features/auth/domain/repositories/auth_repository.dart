@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:agrobravo/features/auth/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
@@ -22,4 +23,5 @@ abstract class AuthRepository {
   Future<Either<Exception, void>> updatePassword(String newPassword);
   Future<Either<Exception, void>> signInWithGoogle();
   Future<Either<Exception, void>> signInWithApple();
+  Stream<AuthChangeEvent> get onAuthStateChange;
 }

@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import '../cubit/documents_cubit.dart';
 import '../../domain/entities/document_entity.dart';
@@ -51,21 +52,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
     final picker = ImagePicker();
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Câmera'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galeria'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
+      backgroundColor: Colors.transparent,
+      builder: (context) => ImageSourceBottomSheet(
+        title: _selectedFile != null || widget.currentDocument?.imageUrl != null
+            ? 'Alterar foto do documento'
+            : 'Tirar foto do documento',
       ),
     );
 

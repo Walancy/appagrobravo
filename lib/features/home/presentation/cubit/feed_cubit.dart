@@ -3,6 +3,8 @@ import 'package:injectable/injectable.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/home/presentation/cubit/feed_state.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 
 @injectable
 class FeedCubit extends Cubit<FeedState> {
@@ -15,18 +17,46 @@ class FeedCubit extends Cubit<FeedState> {
 
     final canPostResult = await _feedRepository.canUserPost();
     final feedResult = await _feedRepository.getFeed();
+    final missionAlertResult = await _feedRepository.getLatestMissionAlert();
 
     final canPost = canPostResult.getOrElse(() => false);
+    final missionAlert = missionAlertResult.getOrElse(() => null);
 
-    feedResult.fold(
-      (error) => emit(FeedState.error(error.toString())),
-      (posts) => emit(FeedState.loaded(posts, canPost)),
+    feedResult.fold((error) => emit(FeedState.error(error.toString())), (
+      posts,
+    ) async {
+      MissionEntity? missionToAlert;
+      if (missionAlert != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final seenMissionId = prefs.getString('last_seen_mission_id');
+        if (seenMissionId != missionAlert.id) {
+          missionToAlert = missionAlert;
+        }
+      }
+      emit(FeedState.loaded(posts, canPost, missionToAlert: missionToAlert));
+    });
+  }
+
+  Future<void> acknowledgeMissionAlert(
+    String missionId, {
+    bool permanently = false,
+  }) async {
+    if (permanently) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_seen_mission_id', missionId);
+    }
+
+    state.maybeWhen(
+      loaded: (posts, canPost, missionToAlert) {
+        emit(FeedState.loaded(posts, canPost, missionToAlert: null));
+      },
+      orElse: () {},
     );
   }
 
   Future<void> toggleLike(String postId) async {
     state.maybeWhen(
-      loaded: (posts, canPost) async {
+      loaded: (posts, canPost, missionToAlert) async {
         final updatedPosts = List<PostEntity>.from(posts);
         final index = updatedPosts.indexWhere((p) => p.id == postId);
         if (index == -1) return;
@@ -39,7 +69,13 @@ class FeedCubit extends Cubit<FeedState> {
           isLiked: !isLiked,
           likesCount: isLiked ? post.likesCount - 1 : post.likesCount + 1,
         );
-        emit(FeedState.loaded(updatedPosts, canPost));
+        emit(
+          FeedState.loaded(
+            updatedPosts,
+            canPost,
+            missionToAlert: missionToAlert,
+          ),
+        );
 
         final result = isLiked
             ? await _feedRepository.unlikePost(postId)
@@ -48,7 +84,13 @@ class FeedCubit extends Cubit<FeedState> {
         result.fold((error) {
           // Rollback on error
           updatedPosts[index] = post;
-          emit(FeedState.loaded(updatedPosts, canPost));
+          emit(
+            FeedState.loaded(
+              updatedPosts,
+              canPost,
+              missionToAlert: missionToAlert,
+            ),
+          );
         }, (_) => null);
       },
       orElse: () => null,
@@ -57,12 +99,18 @@ class FeedCubit extends Cubit<FeedState> {
 
   Future<void> deletePost(String postId) async {
     state.maybeWhen(
-      loaded: (posts, canPost) async {
+      loaded: (posts, canPost, missionToAlert) async {
         // Optimistic update
         final updatedPosts = List<PostEntity>.from(posts)
           ..removeWhere((p) => p.id == postId);
 
-        emit(FeedState.loaded(updatedPosts, canPost));
+        emit(
+          FeedState.loaded(
+            updatedPosts,
+            canPost,
+            missionToAlert: missionToAlert,
+          ),
+        );
 
         final result = await _feedRepository.deletePost(postId);
 
@@ -94,12 +142,18 @@ class FeedCubit extends Cubit<FeedState> {
 
     result.fold((error) => null, (updatedPost) {
       state.maybeWhen(
-        loaded: (posts, canPost) {
+        loaded: (posts, canPost, missionToAlert) {
           final updatedPosts = List<PostEntity>.from(posts);
           final index = updatedPosts.indexWhere((p) => p.id == postId);
           if (index != -1) {
             updatedPosts[index] = updatedPost;
-            emit(FeedState.loaded(updatedPosts, canPost));
+            emit(
+              FeedState.loaded(
+                updatedPosts,
+                canPost,
+                missionToAlert: missionToAlert,
+              ),
+            );
           } else {
             loadFeed();
           }

@@ -16,6 +16,8 @@ _CommentModel _$CommentModelFromJson(Map<String, dynamic> json) =>
       createdAt: DateTime.parse(json['created_at'] as String),
       userName: json['userName'] as String?,
       userAvatar: json['userAvatar'] as String?,
+      likesCount: (json['likesCount'] as num?)?.toInt() ?? 0,
+      isLiked: json['isLiked'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$CommentModelToJson(_CommentModel instance) =>

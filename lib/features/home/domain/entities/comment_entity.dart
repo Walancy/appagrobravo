@@ -12,6 +12,8 @@ abstract class CommentEntity with _$CommentEntity {
     required String text,
     required DateTime createdAt,
     @Default([]) List<CommentEntity> replies,
+    @Default(0) int likesCount,
+    @Default(false) bool isLiked,
   }) = _CommentEntity;
 
   const CommentEntity._();

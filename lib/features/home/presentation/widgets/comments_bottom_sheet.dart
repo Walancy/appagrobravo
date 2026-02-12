@@ -44,6 +44,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   }
 
   Future<void> _loadInitialData() async {
+    _currentUserId = getIt<FeedRepository>().getCurrentUserId();
     _loadComments();
   }
 
@@ -113,6 +114,58 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
     );
   }
 
+  Future<void> _toggleLikeComment(CommentEntity comment) async {
+    final repo = getIt<FeedRepository>();
+    final isLiked = comment.isLiked;
+
+    // Optimistic update
+    setState(() {
+      _updateCommentInList(comment.id, (c) {
+        return c.copyWith(
+          isLiked: !isLiked,
+          likesCount: isLiked ? c.likesCount - 1 : c.likesCount + 1,
+        );
+      });
+    });
+
+    final result = isLiked
+        ? await repo.unlikeComment(comment.id)
+        : await repo.likeComment(comment.id);
+
+    result.fold((error) {
+      // Rollback on error
+      setState(() {
+        _updateCommentInList(comment.id, (c) {
+          return c.copyWith(
+            isLiked: isLiked,
+            likesCount: isLiked ? c.likesCount + 1 : c.likesCount - 1,
+          );
+        });
+      });
+    }, (_) => null);
+  }
+
+  void _updateCommentInList(
+    String commentId,
+    CommentEntity Function(CommentEntity) updateFn,
+  ) {
+    _comments = _comments.map((c) {
+      if (c.id == commentId) {
+        return updateFn(c);
+      }
+      if (c.replies.isNotEmpty) {
+        final updatedReplies = c.replies.map((r) {
+          if (r.id == commentId) {
+            return updateFn(r);
+          }
+          return r;
+        }).toList();
+        return c.copyWith(replies: updatedReplies);
+      }
+      return c;
+    }).toList();
+  }
+
   void _onEditComment(CommentEntity comment) {
     setState(() {
       _editingCommentId = comment.id;
@@ -121,6 +174,56 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
       _rootCommentIdForReply = null;
     });
     _focusNode.requestFocus();
+  }
+
+  void _showCommentOptions(CommentEntity comment) {
+    if (_currentUserId != comment.userId) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Editar comentário'),
+              onTap: () {
+                Navigator.pop(context);
+                _onEditComment(comment);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text(
+                'Excluir comentário',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _deleteComment(comment.id);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   String _getTimeAgo(DateTime date) {
@@ -341,99 +444,76 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textPrimary,
+                child: GestureDetector(
+                  onLongPress: () => _showCommentOptions(comment),
+                  behavior: HitTestBehavior.opaque,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '${comment.userName} ',
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () =>
+                                    context.push('/profile/${comment.userId}'),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: isReply ? 13 : 12,
+                              ),
+                            ),
+                            WidgetSpan(
+                              child: SizedBox(width: isReply ? 12 : 4),
+                            ),
+                            TextSpan(
+                              text: _getTimeAgo(comment.createdAt),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
                         ),
-                        children: [
-                          TextSpan(
-                            text: '${comment.userName} ',
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () =>
-                                  context.push('/profile/${comment.userId}'),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: isReply ? 13 : 12,
-                            ),
-                          ),
-                          WidgetSpan(child: SizedBox(width: isReply ? 12 : 4)),
-                          TextSpan(
-                            text: _getTimeAgo(comment.createdAt),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(comment.text, style: AppTextStyles.bodyMedium),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(comment.text, style: AppTextStyles.bodyMedium),
+                    ],
+                  ),
                 ),
               ),
-              if (_currentUserId == comment.userId)
-                PopupMenuButton<String>(
-                  color: Colors.white,
-                  icon: Icon(
-                    Icons.more_vert,
-                    size: 20,
-                    color: AppColors.textPrimary.withOpacity(0.6),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
-                  elevation: 4,
-                  offset: const Offset(0, 4),
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      _onEditComment(comment);
-                    } else if (value == 'delete') {
-                      _deleteComment(comment.id);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 18,
-                            color: AppColors.textPrimary.withOpacity(0.8),
-                          ),
-                          const SizedBox(width: 12),
-                          Text('Editar', style: AppTextStyles.bodyMedium),
-                        ],
+              const SizedBox(width: AppSpacing.sm),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => _toggleLikeComment(comment),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        comment.isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_outline_rounded,
+                        size: 18,
+                        color: comment.isLiked
+                            ? Colors.red
+                            : AppColors.textSecondary,
                       ),
                     ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline_rounded,
-                            size: 18,
-                            color: Colors.red.withOpacity(0.8),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Excluir',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.red.withOpacity(0.8),
-                            ),
-                          ),
-                        ],
+                  ),
+                  if (comment.likesCount > 0)
+                    Text(
+                      '${comment.likesCount}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 10,
                       ),
                     ),
-                  ],
-                ),
+                ],
+              ),
             ],
           ),
           Padding(
@@ -467,6 +547,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
+                        fontSize: 11,
                       ),
                     ),
                   ),

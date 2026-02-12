@@ -70,20 +70,32 @@ class FeedRepositoryImpl implements FeedRepository {
     String postId,
   ) async {
     try {
+      final userId = _supabaseClient.auth.currentUser?.id;
       final response = await _supabaseClient
           .from('comentarios')
           .select('''
             *,
-            users:user_id (nome, foto)
+            users:user_id (nome, foto),
+            curtidas_comentarios:curtidas_comentarios(user_id)
           ''')
           .eq('post_id', postId)
           .order('created_at', ascending: true);
 
       final allComments = (response as List).map((cMap) {
         final user = cMap['users'] as Map<String, dynamic>?;
-        return CommentModel.fromJson(
-          cMap,
-        ).copyWith(userName: user?['nome'], userAvatar: user?['foto']);
+        final curtidasList = cMap['curtidas_comentarios'] as List?;
+        final likesCount = curtidasList?.length ?? 0;
+        final isLiked =
+            userId != null &&
+            curtidasList != null &&
+            curtidasList.any((c) => c['user_id'] == userId);
+
+        return CommentModel.fromJson(cMap).copyWith(
+          userName: user?['nome'],
+          userAvatar: user?['foto'],
+          likesCount: likesCount,
+          isLiked: isLiked,
+        );
       }).toList();
 
       // Build hierarchy
@@ -137,6 +149,40 @@ class FeedRepositoryImpl implements FeedRepository {
       return const Right(unit);
     } catch (e) {
       return Left(Exception('Erro ao remover curtida: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Unit>> likeComment(String commentId) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      await _supabaseClient.from('curtidas_comentarios').insert({
+        'comment_id': commentId,
+        'user_id': userId,
+      });
+
+      return const Right(unit);
+    } catch (e) {
+      return Left(Exception('Erro ao curtir comentário: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Unit>> unlikeComment(String commentId) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      await _supabaseClient.from('curtidas_comentarios').delete().match({
+        'comment_id': commentId,
+        'user_id': userId,
+      });
+
+      return const Right(unit);
+    } catch (e) {
+      return Left(Exception('Erro ao remover curtida do comentário: $e'));
     }
   }
 
@@ -343,8 +389,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final commentsCount = commentsList?.length ?? 0;
       final isLiked =
           userId != null &&
-          curtidasList != null &&
-          curtidasList.any((c) => c['user_id'] == userId);
+          (curtidasList?.any((c) => c['user_id'] == userId) ?? false);
 
       final model = PostModel.fromJson(response).copyWith(
         userName: user?['nome'],
@@ -473,6 +518,105 @@ class FeedRepositoryImpl implements FeedRepository {
       return Right(missions);
     } catch (e) {
       return Left(Exception('Erro ao buscar missões do usuário: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, MissionEntity?>> getLatestMissionAlert() async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return const Right(null);
+
+      // 1. Get the most recent group participation
+      final groupResponse = await _supabaseClient
+          .from('gruposParticipantes')
+          .select(
+            'grupo_id, grupos:grupo_id (nome, data_inicio, logo, missoes:missao_id (id, nome, logo, localizacao))',
+          )
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (groupResponse == null) return const Right(null);
+
+      final groupData = groupResponse['grupos'] as Map<String, dynamic>?;
+      if (groupData == null) return const Right(null);
+
+      final missionData = groupData['missoes'] as Map<String, dynamic>?;
+      if (missionData == null) return const Right(null);
+
+      // 2. Count pending documents
+      final docsResponse = await _supabaseClient
+          .from('documentos')
+          .select('tipo, status')
+          .eq('user_id', userId);
+
+      final docsList = docsResponse as List;
+      final approvedTypes = docsList
+          .where((d) => d['status'] == 'APROVADO')
+          .map((d) => d['tipo'] as String)
+          .toSet();
+
+      final requiredTypes = [
+        'PASSAPORTE',
+        'VISTO',
+        'VACINA',
+        'SEGURO',
+        'CARTEIRA_MOTORISTA',
+        'AUTORIZACAO_MENORES',
+      ];
+      int pendingDocsCount = 0;
+      for (final type in requiredTypes) {
+        if (!approvedTypes.contains(type)) {
+          pendingDocsCount++;
+        }
+      }
+
+      // 3. Ensure a notification record exists for this mission addition
+      try {
+        final existingNotification = await _supabaseClient
+            .from('notificacoes')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('tipo', 'missionUpdate')
+            .eq('grupo_id', groupResponse['grupo_id'])
+            .limit(1)
+            .maybeSingle();
+
+        if (existingNotification == null) {
+          await _supabaseClient.from('notificacoes').insert({
+            'user_id': userId,
+            'assunto': 'missionUpdate',
+            'tipo': 'missionUpdate', // Keeping for DB compatibility
+            'grupo_id': groupResponse['grupo_id'],
+            'missao_id': missionData['id'],
+            'titulo': 'Nova Missão',
+            'mensagem': 'Você foi adicionado à missão ${missionData['nome']}!',
+            'lido': false,
+          });
+        }
+      } catch (e) {
+        debugPrint('Erro ao criar notificação de missão: $e');
+      }
+
+      return Right(
+        MissionEntity(
+          id: missionData['id']?.toString() ?? '',
+          name: missionData['nome']?.toString() ?? 'Sem nome',
+          logo: missionData['logo']?.toString(),
+          location:
+              missionData['localizacao']?.toString() ?? 'Destino em breve',
+          startDate: groupData['data_inicio'] != null
+              ? DateTime.tryParse(groupData['data_inicio'].toString())
+              : null,
+          groupName: groupData['nome']?.toString(),
+          groupLogo: groupData['logo']?.toString(),
+          pendingDocsCount: pendingDocsCount,
+        ),
+      );
+    } catch (e) {
+      return Left(Exception('Erro ao buscar alerta de missão: $e'));
     }
   }
 
