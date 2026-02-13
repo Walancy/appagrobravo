@@ -857,7 +857,7 @@ $ChatEntityCopyWith<$Res>? get currentMission {
 /// @nodoc
 mixin _$GroupMemberEntity {
 
- String get id; String get name; String get role; bool get isGuide; bool get isMe; String? get avatarUrl;
+ String get id; String get name; String get role; bool get isGuide; bool get isMe; String? get avatarUrl; ConnectionStatus get connectionStatus;
 /// Create a copy of GroupMemberEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -868,16 +868,16 @@ $GroupMemberEntityCopyWith<GroupMemberEntity> get copyWith => _$GroupMemberEntit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.connectionStatus, connectionStatus) || other.connectionStatus == connectionStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl);
+int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl,connectionStatus);
 
 @override
 String toString() {
-  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl)';
+  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl, connectionStatus: $connectionStatus)';
 }
 
 
@@ -888,7 +888,7 @@ abstract mixin class $GroupMemberEntityCopyWith<$Res>  {
   factory $GroupMemberEntityCopyWith(GroupMemberEntity value, $Res Function(GroupMemberEntity) _then) = _$GroupMemberEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl
+ String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl, ConnectionStatus connectionStatus
 });
 
 
@@ -905,7 +905,7 @@ class _$GroupMemberEntityCopyWithImpl<$Res>
 
 /// Create a copy of GroupMemberEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,Object? connectionStatus = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -913,7 +913,8 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as String,isGuide: null == isGuide ? _self.isGuide : isGuide // ignore: cast_nullable_to_non_nullable
 as bool,isMe: null == isMe ? _self.isMe : isMe // ignore: cast_nullable_to_non_nullable
 as bool,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,connectionStatus: null == connectionStatus ? _self.connectionStatus : connectionStatus // ignore: cast_nullable_to_non_nullable
+as ConnectionStatus,
   ));
 }
 
@@ -998,10 +999,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl,  ConnectionStatus connectionStatus)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupMemberEntity() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl,_that.connectionStatus);case _:
   return orElse();
 
 }
@@ -1019,10 +1020,10 @@ return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.av
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl,  ConnectionStatus connectionStatus)  $default,) {final _that = this;
 switch (_that) {
 case _GroupMemberEntity():
-return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl,_that.connectionStatus);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1039,10 +1040,10 @@ return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.av
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String role,  bool isGuide,  bool isMe,  String? avatarUrl,  ConnectionStatus connectionStatus)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupMemberEntity() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.avatarUrl,_that.connectionStatus);case _:
   return null;
 
 }
@@ -1054,7 +1055,7 @@ return $default(_that.id,_that.name,_that.role,_that.isGuide,_that.isMe,_that.av
 
 
 class _GroupMemberEntity implements GroupMemberEntity {
-  const _GroupMemberEntity({required this.id, required this.name, required this.role, required this.isGuide, this.isMe = false, this.avatarUrl});
+  const _GroupMemberEntity({required this.id, required this.name, required this.role, required this.isGuide, this.isMe = false, this.avatarUrl, this.connectionStatus = ConnectionStatus.none});
   
 
 @override final  String id;
@@ -1063,6 +1064,7 @@ class _GroupMemberEntity implements GroupMemberEntity {
 @override final  bool isGuide;
 @override@JsonKey() final  bool isMe;
 @override final  String? avatarUrl;
+@override@JsonKey() final  ConnectionStatus connectionStatus;
 
 /// Create a copy of GroupMemberEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -1074,16 +1076,16 @@ _$GroupMemberEntityCopyWith<_GroupMemberEntity> get copyWith => __$GroupMemberEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupMemberEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.isGuide, isGuide) || other.isGuide == isGuide)&&(identical(other.isMe, isMe) || other.isMe == isMe)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.connectionStatus, connectionStatus) || other.connectionStatus == connectionStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl);
+int get hashCode => Object.hash(runtimeType,id,name,role,isGuide,isMe,avatarUrl,connectionStatus);
 
 @override
 String toString() {
-  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl)';
+  return 'GroupMemberEntity(id: $id, name: $name, role: $role, isGuide: $isGuide, isMe: $isMe, avatarUrl: $avatarUrl, connectionStatus: $connectionStatus)';
 }
 
 
@@ -1094,7 +1096,7 @@ abstract mixin class _$GroupMemberEntityCopyWith<$Res> implements $GroupMemberEn
   factory _$GroupMemberEntityCopyWith(_GroupMemberEntity value, $Res Function(_GroupMemberEntity) _then) = __$GroupMemberEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl
+ String id, String name, String role, bool isGuide, bool isMe, String? avatarUrl, ConnectionStatus connectionStatus
 });
 
 
@@ -1111,7 +1113,7 @@ class __$GroupMemberEntityCopyWithImpl<$Res>
 
 /// Create a copy of GroupMemberEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? isGuide = null,Object? isMe = null,Object? avatarUrl = freezed,Object? connectionStatus = null,}) {
   return _then(_GroupMemberEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -1119,7 +1121,8 @@ as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non
 as String,isGuide: null == isGuide ? _self.isGuide : isGuide // ignore: cast_nullable_to_non_nullable
 as bool,isMe: null == isMe ? _self.isMe : isMe // ignore: cast_nullable_to_non_nullable
 as bool,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,connectionStatus: null == connectionStatus ? _self.connectionStatus : connectionStatus // ignore: cast_nullable_to_non_nullable
+as ConnectionStatus,
   ));
 }
 

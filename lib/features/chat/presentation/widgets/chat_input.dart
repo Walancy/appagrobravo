@@ -169,6 +169,9 @@ class _ChatInputState extends State<ChatInput> {
                         child: TextField(
                           controller: _controller,
                           autofocus: widget.isEditing,
+                          minLines: 1,
+                          maxLines: 6,
+                          keyboardType: TextInputType.multiline,
                           decoration: const InputDecoration(
                             hintText: 'Mensagem',
                             hintStyle: TextStyle(color: Colors.grey),
@@ -178,6 +181,11 @@ class _ChatInputState extends State<ChatInput> {
                               vertical: 12,
                             ),
                           ),
+                          onSubmitted: (_) {
+                            // Optional: handle enter key if needed, but usually multiline uses enter for new line
+                            // If we want enter to send, we need to handle that.
+                            // User didn't specify enter behavior, so default multiline behavior is fine.
+                          },
                         ),
                       ),
                     ],

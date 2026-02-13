@@ -46,10 +46,10 @@ class GuideCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppTextStyles.h3.copyWith(fontSize: 16)),
+                Text(name, style: AppTextStyles.h3.copyWith(fontSize: 14)),
                 Text(
                   role,
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 14),
+                  style: AppTextStyles.bodySmall.copyWith(fontSize: 12),
                 ),
               ],
             ),

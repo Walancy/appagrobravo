@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/assets.gen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileHeaderCover extends StatelessWidget {
   final String? coverUrl;
@@ -9,6 +10,7 @@ class ProfileHeaderCover extends StatelessWidget {
   final bool isEditing;
   final VoidCallback? onUpdateAvatar;
   final VoidCallback? onUpdateCover;
+  final Widget? statsWidget;
 
   const ProfileHeaderCover({
     super.key,
@@ -18,6 +20,7 @@ class ProfileHeaderCover extends StatelessWidget {
     this.isEditing = false,
     this.onUpdateAvatar,
     this.onUpdateCover,
+    this.statsWidget,
   });
 
   @override
@@ -38,7 +41,7 @@ class ProfileHeaderCover extends StatelessWidget {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: coverUrl != null
-                      ? NetworkImage(coverUrl!)
+                      ? CachedNetworkImageProvider(coverUrl!)
                       : Assets.images.background.provider(),
                   fit: BoxFit.cover,
                 ),
@@ -56,6 +59,10 @@ class ProfileHeaderCover extends StatelessWidget {
             ),
           ),
 
+          // Stats
+          if (statsWidget != null)
+            Positioned(top: 192, left: 136, right: 16, child: statsWidget!),
+
           // Avatar
           Positioned(
             top: 120, // 180 (cover bottom) - 60 (avatar top portion) = 120
@@ -69,16 +76,34 @@ class ProfileHeaderCover extends StatelessWidget {
                     color: Colors.grey[100],
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 4),
-                    image: avatarUrl != null
-                        ? DecorationImage(
-                            image: NetworkImage(avatarUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
                   ),
-                  child: avatarUrl == null
-                      ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                      : null,
+                  child: ClipOval(
+                    child: (avatarUrl != null && avatarUrl!.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: avatarUrl!,
+                            fit: BoxFit.cover,
+                            height: 110,
+                            width: 110,
+                            placeholder: (context, url) =>
+                                Container(color: Colors.grey[200]),
+                            errorWidget: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+                          ),
+                  ),
                 ),
                 if (isEditing)
                   Positioned(

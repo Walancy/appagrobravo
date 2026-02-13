@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -82,24 +83,27 @@ class ProfileRepositoryImpl implements ProfileRepository {
       try {
         final missionRes = await _supabaseClient
             .from('gruposParticipantes')
-            .select('grupos:grupo_id (nome, missoes:missao_id (nome))')
+            .select(
+              'grupo:grupos!fk_gruposparticipantes_grupos(nome, missao:missao_id(nome))',
+            )
             .eq('user_id', userId)
             .limit(1)
             .maybeSingle();
 
-        if (missionRes != null && missionRes['grupos'] != null) {
-          final g = missionRes['grupos'];
+        if (missionRes != null && missionRes['grupo'] != null) {
+          debugPrint('MissionRes: $missionRes');
+          final g = missionRes['grupo'];
           if (g is Map) {
             groupName = g['nome'];
-            final m = g['missoes'];
+            final m = g['missao'];
             if (m is Map) {
               missionName = m['nome'];
-            } else if (m is List && m.isNotEmpty) {
-              missionName = m.first['nome'];
             }
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error fetching mission/group: $e');
+      }
 
       return Right(
         ProfileEntity(

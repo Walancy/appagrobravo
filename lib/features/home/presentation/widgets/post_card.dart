@@ -4,6 +4,8 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 
 class PostCard extends StatelessWidget {
   final PostEntity post;
@@ -45,7 +47,7 @@ class PostCard extends StatelessWidget {
                         ? Colors.grey[100]
                         : Colors.transparent,
                     backgroundImage: post.userAvatar != null
-                        ? NetworkImage(post.userAvatar!)
+                        ? CachedNetworkImageProvider(post.userAvatar!)
                         : null,
                     child: post.userAvatar == null
                         ? const Icon(
@@ -293,7 +295,7 @@ class _PostImageSliderState extends State<_PostImageSlider>
     if (widget.images.isEmpty) return;
 
     final firstImage = widget.images.first;
-    final ImageStream stream = NetworkImage(
+    final ImageStream stream = CachedNetworkImageProvider(
       firstImage,
     ).resolve(ImageConfiguration.empty);
 
@@ -365,12 +367,25 @@ class _PostImageSliderState extends State<_PostImageSlider>
               });
             },
             itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  image: DecorationImage(
-                    image: NetworkImage(widget.images[index]),
-                    fit: BoxFit.cover,
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: CachedNetworkImage(
+                  imageUrl: widget.images[index],
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(color: Colors.white),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.grey,
+                        size: 40,
+                      ),
+                    ),
                   ),
                 ),
               );

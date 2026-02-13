@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -249,7 +250,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
   @override
   Future<Either<Exception, PostEntity>> createPost({
-    required List<String> imagePaths,
+    required List<dynamic> images,
     required String caption,
     String? missionId,
     bool privado = false,
@@ -259,22 +260,48 @@ class FeedRepositoryImpl implements FeedRepository {
       if (userId == null) return Left(Exception('Usuário não autenticado'));
 
       final List<String> imageUrls = [];
+      debugPrint('CREATE_POST: Processing ${images.length} images');
 
-      for (final path in imagePaths) {
-        final file = File(path);
-        // Clean filename to avoid issues with special chars
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final ext = path.split('.').last;
-        final fileName = '${timestamp}_image.$ext';
-        // Bucket is 'files', so we put it in 'posts' folder
+      for (int i = 0; i < images.length; i++) {
+        final image = images[i];
+        Uint8List fileBytes;
+        String fileName;
+        debugPrint('IMAGE $i: type=${image.runtimeType}');
+
+        if (image is XFile) {
+          fileBytes = await image.readAsBytes();
+          final ext = image.name.split('.').last;
+          final extension = ext.isNotEmpty && ext.length < 5 ? ext : 'jpg';
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          fileName = '${timestamp}_image.$extension';
+        } else if (image is String) {
+          if (kIsWeb) {
+            continue;
+          }
+          final file = File(image);
+          fileBytes = await file.readAsBytes();
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final ext = image.split('.').last;
+          fileName = '${timestamp}_image.$ext';
+        } else {
+          continue;
+        }
+
         final storagePath = 'posts/$userId/$fileName';
 
-        await _supabaseClient.storage.from('files').upload(storagePath, file);
+        await _supabaseClient.storage
+            .from('files')
+            .uploadBinary(storagePath, fileBytes);
         final url = _supabaseClient.storage
             .from('files')
             .getPublicUrl(storagePath);
+        debugPrint('IMAGE $i: upload success, url: $url');
         imageUrls.add(url);
       }
+
+      debugPrint(
+        'CREATE_POST: Inserting into DB with ${imageUrls.length} urls',
+      );
 
       final response = await _supabaseClient
           .from('posts')
@@ -317,7 +344,7 @@ class FeedRepositoryImpl implements FeedRepository {
   @override
   Future<Either<Exception, PostEntity>> updatePost({
     required String postId,
-    required List<String> images,
+    required List<dynamic> images,
     required String caption,
     String? missionId,
     required bool privado,
@@ -339,28 +366,46 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final List<String> finalImageUrls = [];
 
-      for (final path in images) {
+      for (final image in images) {
         // If it starts with http, it's an existing URL, keep it.
-        if (path.startsWith('http')) {
-          finalImageUrls.add(path);
-        } else {
-          // It's a local file path, upload it.
-          final file = File(path);
-          if (file.existsSync()) {
-            final timestamp = DateTime.now().millisecondsSinceEpoch;
-            final ext = path.split('.').last;
-            final fileName = '${timestamp}_image_updated.$ext';
-            final storagePath = 'posts/$userId/$fileName';
-
-            await _supabaseClient.storage
-                .from('files')
-                .upload(storagePath, file);
-            final url = _supabaseClient.storage
-                .from('files')
-                .getPublicUrl(storagePath);
-            finalImageUrls.add(url);
-          }
+        if (image is String && image.startsWith('http')) {
+          finalImageUrls.add(image);
+          continue;
         }
+
+        Uint8List fileBytes;
+        String fileName;
+
+        if (image is XFile) {
+          fileBytes = await image.readAsBytes();
+          final ext = image.name.split('.').last;
+          final extension = ext.isNotEmpty && ext.length < 5 ? ext : 'jpg';
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          fileName = '${timestamp}_image_updated.$extension';
+        } else if (image is String) {
+          if (kIsWeb) {
+            continue;
+          }
+          final file = File(image);
+          if (!file.existsSync()) continue;
+
+          fileBytes = await file.readAsBytes();
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
+          final ext = image.split('.').last;
+          fileName = '${timestamp}_image_updated.$ext';
+        } else {
+          continue;
+        }
+
+        final storagePath = 'posts/$userId/$fileName';
+
+        await _supabaseClient.storage
+            .from('files')
+            .uploadBinary(storagePath, fileBytes);
+        final url = _supabaseClient.storage
+            .from('files')
+            .getPublicUrl(storagePath);
+        finalImageUrls.add(url);
       }
 
       final response = await _supabaseClient
@@ -490,13 +535,13 @@ class FeedRepositoryImpl implements FeedRepository {
       try {
         final directMissionsResponse = await _supabaseClient
             .from('missoesParticipantes')
-            .select('missoes:missoes_id (id, nome, logo)')
+            .select('missao:missoes_id (id, nome:nome_viagem, logo:imagem)')
             .eq('user_id', userId);
 
         final existingIds = missions.map((m) => m.id).toSet();
 
         for (final row in directMissionsResponse as List) {
-          final missaoData = row['missoes'] ?? row['missoes_id'];
+          final missaoData = row['missao'];
           if (missaoData is Map<String, dynamic>) {
             final id = missaoData['id']?.toString();
             if (id != null && !existingIds.contains(id)) {
@@ -531,20 +576,22 @@ class FeedRepositoryImpl implements FeedRepository {
       final groupResponse = await _supabaseClient
           .from('gruposParticipantes')
           .select(
-            'grupo_id, grupos:grupo_id (nome, data_inicio, logo, missoes:missao_id (id, nome, logo, localizacao))',
+            'grupo_id, grupos:grupo_id (nome, data_inicio, logo, missoes:missao_id (id, nome, logo, localizacao, passaporte_obrigatorio, visto_obrigatorio, vacina_obrigatorio, seguro_obrigatorio, cnh_obrigatorio, autorizacao_obrigatorio))',
           )
           .eq('user_id', userId)
-          .order('created_at', ascending: false)
+          .order('id', ascending: false)
           .limit(1)
           .maybeSingle();
 
       if (groupResponse == null) return const Right(null);
 
-      final groupData = groupResponse['grupos'] as Map<String, dynamic>?;
-      if (groupData == null) return const Right(null);
+      final grupoData = groupResponse['grupos'] as Map<String, dynamic>?;
+      if (grupoData == null) return const Right(null);
 
-      final missionData = groupData['missoes'] as Map<String, dynamic>?;
+      final missionData = grupoData['missoes'] as Map<String, dynamic>?;
       if (missionData == null) return const Right(null);
+
+      final missionId = missionData['id'] as String;
 
       // 2. Count pending documents
       final docsResponse = await _supabaseClient
@@ -558,18 +605,32 @@ class FeedRepositoryImpl implements FeedRepository {
           .map((d) => d['tipo'] as String)
           .toSet();
 
+      // Get mandatory flags from mission
+      final bool passReq = missionData['passaporte_obrigatorio'] ?? false;
+      final bool visaReq = missionData['visto_obrigatorio'] ?? false;
+      final bool vacReq = missionData['vacina_obrigatorio'] ?? false;
+      final bool segReq = missionData['seguro_obrigatorio'] ?? false;
+      final bool cnhReq = missionData['cnh_obrigatorio'] ?? false;
+      final bool autReq = missionData['autorizacao_obrigatorio'] ?? false;
+
       final requiredTypes = [
-        'PASSAPORTE',
-        'VISTO',
-        'VACINA',
-        'SEGURO',
-        'CARTEIRA_MOTORISTA',
-        'AUTORIZACAO_MENORES',
+        if (passReq) 'PASSAPORTE',
+        if (visaReq) 'VISTO',
+        if (vacReq) 'VACINA',
+        if (segReq) 'SEGURO',
+        if (cnhReq) 'CARTEIRA_MOTORISTA',
+        if (autReq) 'AUTORIZACAO_MENORES',
       ];
-      int pendingDocsCount = 0;
-      for (final type in requiredTypes) {
+
+      // If no flags are set, fallback to a default set (backwards compatibility)
+      final effectiveRequiredTypes = requiredTypes.isEmpty
+          ? ['PASSAPORTE', 'VISTO', 'VACINA', 'SEGURO']
+          : requiredTypes;
+
+      int pendingCount = 0;
+      for (var type in effectiveRequiredTypes) {
         if (!approvedTypes.contains(type)) {
-          pendingDocsCount++;
+          pendingCount++;
         }
       }
 
@@ -602,17 +663,18 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(
         MissionEntity(
-          id: missionData['id']?.toString() ?? '',
-          name: missionData['nome']?.toString() ?? 'Sem nome',
-          logo: missionData['logo']?.toString(),
-          location:
-              missionData['localizacao']?.toString() ?? 'Destino em breve',
-          startDate: groupData['data_inicio'] != null
-              ? DateTime.tryParse(groupData['data_inicio'].toString())
-              : null,
-          groupName: groupData['nome']?.toString(),
-          groupLogo: groupData['logo']?.toString(),
-          pendingDocsCount: pendingDocsCount,
+          id: missionId,
+          name: missionData['nome'] ?? 'Sua Missão',
+          logo: missionData['logo'],
+          location: missionData['localizacao'],
+          groupName: grupoData['nome'],
+          pendingDocsCount: pendingCount,
+          passaporteObrigatorio: passReq,
+          vistoObrigatorio: visaReq,
+          vacinaObrigatoria: vacReq,
+          seguroObrigatorio: segReq,
+          carteiraObrigatoria: cnhReq,
+          autorizacaoObrigatoria: autReq,
         ),
       );
     } catch (e) {

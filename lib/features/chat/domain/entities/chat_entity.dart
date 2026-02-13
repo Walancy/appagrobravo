@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 
 part 'chat_entity.freezed.dart';
 
@@ -44,6 +45,7 @@ abstract class GroupMemberEntity with _$GroupMemberEntity {
     required bool isGuide,
     @Default(false) bool isMe,
     String? avatarUrl,
+    @Default(ConnectionStatus.none) ConnectionStatus connectionStatus,
   }) = _GroupMemberEntity;
 }
 

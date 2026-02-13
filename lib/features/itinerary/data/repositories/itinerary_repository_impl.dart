@@ -1,9 +1,14 @@
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dartz/dartz.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../../domain/repositories/itinerary_repository.dart';
 import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
+import '../../domain/entities/emergency_contacts.dart';
 import '../models/itinerary_group_dto.dart';
 import '../models/itinerary_item_dto.dart';
 
@@ -80,7 +85,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           .from('gruposParticipantes')
           .select('grupo_id')
           .eq('user_id', userId)
-          .maybeSingle(); // Assumes user belongs to one main group for now, or takes the first one found
+          .maybeSingle();
 
       if (response == null) return const Right(null);
 
@@ -105,7 +110,6 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final List<dynamic> data = response as List<dynamic>;
       final docTypes = data.map((doc) {
         final type = doc['tipo']?.toString();
-        // Capitalize first letter for display
         if (type != null && type.isNotEmpty) {
           return type[0].toUpperCase() + type.substring(1).toLowerCase();
         }
@@ -115,6 +119,105 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return Right(docTypes);
     } catch (e) {
       return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, EmergencyContacts>> getEmergencyContacts(
+    double lat,
+    double lng,
+  ) async {
+    try {
+      String? countryName;
+
+      // 1. Try mobile-native geocoding first (not on Web)
+      if (!kIsWeb) {
+        try {
+          final placemarks = await placemarkFromCoordinates(lat, lng);
+          if (placemarks.isNotEmpty) {
+            countryName = placemarks.first.country;
+          }
+        } catch (e) {
+          // Failure on mobile geocoding, will try fallback below
+        }
+      }
+
+      // 2. Web fallback or if mobile native geocoding failed
+      if (countryName == null) {
+        try {
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng',
+          );
+          final response = await http.get(
+            url,
+            headers: {'User-Agent': 'AgroBravoApp/1.0'},
+          );
+
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            countryName = data['address']?['country'];
+          }
+        } catch (e) {
+          return Left(
+            Exception(
+              'Não foi possível determinar o país pela localização (Web Fallback): $e',
+            ),
+          );
+        }
+      }
+
+      if (countryName == null) {
+        return Left(
+          Exception('Não foi possível identificar o país desta localização.'),
+        );
+      }
+
+      final countryRes = await _supabaseClient
+          .from('paises')
+          .select('id, pais')
+          .or('pais.ilike.%$countryName%')
+          .maybeSingle();
+
+      int? paisId;
+      String matchedCountry = countryName;
+
+      if (countryRes != null) {
+        paisId = countryRes['id'] as int;
+        matchedCountry = countryRes['pais'] as String;
+      }
+
+      if (paisId == null) {
+        return Left(
+          Exception(
+            'Contatos de emergência não configurados para $countryName.',
+          ),
+        );
+      }
+
+      final emergencyRes = await _supabaseClient
+          .from('chamada_emergencia')
+          .select()
+          .eq('pais_id', paisId)
+          .maybeSingle();
+
+      if (emergencyRes == null) {
+        return Left(
+          Exception(
+            'Dados de emergência não encontrados para $matchedCountry.',
+          ),
+        );
+      }
+
+      return Right(
+        EmergencyContacts(
+          police: emergencyRes['policia'] ?? '190',
+          firefighters: emergencyRes['bombeiro'] ?? '193',
+          medical: emergencyRes['ambulancia'] ?? '192',
+          countryName: matchedCountry,
+        ),
+      );
+    } catch (e) {
+      return Left(Exception('Erro ao buscar contatos de emergência: $e'));
     }
   }
 }

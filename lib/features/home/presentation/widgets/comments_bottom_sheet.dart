@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -347,7 +348,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                         return CircleAvatar(
                           radius: 18,
                           backgroundImage: avatarUrl != null
-                              ? NetworkImage(avatarUrl)
+                              ? CachedNetworkImageProvider(avatarUrl)
                               : null,
                           backgroundColor: AppColors.primary.withAlpha(50),
                           child: avatarUrl == null
@@ -435,7 +436,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   radius: 16,
                   backgroundColor: Colors.grey[100],
                   backgroundImage: comment.userAvatar != null
-                      ? NetworkImage(comment.userAvatar!)
+                      ? CachedNetworkImageProvider(comment.userAvatar!)
                       : null,
                   child: comment.userAvatar == null
                       ? const Icon(Icons.person, size: 18)

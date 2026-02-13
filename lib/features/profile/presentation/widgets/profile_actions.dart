@@ -3,6 +3,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileActions extends StatelessWidget {
   final VoidCallback onEditProfile;
@@ -15,6 +16,7 @@ class ProfileActions extends StatelessWidget {
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
   final VoidCallback? onDisconnect;
+  final String? phone;
 
   const ProfileActions({
     super.key,
@@ -28,6 +30,7 @@ class ProfileActions extends StatelessWidget {
     this.onAccept,
     this.onReject,
     this.onDisconnect,
+    this.phone,
   });
 
   @override
@@ -99,6 +102,40 @@ class ProfileActions extends StatelessWidget {
           ],
         );
       case ConnectionStatus.connected:
+        if (phone != null && phone!.isNotEmpty) {
+          return Row(
+            children: [
+              Expanded(
+                child: _ProfileActionButton(
+                  label: 'WhatsApp',
+                  icon: Icons.chat,
+                  backgroundColor: Colors.green,
+                  onPressed: () async {
+                    final cleanPhone = phone!.replaceAll(RegExp(r'\D'), '');
+                    final url = Uri.parse(
+                      'https://wa.me/55$cleanPhone',
+                    ); // Assuming BR country code for now
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _ProfileActionButton(
+                  label: 'Desconectar',
+                  icon: Icons.person_remove_outlined,
+                  backgroundColor: Colors.grey[200],
+                  onPressed: onDisconnect ?? () {},
+                ),
+              ),
+            ],
+          );
+        }
         return _ProfileActionButton(
           label: 'Desconectar',
           icon: Icons.person_remove_outlined,
@@ -125,7 +162,7 @@ class _ProfileActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 48,
+      height: 40,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppColors.primary,
@@ -143,12 +180,12 @@ class _ProfileActionButton extends StatelessWidget {
             Text(
               label,
               style: AppTextStyles.button.copyWith(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 8),
-            Icon(icon, size: 18),
+            Icon(icon, size: 16),
           ],
         ),
       ),

@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
-import 'package:agrobravo/core/tokens/app_spacing.dart';
+
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/tokens/assets.gen.dart';
 import 'package:agrobravo/core/di/injection.dart';
@@ -18,15 +19,18 @@ import 'package:agrobravo/features/chat/presentation/pages/chat_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/itinerary_tab.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/pages/profile_tab.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
-import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
 import 'package:agrobravo/features/home/presentation/widgets/itinerary_microcards.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import 'package:agrobravo/features/home/presentation/widgets/mission_alert_dialog.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/emergency_modal.dart';
+import 'package:agrobravo/core/components/feed_shimmer.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,6 +41,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final documentsCubit = context.read<DocumentsCubit>();
+      documentsCubit.state.maybeMap(
+        initial: (_) => documentsCubit.loadDocuments(),
+        orElse: () {},
+      );
+
+      final notificationsCubit = context.read<NotificationsCubit>();
+      notificationsCubit.state.maybeMap(
+        initial: (_) => notificationsCubit.loadNotifications(),
+        orElse: () {},
+      );
+
+      final itineraryCubit = context.read<ItineraryCubit>();
+      itineraryCubit.state.maybeMap(
+        initial: (_) => itineraryCubit.loadUserItinerary(),
+        orElse: () {},
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   void _showMissionAlert(BuildContext context, MissionEntity mission) {
     showDialog(
@@ -60,19 +92,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => getIt<FeedCubit>()..loadFeed()),
-        BlocProvider(
-          create: (context) => getIt<DocumentsCubit>()..loadDocuments(),
-        ),
-        BlocProvider(
-          create: (context) => getIt<NotificationsCubit>()..loadNotifications(),
-        ),
-        BlocProvider(
-          create: (context) => getIt<ItineraryCubit>()..loadUserItinerary(),
-        ),
-      ],
+    return BlocProvider(
+      create: (context) => getIt<FeedCubit>()..loadFeed(),
       child: BlocListener<FeedCubit, FeedState>(
         listener: (context, state) {
           state.maybeMap(
@@ -84,12 +105,22 @@ class _HomePageState extends State<HomePage> {
             orElse: () {},
           );
         },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          extendBodyBehindAppBar: true,
-          appBar: _buildHeader(context),
-          body: _buildBody(),
-          bottomNavigationBar: _buildBottomNav(),
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            systemNavigationBarIconBrightness: Brightness.dark,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            extendBodyBehindAppBar: true,
+            appBar: _buildHeader(context),
+            body: _buildBody(),
+            bottomNavigationBar: _buildBottomNav(),
+          ),
         ),
       ),
     );
@@ -183,7 +214,25 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
+        if (_selectedIndex == 2)
+          IconButton(
+            onPressed: () => _showEmergencyModal(context),
+            icon: const Icon(
+              Icons.emergency_outlined,
+              size: 28,
+              color: Colors.red,
+            ),
+          ),
       ],
+    );
+  }
+
+  void _showEmergencyModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EmergencyModal(),
     );
   }
 
@@ -204,7 +253,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context, state) {
         return state.when(
           initial: () => const SizedBox.shrink(),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const FeedShimmer(),
           error: (message) => Center(child: Text(message)),
           loaded: (posts, _, __) {
             if (posts.isEmpty) {
@@ -212,11 +261,9 @@ class _HomePageState extends State<HomePage> {
                 edgeOffset: 120,
                 onRefresh: () => context.read<FeedCubit>().loadFeed(),
                 child: ListView(
-                  padding: const EdgeInsets.only(
-                    top: 130,
-                    bottom: AppSpacing.md,
-                  ),
+                  padding: EdgeInsets.zero,
                   children: [
+                    const HeaderSpacer(),
                     ItineraryMicrocards(
                       onSeeAll: () => setState(() => _selectedIndex = 2),
                     ),
@@ -234,16 +281,17 @@ class _HomePageState extends State<HomePage> {
               edgeOffset: 120,
               onRefresh: () => context.read<FeedCubit>().loadFeed(),
               child: ListView.builder(
-                padding: const EdgeInsets.only(top: 130, bottom: AppSpacing.md),
-                itemCount: posts.length + 1,
+                padding: EdgeInsets.zero,
+                itemCount: posts.length + 2,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
+                  if (index == 0) return const HeaderSpacer();
+                  if (index == 1) {
                     return ItineraryMicrocards(
                       onSeeAll: () => setState(() => _selectedIndex = 2),
                     );
                   }
 
-                  final post = posts[index - 1];
+                  final post = posts[index - 2];
                   final currentUserId = getIt<FeedRepository>()
                       .getCurrentUserId();
                   final isOwner = post.userId == currentUserId;
@@ -312,7 +360,7 @@ class _HomePageState extends State<HomePage> {
           if (context.mounted) {
             final result = await context.push<bool>(
               '/create-post',
-              extra: [image.path],
+              extra: [image],
             );
             if (result == true && context.mounted) {
               context.read<FeedCubit>().loadFeed();
@@ -332,20 +380,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _confirmDeletePost(BuildContext context, String postId) {
+    final feedCubit = context.read<FeedCubit>();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir Publicação'),
         content: const Text('Tem certeza que deseja excluir esta publicação?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              context.read<FeedCubit>().deletePost(postId); // Helper to delete
+              Navigator.pop(dialogContext);
+              feedCubit.deletePost(postId);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Excluir'),
@@ -357,7 +406,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomNav() {
     return Container(
-      padding: const EdgeInsets.only(top: 10, bottom: 20),
+      padding: EdgeInsets.fromLTRB(
+        0,
+        10,
+        0,
+        MediaQuery.of(context).padding.bottom + 10,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -373,36 +427,34 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.home_outlined, Icons.home_rounded, 'Inicio'),
-            _buildNavItem(
-              1,
-              Icons.chat_bubble_outline_rounded,
-              Icons.chat_bubble_rounded,
-              'Chat',
-            ),
-            _buildNavItem(
-              2,
-              Icons.explore_outlined,
-              Icons.explore_rounded,
-              'Itinerário',
-            ),
-            BlocBuilder<DocumentsCubit, DocumentsState>(
-              builder: (context, state) {
-                return _buildNavItem(
-                  3,
-                  Icons.person_outline_rounded,
-                  Icons.person_rounded,
-                  'Perfil',
-                  hasBadge: state.hasPendingAction,
-                );
-              },
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavItem(0, Icons.home_outlined, Icons.home_outlined, 'Inicio'),
+          _buildNavItem(
+            1,
+            Icons.chat_bubble_outline_rounded,
+            Icons.chat_bubble_outline_rounded,
+            'Chat',
+          ),
+          _buildNavItem(
+            2,
+            Icons.explore_outlined,
+            Icons.explore_outlined,
+            'Itinerário',
+          ),
+          BlocBuilder<DocumentsCubit, DocumentsState>(
+            builder: (context, state) {
+              return _buildNavItem(
+                3,
+                Icons.person_outline_rounded,
+                Icons.person_outline_rounded,
+                'Perfil',
+                hasBadge: state.hasPendingAction,
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -421,14 +473,14 @@ class _HomePageState extends State<HomePage> {
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 80,
+        width: 60,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(isSelected ? activeIcon : icon, color: color, size: 28),
+                Icon(isSelected ? activeIcon : icon, color: color, size: 24),
                 if (hasBadge)
                   Positioned(
                     right: -2,
@@ -450,7 +502,7 @@ class _HomePageState extends State<HomePage> {
               label,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: color,
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               ),
             ),

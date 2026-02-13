@@ -13,6 +13,12 @@ abstract class MissionEntity with _$MissionEntity {
     String? groupName,
     String? groupLogo,
     int? pendingDocsCount,
+    @Default(false) bool passaporteObrigatorio,
+    @Default(false) bool vistoObrigatorio,
+    @Default(false) bool vacinaObrigatoria,
+    @Default(false) bool seguroObrigatorio,
+    @Default(false) bool carteiraObrigatoria,
+    @Default(false) bool autorizacaoObrigatoria,
   }) = _MissionEntity;
 
   const MissionEntity._();

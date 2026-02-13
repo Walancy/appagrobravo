@@ -9,6 +9,8 @@ import '../cubit/itinerary_cubit.dart';
 import '../widgets/day_slider.dart';
 import '../widgets/itinerary_list.dart';
 import '../widgets/itinerary_filter_modal.dart';
+import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/itinerary_shimmer.dart';
 
 /// Standalone Widget to be used as a Tab
 class ItineraryTab extends StatelessWidget {
@@ -24,7 +26,7 @@ class ItineraryTab extends StatelessWidget {
         body: BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
             return state.maybeWhen(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ItineraryShimmer(),
               error: (msg) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -117,8 +119,8 @@ class _ItineraryContentState extends State<ItineraryContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Spacer for header - reduced to bring content closer
-          SizedBox(height: MediaQuery.of(context).padding.top + 20),
+          const HeaderSpacer(),
+          const SizedBox(height: 10),
 
           // "Termina em X dias"
           Padding(

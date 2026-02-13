@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/tokens/app_colors.dart';
 import '../../../../core/tokens/app_text_styles.dart';
-import '../../domain/entities/itinerary_item.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GenericEventCard extends StatelessWidget {
   final ItineraryItemEntity item;
@@ -77,7 +78,21 @@ class GenericEventCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
-              onPressed: () {},
+              onPressed: () async {
+                if (item.location != null && item.location!.isNotEmpty) {
+                  final query = Uri.encodeComponent(item.location!);
+                  final googleMapsUrl = Uri.parse(
+                    'https://www.google.com/maps/search/?api=1&query=$query',
+                  );
+
+                  if (await canLaunchUrl(googleMapsUrl)) {
+                    await launchUrl(
+                      googleMapsUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
+                  }
+                }
+              },
               icon: const Icon(Icons.location_on_outlined, size: 16),
               label: const Text('Ver no Mapa'),
               style: TextButton.styleFrom(

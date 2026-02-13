@@ -84,14 +84,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1016.FeedRepository>(
       () => _i386.FeedRepositoryImpl(gh<_i454.SupabaseClient>()),
     );
+    gh.factory<_i958.GroupInfoCubit>(
+      () => _i958.GroupInfoCubit(
+        gh<_i135.ChatRepository>(),
+        gh<_i321.ProfileRepository>(),
+      ),
+    );
     gh.lazySingleton<_i748.NotificationsRepository>(
       () => _i502.NotificationsRepositoryImpl(gh<_i454.SupabaseClient>()),
     );
     gh.lazySingleton<_i889.ItineraryRepository>(
       () => _i758.ItineraryRepositoryImpl(gh<_i454.SupabaseClient>()),
-    );
-    gh.factory<_i920.DocumentsCubit>(
-      () => _i920.DocumentsCubit(gh<_i194.DocumentsRepository>()),
     );
     gh.factory<_i934.ItineraryCubit>(
       () => _i934.ItineraryCubit(gh<_i889.ItineraryRepository>()),
@@ -102,8 +105,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i997.ChatDetailCubit>(
       () => _i997.ChatDetailCubit(gh<_i135.ChatRepository>()),
     );
-    gh.factory<_i958.GroupInfoCubit>(
-      () => _i958.GroupInfoCubit(gh<_i135.ChatRepository>()),
+    gh.factory<_i920.DocumentsCubit>(
+      () => _i920.DocumentsCubit(
+        gh<_i194.DocumentsRepository>(),
+        gh<_i321.ProfileRepository>(),
+        gh<_i1016.FeedRepository>(),
+        gh<_i454.SupabaseClient>(),
+      ),
     );
     gh.lazySingleton<_i681.AuthCubit>(
       () => _i681.AuthCubit(gh<_i1062.AuthRepository>()),

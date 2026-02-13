@@ -22,119 +22,94 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => getIt<ChatCubit>()..loadChatData(),
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
-        appBar: AppHeader(
-          mode: HeaderMode.home,
-          logo: SvgPicture.asset(Assets.images.logoColorida, height: 32),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.notifications_none_rounded,
-                size: 28,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        body: BlocBuilder<ChatCubit, ChatState>(
-          builder: (context, state) {
-            return state.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (message) => Center(child: Text('Erro: $message')),
-              loaded: (data) {
-                if (data.currentMission == null && data.history.isEmpty) {
-                  return const Center(child: Text('Nenhum chat encontrado.'));
-                }
+      child: BlocBuilder<ChatCubit, ChatState>(
+        builder: (context, state) {
+          return state.when(
+            initial: () => const SizedBox.shrink(),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (message) => Center(child: Text('Erro: $message')),
+            loaded: (data) {
+              if (data.currentMission == null && data.history.isEmpty) {
+                return const Center(child: Text('Nenhum chat encontrado.'));
+              }
 
-                return ListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: 0,
-                  ),
-                  children: [
-                    const SizedBox(height: 20),
-
-                    if (data.currentMission != null) ...[
-                      Text(
-                        'Meu Grupo',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
+              return ListView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                children: [
+                  const HeaderSpacer(),
+                  const SizedBox(height: 20),
+                  if (data.currentMission != null) ...[
+                    Text(
+                      'Meu Grupo',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _buildChatCard(
-                        context,
-                        data.currentMission!,
-                        isCurrent: true,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-
-                    if (data.guides.isNotEmpty) ...[
-                      Text(
-                        'Guias',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...data.guides.map(
-                        (g) => GuideCard(
-                          name: g.name,
-                          role: g.role,
-                          avatarUrl:
-                              g.avatarUrl ??
-                              'https://i.pravatar.cc/150', // Fallback
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        IndividualChatPage(guide: g),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-
-                    if (data.history.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.history,
-                            color: AppColors.textPrimary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Histórico',
-                            style: AppTextStyles.h3.copyWith(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...data.history.map(
-                        (m) => _buildChatCard(context, m, isCurrent: false),
-                      ),
-                    ],
-
-                    const SizedBox(height: 100),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _buildChatCard(
+                      context,
+                      data.currentMission!,
+                      isCurrent: true,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                   ],
-                );
-              },
-            );
-          },
-        ),
+                  if (data.guides.isNotEmpty) ...[
+                    Text(
+                      'Guias',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ...data.guides.map(
+                      (g) => GuideCard(
+                        name: g.name,
+                        role: g.role,
+                        avatarUrl: g.avatarUrl ?? 'https://i.pravatar.cc/150',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      IndividualChatPage(guide: g),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                  if (data.history.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.history,
+                          color: AppColors.textPrimary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Histórico',
+                          style: AppTextStyles.h3.copyWith(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ...data.history.map(
+                      (m) => _buildChatCard(context, m, isCurrent: false),
+                    ),
+                  ],
+                  const SizedBox(height: 100),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -144,7 +119,6 @@ class ChatPage extends StatelessWidget {
     ChatEntity mission, {
     required bool isCurrent,
   }) {
-    // Basic logic to determine status text for history
     String? status;
     if (!isCurrent) {
       if (mission.endDate != null) {
@@ -171,13 +145,11 @@ class ChatPage extends StatelessWidget {
         title: mission.title,
         subtitle: mission.subtitle,
         leading: _buildMissionImage(mission.imageUrl),
-        time: isCurrent
-            ? DateFormat('HH:mm').format(DateTime.now())
-            : null, // Mock time for current
+        time: isCurrent ? DateFormat('HH:mm').format(DateTime.now()) : null,
         unreadCount: isCurrent ? mission.unreadCount : null,
         statusText: status,
-        memberCount: 0, // Not showing as requested
-        memberAvatars: const [], // Not fetching members specifically for now
+        memberCount: 0,
+        memberAvatars: const [],
       ),
     );
   }

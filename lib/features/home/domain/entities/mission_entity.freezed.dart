@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MissionEntity {
 
- String get id; String get name; String? get logo; String? get location; DateTime? get startDate; String? get groupName; String? get groupLogo; int? get pendingDocsCount;
+ String get id; String get name; String? get logo; String? get location; DateTime? get startDate; String? get groupName; String? get groupLogo; int? get pendingDocsCount; bool get passaporteObrigatorio; bool get vistoObrigatorio; bool get vacinaObrigatoria; bool get seguroObrigatorio; bool get carteiraObrigatoria; bool get autorizacaoObrigatoria;
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $MissionEntityCopyWith<MissionEntity> get copyWith => _$MissionEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount)&&(identical(other.passaporteObrigatorio, passaporteObrigatorio) || other.passaporteObrigatorio == passaporteObrigatorio)&&(identical(other.vistoObrigatorio, vistoObrigatorio) || other.vistoObrigatorio == vistoObrigatorio)&&(identical(other.vacinaObrigatoria, vacinaObrigatoria) || other.vacinaObrigatoria == vacinaObrigatoria)&&(identical(other.seguroObrigatorio, seguroObrigatorio) || other.seguroObrigatorio == seguroObrigatorio)&&(identical(other.carteiraObrigatoria, carteiraObrigatoria) || other.carteiraObrigatoria == carteiraObrigatoria)&&(identical(other.autorizacaoObrigatoria, autorizacaoObrigatoria) || other.autorizacaoObrigatoria == autorizacaoObrigatoria));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount);
+int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount,passaporteObrigatorio,vistoObrigatorio,vacinaObrigatoria,seguroObrigatorio,carteiraObrigatoria,autorizacaoObrigatoria);
 
 @override
 String toString() {
-  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount)';
+  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount, passaporteObrigatorio: $passaporteObrigatorio, vistoObrigatorio: $vistoObrigatorio, vacinaObrigatoria: $vacinaObrigatoria, seguroObrigatorio: $seguroObrigatorio, carteiraObrigatoria: $carteiraObrigatoria, autorizacaoObrigatoria: $autorizacaoObrigatoria)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $MissionEntityCopyWith<$Res>  {
   factory $MissionEntityCopyWith(MissionEntity value, $Res Function(MissionEntity) _then) = _$MissionEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount
+ String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount, bool passaporteObrigatorio, bool vistoObrigatorio, bool vacinaObrigatoria, bool seguroObrigatorio, bool carteiraObrigatoria, bool autorizacaoObrigatoria
 });
 
 
@@ -62,7 +62,7 @@ class _$MissionEntityCopyWithImpl<$Res>
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,Object? passaporteObrigatorio = null,Object? vistoObrigatorio = null,Object? vacinaObrigatoria = null,Object? seguroObrigatorio = null,Object? carteiraObrigatoria = null,Object? autorizacaoObrigatoria = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -72,7 +72,13 @@ as String?,startDate: freezed == startDate ? _self.startDate : startDate // igno
 as DateTime?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
 as String?,groupLogo: freezed == groupLogo ? _self.groupLogo : groupLogo // ignore: cast_nullable_to_non_nullable
 as String?,pendingDocsCount: freezed == pendingDocsCount ? _self.pendingDocsCount : pendingDocsCount // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,passaporteObrigatorio: null == passaporteObrigatorio ? _self.passaporteObrigatorio : passaporteObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,vistoObrigatorio: null == vistoObrigatorio ? _self.vistoObrigatorio : vistoObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,vacinaObrigatoria: null == vacinaObrigatoria ? _self.vacinaObrigatoria : vacinaObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,seguroObrigatorio: null == seguroObrigatorio ? _self.seguroObrigatorio : seguroObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,carteiraObrigatoria: null == carteiraObrigatoria ? _self.carteiraObrigatoria : carteiraObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,autorizacaoObrigatoria: null == autorizacaoObrigatoria ? _self.autorizacaoObrigatoria : autorizacaoObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -157,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount,  bool passaporteObrigatorio,  bool vistoObrigatorio,  bool vacinaObrigatoria,  bool seguroObrigatorio,  bool carteiraObrigatoria,  bool autorizacaoObrigatoria)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MissionEntity() when $default != null:
-return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount,_that.passaporteObrigatorio,_that.vistoObrigatorio,_that.vacinaObrigatoria,_that.seguroObrigatorio,_that.carteiraObrigatoria,_that.autorizacaoObrigatoria);case _:
   return orElse();
 
 }
@@ -178,10 +184,10 @@ return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount,  bool passaporteObrigatorio,  bool vistoObrigatorio,  bool vacinaObrigatoria,  bool seguroObrigatorio,  bool carteiraObrigatoria,  bool autorizacaoObrigatoria)  $default,) {final _that = this;
 switch (_that) {
 case _MissionEntity():
-return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount,_that.passaporteObrigatorio,_that.vistoObrigatorio,_that.vacinaObrigatoria,_that.seguroObrigatorio,_that.carteiraObrigatoria,_that.autorizacaoObrigatoria);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +204,10 @@ return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? logo,  String? location,  DateTime? startDate,  String? groupName,  String? groupLogo,  int? pendingDocsCount,  bool passaporteObrigatorio,  bool vistoObrigatorio,  bool vacinaObrigatoria,  bool seguroObrigatorio,  bool carteiraObrigatoria,  bool autorizacaoObrigatoria)?  $default,) {final _that = this;
 switch (_that) {
 case _MissionEntity() when $default != null:
-return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount);case _:
+return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_that.groupName,_that.groupLogo,_that.pendingDocsCount,_that.passaporteObrigatorio,_that.vistoObrigatorio,_that.vacinaObrigatoria,_that.seguroObrigatorio,_that.carteiraObrigatoria,_that.autorizacaoObrigatoria);case _:
   return null;
 
 }
@@ -213,7 +219,7 @@ return $default(_that.id,_that.name,_that.logo,_that.location,_that.startDate,_t
 
 
 class _MissionEntity extends MissionEntity {
-  const _MissionEntity({required this.id, required this.name, this.logo, this.location, this.startDate, this.groupName, this.groupLogo, this.pendingDocsCount}): super._();
+  const _MissionEntity({required this.id, required this.name, this.logo, this.location, this.startDate, this.groupName, this.groupLogo, this.pendingDocsCount, this.passaporteObrigatorio = false, this.vistoObrigatorio = false, this.vacinaObrigatoria = false, this.seguroObrigatorio = false, this.carteiraObrigatoria = false, this.autorizacaoObrigatoria = false}): super._();
   
 
 @override final  String id;
@@ -224,6 +230,12 @@ class _MissionEntity extends MissionEntity {
 @override final  String? groupName;
 @override final  String? groupLogo;
 @override final  int? pendingDocsCount;
+@override@JsonKey() final  bool passaporteObrigatorio;
+@override@JsonKey() final  bool vistoObrigatorio;
+@override@JsonKey() final  bool vacinaObrigatoria;
+@override@JsonKey() final  bool seguroObrigatorio;
+@override@JsonKey() final  bool carteiraObrigatoria;
+@override@JsonKey() final  bool autorizacaoObrigatoria;
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +247,16 @@ _$MissionEntityCopyWith<_MissionEntity> get copyWith => __$MissionEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MissionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.groupLogo, groupLogo) || other.groupLogo == groupLogo)&&(identical(other.pendingDocsCount, pendingDocsCount) || other.pendingDocsCount == pendingDocsCount)&&(identical(other.passaporteObrigatorio, passaporteObrigatorio) || other.passaporteObrigatorio == passaporteObrigatorio)&&(identical(other.vistoObrigatorio, vistoObrigatorio) || other.vistoObrigatorio == vistoObrigatorio)&&(identical(other.vacinaObrigatoria, vacinaObrigatoria) || other.vacinaObrigatoria == vacinaObrigatoria)&&(identical(other.seguroObrigatorio, seguroObrigatorio) || other.seguroObrigatorio == seguroObrigatorio)&&(identical(other.carteiraObrigatoria, carteiraObrigatoria) || other.carteiraObrigatoria == carteiraObrigatoria)&&(identical(other.autorizacaoObrigatoria, autorizacaoObrigatoria) || other.autorizacaoObrigatoria == autorizacaoObrigatoria));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount);
+int get hashCode => Object.hash(runtimeType,id,name,logo,location,startDate,groupName,groupLogo,pendingDocsCount,passaporteObrigatorio,vistoObrigatorio,vacinaObrigatoria,seguroObrigatorio,carteiraObrigatoria,autorizacaoObrigatoria);
 
 @override
 String toString() {
-  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount)';
+  return 'MissionEntity(id: $id, name: $name, logo: $logo, location: $location, startDate: $startDate, groupName: $groupName, groupLogo: $groupLogo, pendingDocsCount: $pendingDocsCount, passaporteObrigatorio: $passaporteObrigatorio, vistoObrigatorio: $vistoObrigatorio, vacinaObrigatoria: $vacinaObrigatoria, seguroObrigatorio: $seguroObrigatorio, carteiraObrigatoria: $carteiraObrigatoria, autorizacaoObrigatoria: $autorizacaoObrigatoria)';
 }
 
 
@@ -255,7 +267,7 @@ abstract mixin class _$MissionEntityCopyWith<$Res> implements $MissionEntityCopy
   factory _$MissionEntityCopyWith(_MissionEntity value, $Res Function(_MissionEntity) _then) = __$MissionEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount
+ String id, String name, String? logo, String? location, DateTime? startDate, String? groupName, String? groupLogo, int? pendingDocsCount, bool passaporteObrigatorio, bool vistoObrigatorio, bool vacinaObrigatoria, bool seguroObrigatorio, bool carteiraObrigatoria, bool autorizacaoObrigatoria
 });
 
 
@@ -272,7 +284,7 @@ class __$MissionEntityCopyWithImpl<$Res>
 
 /// Create a copy of MissionEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? logo = freezed,Object? location = freezed,Object? startDate = freezed,Object? groupName = freezed,Object? groupLogo = freezed,Object? pendingDocsCount = freezed,Object? passaporteObrigatorio = null,Object? vistoObrigatorio = null,Object? vacinaObrigatoria = null,Object? seguroObrigatorio = null,Object? carteiraObrigatoria = null,Object? autorizacaoObrigatoria = null,}) {
   return _then(_MissionEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -282,7 +294,13 @@ as String?,startDate: freezed == startDate ? _self.startDate : startDate // igno
 as DateTime?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
 as String?,groupLogo: freezed == groupLogo ? _self.groupLogo : groupLogo // ignore: cast_nullable_to_non_nullable
 as String?,pendingDocsCount: freezed == pendingDocsCount ? _self.pendingDocsCount : pendingDocsCount // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,passaporteObrigatorio: null == passaporteObrigatorio ? _self.passaporteObrigatorio : passaporteObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,vistoObrigatorio: null == vistoObrigatorio ? _self.vistoObrigatorio : vistoObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,vacinaObrigatoria: null == vacinaObrigatoria ? _self.vacinaObrigatoria : vacinaObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,seguroObrigatorio: null == seguroObrigatorio ? _self.seguroObrigatorio : seguroObrigatorio // ignore: cast_nullable_to_non_nullable
+as bool,carteiraObrigatoria: null == carteiraObrigatoria ? _self.carteiraObrigatoria : carteiraObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,autorizacaoObrigatoria: null == autorizacaoObrigatoria ? _self.autorizacaoObrigatoria : autorizacaoObrigatoria // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

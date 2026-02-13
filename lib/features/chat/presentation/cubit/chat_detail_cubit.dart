@@ -34,6 +34,8 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
           },
           onError: (error) {
             emit(ChatDetailState.error(error.toString()));
+            print('Error in loadMessages: $error');
+            print(StackTrace.current);
           },
         );
   }

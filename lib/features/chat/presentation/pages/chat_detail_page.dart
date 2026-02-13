@@ -10,6 +10,7 @@ import 'package:agrobravo/features/chat/presentation/pages/group_info_page.dart'
 import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:intl/intl.dart';
 
 class ChatDetailPage extends StatelessWidget {
   final ChatEntity chat;
@@ -241,53 +242,108 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
                               final msg = messages[index];
-                              // Map MessageEntity to Widget properties
-                              // Assuming ChatBubble types match mostly
                               final isSelected = _selectedMessageIds.contains(
                                 msg.id,
                               );
-                              return ChatBubble(
-                                message: msg.text,
-                                time:
-                                    '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                                type: _mapMessageType(msg.type),
-                                userName: msg.userName,
-                                userAvatarUrl: msg.userAvatarUrl,
-                                guideRole: msg.guideRole,
-                                attachmentUrl: msg.attachmentUrl,
-                                isEdited: msg.isEdited,
-                                isDeleted: msg.isDeleted,
-                                isSelected: isSelected,
-                                repliedMessage: msg.repliedToMessage?.text,
-                                repliedUserName: msg.repliedToMessage?.userName,
-                                onReply: () {
-                                  setState(() {
-                                    _replyingToMessage = msg;
-                                    _editingMessageId = null;
-                                  });
-                                },
-                                onLongPress:
-                                    msg.type == MessageType.me && !msg.isDeleted
-                                    ? () {
-                                        setState(() {
-                                          _selectedMessageIds.add(msg.id);
-                                        });
-                                      }
-                                    : null,
-                                onTap:
-                                    _selectedMessageIds.isNotEmpty &&
+
+                              bool showDateHeader = false;
+                              if (index == 0) {
+                                showDateHeader = true;
+                              } else {
+                                final prevMsg = messages[index - 1];
+                                final currentDate = DateTime(
+                                  msg.timestamp.year,
+                                  msg.timestamp.month,
+                                  msg.timestamp.day,
+                                );
+                                final prevDate = DateTime(
+                                  prevMsg.timestamp.year,
+                                  prevMsg.timestamp.month,
+                                  prevMsg.timestamp.day,
+                                );
+                                if (currentDate.isAfter(prevDate)) {
+                                  showDateHeader = true;
+                                }
+                              }
+
+                              return Column(
+                                children: [
+                                  if (showDateHeader)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16.0,
+                                      ),
+                                      child: Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _formatDateHeader(msg.timestamp),
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black54,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ChatBubble(
+                                    message: msg.text,
+                                    time:
+                                        '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                    type: _mapMessageType(msg.type),
+                                    userName: msg.userName,
+                                    userAvatarUrl: msg.userAvatarUrl,
+                                    guideRole: msg.guideRole,
+                                    attachmentUrl: msg.attachmentUrl,
+                                    isEdited: msg.isEdited,
+                                    isDeleted: msg.isDeleted,
+                                    isSelected: isSelected,
+                                    repliedMessage: msg.repliedToMessage?.text,
+                                    repliedUserName:
+                                        msg.repliedToMessage?.userName,
+                                    onReply: () {
+                                      setState(() {
+                                        _replyingToMessage = msg;
+                                        _editingMessageId = null;
+                                      });
+                                    },
+                                    onLongPress:
                                         msg.type == MessageType.me &&
-                                        !msg.isDeleted
-                                    ? () {
-                                        setState(() {
-                                          if (isSelected) {
-                                            _selectedMessageIds.remove(msg.id);
-                                          } else {
-                                            _selectedMessageIds.add(msg.id);
+                                            !msg.isDeleted
+                                        ? () {
+                                            setState(() {
+                                              _selectedMessageIds.add(msg.id);
+                                            });
                                           }
-                                        });
-                                      }
-                                    : null,
+                                        : null,
+                                    onTap:
+                                        _selectedMessageIds.isNotEmpty &&
+                                            msg.type == MessageType.me &&
+                                            !msg.isDeleted
+                                        ? () {
+                                            setState(() {
+                                              if (isSelected) {
+                                                _selectedMessageIds.remove(
+                                                  msg.id,
+                                                );
+                                              } else {
+                                                _selectedMessageIds.add(msg.id);
+                                              }
+                                            });
+                                          }
+                                        : null,
+                                  ),
+                                ],
                               );
                             },
                           );
@@ -375,6 +431,21 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         return ChatBubbleType.other;
       case MessageType.guide:
         return ChatBubbleType.guide;
+    }
+  }
+
+  String _formatDateHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    final messageDate = DateTime(date.year, date.month, date.day);
+
+    if (messageDate == today) {
+      return 'Hoje';
+    } else if (messageDate == yesterday) {
+      return 'Ontem';
+    } else {
+      return DateFormat('dd/MM/yyyy').format(date);
     }
   }
 

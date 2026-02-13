@@ -45,13 +45,13 @@ final appRouter = GoRouter(
       path: '/create-post',
       pageBuilder: (context, state) {
         final extra = state.extra;
-        List<String> images = [];
+        List<dynamic> images = [];
         PostEntity? postToEdit;
 
-        if (extra is List<String>) {
+        if (extra is List) {
           images = extra;
         } else if (extra is Map<String, dynamic>) {
-          images = (extra['initialImages'] as List?)?.cast<String>() ?? [];
+          images = (extra['initialImages'] as List?) ?? [];
           postToEdit = extra['postToEdit'] as PostEntity?;
         }
 

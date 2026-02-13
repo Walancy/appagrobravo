@@ -13,7 +13,7 @@ import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_she
 import 'package:agrobravo/features/home/presentation/widgets/select_mission_dialog.dart';
 
 class CreatePostPage extends StatefulWidget {
-  final List<String> initialImages;
+  final List<dynamic> initialImages;
   final PostEntity? postToEdit;
 
   const CreatePostPage({
@@ -27,7 +27,7 @@ class CreatePostPage extends StatefulWidget {
 }
 
 class _CreatePostPageState extends State<CreatePostPage> {
-  late List<String> _images;
+  late List<dynamic> _images;
   int _selectedImageIndex = 0;
   bool _isPrivate = false;
   final TextEditingController _captionController = TextEditingController();
@@ -42,6 +42,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint(
+      'CreatePostPage initialized with images: ${widget.initialImages}',
+    );
     if (_isEditing) {
       _images = List.from(widget.postToEdit!.images);
       _captionController.text = widget.postToEdit!.caption;
@@ -93,7 +96,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         final image = await picker.pickImage(source: source);
         if (image != null && mounted) {
           setState(() {
-            _images.add(image.path);
+            _images.add(image);
             _selectedImageIndex = _images.length - 1;
           });
         }
@@ -153,7 +156,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             privado: _isPrivate,
           )
         : await repo.createPost(
-            imagePaths: _images,
+            images: _images,
             caption: _captionController.text,
             missionId: _selectedMission?.id,
             privado: _isPrivate,
@@ -179,13 +182,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
   @override
   Widget build(BuildContext context) {
     // Helper to build image provider based on path type
-    ImageProvider getImageProvider(String path) {
-      if (path.startsWith('http')) {
-        return NetworkImage(path);
-      } else {
-        return FileImage(File(path));
-      }
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -208,55 +204,92 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   if (_images.isNotEmpty)
                     AspectRatio(
                       aspectRatio: 1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          image: DecorationImage(
-                            image: getImageProvider(
-                              _images[_selectedImageIndex],
-                            ),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              bottom: 12,
-                              right: 12,
-                              child: GestureDetector(
-                                onTap: () => _removeImage(_selectedImageIndex),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Text(
-                                        'Excluir',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Builder(
+                                builder: (context) {
+                                  final item = _images[_selectedImageIndex];
+                                  final String path;
+                                  if (item is XFile) {
+                                    path = item.path;
+                                  } else {
+                                    path = item as String;
+                                  }
+                                  if (path.startsWith('http') ||
+                                      path.startsWith('blob:')) {
+                                    return Image.network(
+                                      path,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.grey,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                    );
+                                  }
+                                  return Image.file(
+                                    File(path),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      debugPrint(
+                                        'Error loading image: $error, path: $path',
+                                      );
+                                      return const Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          color: Colors.red,
+                                          size: 40,
                                         ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: () => _removeImage(_selectedImageIndex),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Text(
+                                      'Excluir',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                      SizedBox(width: 4),
-                                      Icon(
-                                        Icons.delete_outline,
-                                        color: AppColors.error,
-                                        size: 18,
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(
+                                      Icons.delete_outline,
+                                      color: AppColors.error,
+                                      size: 18,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -288,9 +321,48 @@ class _CreatePostPageState extends State<CreatePostPage> {
                                             width: 2,
                                           )
                                         : null,
-                                    image: DecorationImage(
-                                      image: getImageProvider(_images[index]),
-                                      fit: BoxFit.cover,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Builder(
+                                      builder: (context) {
+                                        final item = _images[index];
+                                        final String path;
+                                        if (item is XFile) {
+                                          path = item.path;
+                                        } else {
+                                          path = item as String;
+                                        }
+                                        if (path.startsWith('http') ||
+                                            path.startsWith('blob:')) {
+                                          return Image.network(
+                                            path,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    size: 20,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                          );
+                                        }
+                                        return Image.file(
+                                          File(path),
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    size: 20,
+                                                    color: Colors.red,
+                                                  ),
+                                                );
+                                              },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),

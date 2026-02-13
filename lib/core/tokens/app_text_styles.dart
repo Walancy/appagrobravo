@@ -40,7 +40,7 @@ class AppTextStyles {
   );
 
   static TextStyle get button => GoogleFonts.poppins(
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: FontWeight.normal, // Alterado para Regular
     color: AppColors.surface,
   );

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
+import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/chat/presentation/cubit/group_info_cubit.dart';
 import 'package:agrobravo/features/chat/presentation/cubit/group_info_state.dart';
 import 'package:agrobravo/core/di/injection.dart';
@@ -305,6 +306,13 @@ class _GroupInfoView extends StatelessWidget {
                                     color: Colors.grey,
                                   ),
                                 ),
+                                trailing: (member.isMe || member.isGuide)
+                                    ? null
+                                    : _buildConnectionButton(
+                                        context,
+                                        member,
+                                        chat.id,
+                                      ),
                                 onTap: () =>
                                     context.push('/profile/${member.id}'),
                               );
@@ -322,5 +330,43 @@ class _GroupInfoView extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Widget _buildConnectionButton(
+    BuildContext context,
+    GroupMemberEntity member,
+    String groupId,
+  ) {
+    switch (member.connectionStatus) {
+      case ConnectionStatus.connected:
+        return const Icon(
+          Icons.check_circle,
+          color: AppColors.primary,
+          size: 20,
+        );
+      case ConnectionStatus.pendingSent:
+        return Text(
+          'Pendente',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        );
+      case ConnectionStatus.pendingReceived:
+        return Text(
+          'Solicitou',
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary),
+        );
+      case ConnectionStatus.none:
+        return IconButton(
+          icon: const Icon(Icons.person_add_outlined, color: AppColors.primary),
+          onPressed: () {
+            context.read<GroupInfoCubit>().requestConnection(
+              groupId,
+              member.id,
+            );
+          },
+        );
+    }
+    return const SizedBox.shrink();
   }
 }

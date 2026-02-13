@@ -18,14 +18,15 @@ abstract class FeedRepository {
   Future<Either<Exception, Unit>> updateComment(String commentId, String text);
   Future<Either<Exception, Unit>> deleteComment(String commentId);
   Future<Either<Exception, PostEntity>> createPost({
-    required List<String> imagePaths,
+    required List<dynamic> images,
     required String caption,
     String? missionId,
     bool privado = false,
   });
   Future<Either<Exception, PostEntity>> updatePost({
     required String postId,
-    required List<String> images, // Mixture of new paths and existing URLs
+    required List<dynamic>
+    images, // Mixture of new XFiles/paths and existing URLs
     required String caption,
     String? missionId,
     required bool privado,

@@ -159,28 +159,28 @@ class SettingsPage extends StatelessWidget {
                 Text(
                   profile.name,
                   style: AppTextStyles.h2.copyWith(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${profile.missionName ?? ''}${profile.missionName != null && profile.groupName != null ? ' - ' : ''}${profile.groupName ?? ''}',
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.2,
                   ),
                 ),
                 Text(
                   profile.email ?? '',
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.2,
                   ),
                 ),
                 Text(
                   profile.phone ?? '',
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.2,
                   ),

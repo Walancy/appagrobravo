@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:agrobravo/core/components/full_screen_image_viewer.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 enum ChatBubbleType { me, other, guide }
@@ -169,15 +171,39 @@ class ChatBubble extends StatelessWidget {
                                     4,
                                     0,
                                   ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      attachmentUrl!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: 200,
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox.shrink(),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      FullScreenImageViewer.show(
+                                        context,
+                                        attachmentUrl!,
+                                      );
+                                    },
+                                    child: Hero(
+                                      tag: attachmentUrl!,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: CachedNetworkImage(
+                                          imageUrl: attachmentUrl!,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: 200,
+                                          placeholder: (context, url) => Container(
+                                            height: 200,
+                                            color: Colors.grey.shade200,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(AppColors.primary),
+                                              ),
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              const SizedBox.shrink(),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -243,68 +269,107 @@ class ChatBubble extends StatelessWidget {
                                   ),
                                 ),
                               if (message.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _buildMessageText(textColor),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (isEdited) ...[
-                                            Text(
-                                              'editado',
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    color: textColor
-                                                        .withOpacity(0.5),
-                                                    fontSize: 10,
-                                                    fontStyle: FontStyle.italic,
-                                                  ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                          ],
-                                          Text(
-                                            time,
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                                  color: textColor.withOpacity(
-                                                    0.7,
-                                                  ),
-                                                  fontSize: 12,
-                                                ),
+                                if (message.isNotEmpty)
+                                  Builder(
+                                    builder: (context) {
+                                      final isLong =
+                                          message.length >
+                                          200; // Increased threshold slightly
+                                      if (isLong) {
+                                        return Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            12,
+                                            12,
+                                            6,
+                                            6,
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              else if (attachmentUrl != null)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    12,
-                                    4,
-                                    12,
-                                    8,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        time,
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: textColor.withOpacity(0.7),
-                                          fontSize: 12,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 6,
+                                                ),
+                                                child: _buildMessageText(
+                                                  textColor,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              _buildTimeRow(textColor),
+                                            ],
+                                          ),
+                                        );
+                                      }
+
+                                      // Compact layout for shorter messages
+                                      // Estimated width for time (~6 chars 12px) and editing
+                                      final timeWidth =
+                                          (isEdited ? 45.0 : 0.0) + 40.0;
+
+                                      return Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          12,
+                                          10,
+                                          6,
+                                          4,
                                         ),
-                                      ),
-                                    ],
+                                        child: Stack(
+                                          children: [
+                                            RichText(
+                                              text: TextSpan(
+                                                style: AppTextStyles.bodyMedium
+                                                    .copyWith(
+                                                      color: textColor,
+                                                      fontSize: 16,
+                                                    ),
+                                                children: [
+                                                  TextSpan(text: message),
+                                                  WidgetSpan(
+                                                    alignment:
+                                                        PlaceholderAlignment
+                                                            .middle,
+                                                    child: SizedBox(
+                                                      width: timeWidth,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: _buildTimeRow(textColor),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                else if (attachmentUrl != null)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      4,
+                                      12,
+                                      8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          time,
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: textColor.withOpacity(
+                                                  0.7,
+                                                ),
+                                                fontSize: 12,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
                             ],
                           ],
                         ),
@@ -417,7 +482,7 @@ class ChatBubble extends StatelessWidget {
           child: Text(
             userName ?? 'Usuário',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFF00AA6C), // Green for others too per design
+              color: _getUserColor(userName ?? 'Usuário'),
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,
@@ -443,5 +508,58 @@ class ChatBubble extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  Widget _buildTimeRow(Color textColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isEdited) ...[
+          Text(
+            'editado',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: textColor.withOpacity(0.5),
+              fontSize: 10,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+        Text(
+          time,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: textColor.withOpacity(0.7),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getUserColor(String name) {
+    if (name.isEmpty) return const Color(0xFF00AA6C);
+
+    final colors = [
+      const Color(0xFFE91E63),
+      const Color(0xFF9C27B0),
+      const Color(0xFF673AB7),
+      const Color(0xFF3F51B5),
+      const Color(0xFF2196F3),
+      const Color(0xFF00BCD4),
+      const Color(0xFF009688),
+      const Color(0xFF4CAF50),
+      const Color(0xFF8BC34A),
+      const Color(0xFFF57C00),
+      const Color(0xFFFF5722),
+      const Color(0xFF795548),
+    ];
+
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+
+    return colors[hash.abs() % colors.length];
   }
 }

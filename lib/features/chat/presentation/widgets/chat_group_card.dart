@@ -61,7 +61,7 @@ class ChatGroupCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppTextStyles.h3.copyWith(fontSize: 18),
+                        style: AppTextStyles.h3.copyWith(fontSize: 16),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),

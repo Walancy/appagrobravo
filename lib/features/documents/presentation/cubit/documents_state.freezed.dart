@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<DocumentEntity> documents)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<DocumentEntity> documents,  bool isAlertDismissed,  ProfileEntity? profile,  MissionEntity? mission)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.documents);case _Error() when error != null:
+return loaded(_that.documents,_that.isAlertDismissed,_that.profile,_that.mission);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<DocumentEntity> documents)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<DocumentEntity> documents,  bool isAlertDismissed,  ProfileEntity? profile,  MissionEntity? mission)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.documents);case _Error():
+return loaded(_that.documents,_that.isAlertDismissed,_that.profile,_that.mission);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<DocumentEntity> documents)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<DocumentEntity> documents,  bool isAlertDismissed,  ProfileEntity? profile,  MissionEntity? mission)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.documents);case _Error() when error != null:
+return loaded(_that.documents,_that.isAlertDismissed,_that.profile,_that.mission);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,7 +257,7 @@ String toString() {
 
 
 class _Loaded implements DocumentsState {
-  const _Loaded(final  List<DocumentEntity> documents): _documents = documents;
+  const _Loaded(final  List<DocumentEntity> documents, {this.isAlertDismissed = false, this.profile, this.mission}): _documents = documents;
   
 
  final  List<DocumentEntity> _documents;
@@ -267,6 +267,9 @@ class _Loaded implements DocumentsState {
   return EqualUnmodifiableListView(_documents);
 }
 
+@JsonKey() final  bool isAlertDismissed;
+ final  ProfileEntity? profile;
+ final  MissionEntity? mission;
 
 /// Create a copy of DocumentsState
 /// with the given fields replaced by the non-null parameter values.
@@ -278,16 +281,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._documents, _documents));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._documents, _documents)&&(identical(other.isAlertDismissed, isAlertDismissed) || other.isAlertDismissed == isAlertDismissed)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.mission, mission) || other.mission == mission));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_documents));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_documents),isAlertDismissed,profile,mission);
 
 @override
 String toString() {
-  return 'DocumentsState.loaded(documents: $documents)';
+  return 'DocumentsState.loaded(documents: $documents, isAlertDismissed: $isAlertDismissed, profile: $profile, mission: $mission)';
 }
 
 
@@ -298,11 +301,11 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $DocumentsStateCopyWith<$
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- List<DocumentEntity> documents
+ List<DocumentEntity> documents, bool isAlertDismissed, ProfileEntity? profile, MissionEntity? mission
 });
 
 
-
+$ProfileEntityCopyWith<$Res>? get profile;$MissionEntityCopyWith<$Res>? get mission;
 
 }
 /// @nodoc
@@ -315,14 +318,41 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of DocumentsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? documents = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? documents = null,Object? isAlertDismissed = null,Object? profile = freezed,Object? mission = freezed,}) {
   return _then(_Loaded(
 null == documents ? _self._documents : documents // ignore: cast_nullable_to_non_nullable
-as List<DocumentEntity>,
+as List<DocumentEntity>,isAlertDismissed: null == isAlertDismissed ? _self.isAlertDismissed : isAlertDismissed // ignore: cast_nullable_to_non_nullable
+as bool,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
+as ProfileEntity?,mission: freezed == mission ? _self.mission : mission // ignore: cast_nullable_to_non_nullable
+as MissionEntity?,
   ));
 }
 
+/// Create a copy of DocumentsState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProfileEntityCopyWith<$Res>? get profile {
+    if (_self.profile == null) {
+    return null;
+  }
 
+  return $ProfileEntityCopyWith<$Res>(_self.profile!, (value) {
+    return _then(_self.copyWith(profile: value));
+  });
+}/// Create a copy of DocumentsState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MissionEntityCopyWith<$Res>? get mission {
+    if (_self.mission == null) {
+    return null;
+  }
+
+  return $MissionEntityCopyWith<$Res>(_self.mission!, (value) {
+    return _then(_self.copyWith(mission: value));
+  });
+}
 }
 
 /// @nodoc

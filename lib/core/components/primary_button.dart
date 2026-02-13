@@ -19,7 +19,7 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 48, // Reduzido para 48
+      height: 42,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -32,19 +32,14 @@ class PrimaryButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         child: isLoading
             ? const SizedBox(
-                height: 20, // Reduzido
-                width: 20,
+                height: 18,
+                width: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
                 ),
               )
-            : Text(
-                label,
-                style: AppTextStyles.button.copyWith(
-                  fontSize: 16, // Reduzido
-                ),
-              ),
+            : Text(label, style: AppTextStyles.button.copyWith(fontSize: 14)),
       ),
     );
   }

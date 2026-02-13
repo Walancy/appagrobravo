@@ -36,6 +36,7 @@ class ItineraryMicrocards extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: AppSpacing.md),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
@@ -62,13 +63,15 @@ class ItineraryMicrocards extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: 10),
                 SizedBox(
-                  height: 70,
+                  height: 140, // Reduced height for more compact look
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none, // Correctly shows shadows
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
+                      vertical: 12, // Space for shadows
                     ),
                     itemCount: upcomingItems.length,
                     itemBuilder: (context, index) {
@@ -77,7 +80,6 @@ class ItineraryMicrocards extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
               ],
             );
           },
@@ -89,81 +91,141 @@ class ItineraryMicrocards extends StatelessWidget {
 
   Widget _buildMicrocard(ItineraryItemEntity item) {
     IconData icon;
+    String typeLabel;
+
     switch (item.type) {
       case ItineraryType.flight:
-        icon = Icons.flight_takeoff_rounded;
+        icon = Icons.confirmation_number_outlined; // Ticket-like icon
+        typeLabel = 'Voo direto';
         break;
       case ItineraryType.hotel:
-        icon = Icons.hotel_rounded;
+        icon = Icons.hotel_outlined;
+        typeLabel = 'Hospedagem';
         break;
       case ItineraryType.food:
-        icon = Icons.restaurant_rounded;
+        icon = Icons.restaurant_outlined;
+        typeLabel = 'Refeição';
         break;
       case ItineraryType.visit:
-        icon = Icons.location_on_rounded;
+        icon = Icons.location_on_outlined;
+        typeLabel = 'Visita técnica';
         break;
       case ItineraryType.transfer:
-        icon = Icons.directions_bus_rounded;
+        icon = Icons.directions_bus_outlined;
+        typeLabel = 'Transfer';
         break;
       case ItineraryType.leisure:
-        icon = Icons.camera_alt_rounded;
+        icon = Icons.camera_alt_outlined;
+        typeLabel = 'Lazer';
         break;
       case ItineraryType.returnType:
-        icon = Icons.flight_land_rounded;
+        icon = Icons.flight_land_outlined;
+        typeLabel = 'Retorno';
         break;
       default:
-        icon = Icons.event_note_rounded;
+        icon = Icons.event_available_outlined;
+        typeLabel = 'Evento';
     }
 
     final time = item.startDateTime != null
         ? DateFormat.Hm().format(item.startDateTime!)
-        : '';
+        : '--:--';
 
-    return Container(
-      width: 130,
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 12, color: AppColors.primary),
-              const SizedBox(width: 4),
-              Text(
-                time,
-                style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            item.name,
-            style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: AppColors.textPrimary,
+    return GestureDetector(
+      onTap: onSeeAll,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 150, // Smaller width
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(10), // Reduced internal padding
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon, size: 20, color: const Color(0xFF00AA71)),
+                    const SizedBox(width: 8),
+                    Text(
+                      time,
+                      style: AppTextStyles.h3.copyWith(
+                        color: const Color(0xFF00AA71),
+                        fontSize: 14, // Smaller time font
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF00AA71),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.north_east,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12), // Replaced Spacer with small gap
+            Text(
+              typeLabel,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.grey[600],
+                fontSize: 10, // Smaller type label
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              item.name,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 13, // Smaller item name
+                color: Colors.black,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: Colors.grey[500],
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    item.fromCity ?? item.location ?? 'Local não inf.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.grey[500],
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

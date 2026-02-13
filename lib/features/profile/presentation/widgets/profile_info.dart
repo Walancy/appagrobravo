@@ -27,18 +27,30 @@ class ProfileInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Nome
-          Text(name, style: AppTextStyles.h2.copyWith(fontSize: 22)),
+          Text(
+            name,
+            style: AppTextStyles.h2.copyWith(fontSize: 22),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
 
-          // Nome da Missão (Embaixo do nome, pequeno e cinza)
-          if (missionName != null && missionName!.isNotEmpty)
+          // Nome da Missão e Grupo
+          if ((missionName != null && missionName!.isNotEmpty) ||
+              (groupName != null && groupName!.isNotEmpty))
             Padding(
               padding: const EdgeInsets.only(top: 1, bottom: 4),
               child: Text(
-                missionName!,
+                [
+                  if (missionName != null && missionName!.isNotEmpty)
+                    missionName,
+                  if (groupName != null && groupName!.isNotEmpty) groupName,
+                ].join(' - '),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
 
@@ -50,6 +62,8 @@ class ProfileInfo extends StatelessWidget {
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
 
           const SizedBox(height: AppSpacing.xs),
@@ -61,6 +75,8 @@ class ProfileInfo extends StatelessWidget {
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
             ),
         ],
       ),

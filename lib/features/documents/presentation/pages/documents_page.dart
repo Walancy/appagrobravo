@@ -6,6 +6,8 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
+import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import '../cubit/documents_cubit.dart';
 import '../cubit/documents_state.dart';
 import '../../domain/entities/document_entity.dart';
@@ -30,8 +32,8 @@ class DocumentsPage extends StatelessWidget {
               initial: () => const SizedBox.shrink(),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (message) => Center(child: Text(message)),
-              loaded: (documents) {
-                return _buildBody(context, documents);
+              loaded: (documents, isAlertDismissed, profile, mission) {
+                return _buildBody(context, documents, profile, mission);
               },
             );
           },
@@ -40,7 +42,12 @@ class DocumentsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, List<DocumentEntity> documents) {
+  Widget _buildBody(
+    BuildContext context,
+    List<DocumentEntity> documents,
+    ProfileEntity? profile,
+    MissionEntity? mission,
+  ) {
     // List of all types that should be visible
     final allTypes = [
       DocumentType.passaporte,
@@ -71,7 +78,12 @@ class DocumentsPage extends StatelessWidget {
               (d) => d?.type == type,
               orElse: () => null,
             );
-            return _DocumentTypeButton(type: type, document: doc);
+            return _DocumentTypeButton(
+              type: type,
+              document: doc,
+              profile: profile,
+              mission: mission,
+            );
           }),
           const SizedBox(height: 40),
         ],
@@ -83,13 +95,81 @@ class DocumentsPage extends StatelessWidget {
 class _DocumentTypeButton extends StatelessWidget {
   final DocumentType type;
   final DocumentEntity? document;
+  final ProfileEntity? profile;
+  final MissionEntity? mission;
 
-  const _DocumentTypeButton({required this.type, this.document});
+  const _DocumentTypeButton({
+    required this.type,
+    this.document,
+    this.profile,
+    this.mission,
+  });
 
   @override
   Widget build(BuildContext context) {
-    bool isPending =
-        document == null || document!.status == DocumentStatus.pendente;
+    // Calculate Age
+    bool isUnder18 = false;
+    if (profile?.birthDate != null) {
+      final today = DateTime.now();
+      final birthDate = profile!.birthDate!;
+      int age = today.year - birthDate.year;
+      if (today.month < birthDate.month ||
+          (today.month == birthDate.month && today.day < birthDate.day)) {
+        age--;
+      }
+      isUnder18 = age < 18;
+    }
+
+    // MANDATORY LOGIC
+    bool isTypeMandatory = false;
+
+    if (mission != null) {
+      switch (type) {
+        case DocumentType.passaporte:
+          isTypeMandatory = mission!.passaporteObrigatorio;
+          break;
+        case DocumentType.visto:
+          isTypeMandatory = mission!.vistoObrigatorio;
+          break;
+        case DocumentType.vacina:
+          isTypeMandatory = mission!.vacinaObrigatoria;
+          break;
+        case DocumentType.seguro:
+          isTypeMandatory = mission!.seguroObrigatorio;
+          break;
+        case DocumentType.carteiraMotorista:
+          isTypeMandatory = mission!.carteiraObrigatoria;
+          break;
+        case DocumentType.autorizacaoMenores:
+          isTypeMandatory = mission!.autorizacaoObrigatoria && isUnder18;
+          break;
+        case DocumentType.outro:
+          isTypeMandatory = false;
+          break;
+      }
+    } else {
+      // Fallback baseline if mission info not loaded
+      final baselineMandatory = [
+        DocumentType.passaporte,
+        DocumentType.visto,
+        DocumentType.vacina,
+        DocumentType.seguro,
+      ];
+      isTypeMandatory = baselineMandatory.contains(type);
+      if (type == DocumentType.autorizacaoMenores) {
+        isTypeMandatory = isUnder18;
+      }
+    }
+
+    bool isPending = false;
+    if (document == null) {
+      // If document is missing, it's only pending if it's mandatory
+      isPending = isTypeMandatory;
+    } else {
+      // If document exists, it's pending if status is PENDENTE
+      isPending = document!.status == DocumentStatus.pendente;
+    }
+
     bool isAlert =
         document != null &&
         (document!.status == DocumentStatus.recusado ||
@@ -98,7 +178,7 @@ class _DocumentTypeButton extends StatelessWidget {
     // Status visual
     Color statusColor = AppColors.primary;
     if (document == null) {
-      statusColor = Colors.orange;
+      statusColor = isPending ? Colors.orange : Colors.grey;
     } else {
       switch (document!.status) {
         case DocumentStatus.aprovado:

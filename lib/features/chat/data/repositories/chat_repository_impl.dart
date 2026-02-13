@@ -1,3 +1,4 @@
+import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
@@ -224,6 +225,7 @@ class ChatRepositoryImpl implements ChatRepository {
                 }
               } catch (e) {
                 print('Error fetching users for messages: $e');
+                print(StackTrace.current);
                 // Continue with empty userMap - messages will show without user details
               }
             }
@@ -253,7 +255,22 @@ class ChatRepositoryImpl implements ChatRepository {
                   repliedToMessage: msg['id_mensagem_respondida'] != null
                       ? messages.firstWhere(
                           (m) => m.id == msg['id_mensagem_respondida'],
-                          orElse: () => null as dynamic,
+                          orElse: () =>
+                              // Return a dummy entity or null. Since orElse expects MessageEntity (non-nullable return for firstWhere unless collection is nullable but here it's List<MessageEntity>),
+                              // actually firstWhere(..., orElse: () => null) is valid ONLY if the return type is nullable.
+                              // But List.firstWhere returns E, not E?.
+                              // Given the error "type 'Null' is not a subtype of type 'MessageEntity'", it means orElse returned null but firstWhere expects MessageEntity.
+                              // We should change how we find the message.
+                              MessageEntity(
+                                id: 'deleted',
+                                text: 'Mensagem não encontrada',
+                                timestamp: DateTime.fromMicrosecondsSinceEpoch(
+                                  0,
+                                ),
+                                type: MessageType.other,
+                                isEdited: false,
+                                isDeleted: true,
+                              ),
                         )
                       : null,
                   isEdited: msg['editado'] ?? false,
@@ -265,6 +282,7 @@ class ChatRepositoryImpl implements ChatRepository {
           });
     } catch (e) {
       print('Error in stream: $e');
+      print(StackTrace.current);
       yield [];
     }
   }
@@ -384,6 +402,37 @@ class ChatRepositoryImpl implements ChatRepository {
             .select('id, nome, foto, cargo')
             .inFilter('id', allUserIds.toList());
 
+        // Fetch connection statuses relative to current user
+        Map<String, ConnectionStatus> statuses = {};
+        if (currentUserId != null) {
+          final connectionsResponse = await _supabaseClient
+              .from('conexoes')
+              .select('*')
+              .or(
+                'and(seguidor_id.eq.$currentUserId,seguido_id.in.(${allUserIds.join(",")})),and(seguido_id.eq.$currentUserId,seguidor_id.in.(${allUserIds.join(",")}))',
+              );
+
+          for (final c in connectionsResponse as List) {
+            final seguidorId = c['seguidor_id'];
+            final seguidoId = c['seguido_id'];
+            final aprovou = c['aprovou'] as bool;
+
+            final otherId = seguidorId == currentUserId
+                ? seguidoId
+                : seguidorId;
+
+            if (aprovou) {
+              statuses[otherId] = ConnectionStatus.connected;
+            } else {
+              if (seguidorId == currentUserId) {
+                statuses[otherId] = ConnectionStatus.pendingSent;
+              } else {
+                statuses[otherId] = ConnectionStatus.pendingReceived;
+              }
+            }
+          }
+        }
+
         for (var u in usersResponse as List) {
           final id = u['id'] as String;
           final isGuide = leaderIds.contains(id);
@@ -397,6 +446,7 @@ class ChatRepositoryImpl implements ChatRepository {
               isGuide: isGuide,
               isMe: isMe,
               avatarUrl: u['foto'],
+              connectionStatus: statuses[id] ?? ConnectionStatus.none,
             ),
           );
         }

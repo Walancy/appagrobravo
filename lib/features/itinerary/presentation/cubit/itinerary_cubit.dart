@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
+import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/repositories/itinerary_repository.dart';
 
 part 'itinerary_state.dart';
@@ -59,8 +61,6 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       (failure) async => emit(ItineraryState.error(failure.toString())),
       (groupId) async {
         if (groupId == null) {
-          // User has no group
-          // Could imply an empty state or specific error
           emit(
             const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
           );
@@ -69,5 +69,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         }
       },
     );
+  }
+
+  Future<Either<Exception, EmergencyContacts>> getRepositoryEmergencyContacts(
+    double lat,
+    double lng,
+  ) {
+    return _repository.getEmergencyContacts(lat, lng);
   }
 }

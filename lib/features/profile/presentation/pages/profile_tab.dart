@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
+import 'package:agrobravo/core/components/profile_shimmer.dart';
 
 class ProfileTab extends StatelessWidget {
   final String? userId;
@@ -34,7 +35,7 @@ class ProfileTab extends StatelessWidget {
           builder: (context, state) {
             return state.when(
               initial: () => const SizedBox.shrink(),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ProfileShimmer(),
               error: (message) => Center(child: Text(message)),
               loaded: (profile, posts, isMe, isEditing) {
                 Future<void> pickAndUploadImage(bool isAvatar) async {
@@ -81,7 +82,7 @@ class ProfileTab extends StatelessWidget {
                       if (image != null && context.mounted) {
                         final result = await context.push<bool>(
                           '/create-post',
-                          extra: [image.path],
+                          extra: [image],
                         );
                         if (result == true && context.mounted) {
                           context.read<ProfileCubit>().loadProfile();
@@ -92,10 +93,10 @@ class ProfileTab extends StatelessWidget {
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.only(top: 115),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const HeaderSpacer(),
                       ProfileHeaderCover(
                         coverUrl: profile.coverUrl,
                         avatarUrl: profile.avatarUrl,
@@ -103,26 +104,24 @@ class ProfileTab extends StatelessWidget {
                         isEditing: isEditing,
                         onUpdateAvatar: () => pickAndUploadImage(true),
                         onUpdateCover: () => pickAndUploadImage(false),
+                        statsWidget: Opacity(
+                          opacity: isEditing ? 0.3 : 1.0,
+                          child: ProfileHeaderStats(
+                            connections: profile.connectionsCount,
+                            posts: profile.postsCount,
+                            missions: profile.missionsCount,
+                            onConnectionsTap: () {
+                              context.push('/connections/${profile.id}');
+                            },
+                          ),
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.md),
-
                       Opacity(
                         opacity: isEditing ? 0.3 : 1.0,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 125),
-                              child: ProfileHeaderStats(
-                                connections: profile.connectionsCount,
-                                posts: profile.postsCount,
-                                missions: profile.missionsCount,
-                                onConnectionsTap: () {
-                                  context.push('/connections/${profile.id}');
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
                             ProfileInfo(
                               name: profile.name,
                               jobTitle: profile.jobTitle,
@@ -134,7 +133,6 @@ class ProfileTab extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
                       ProfileActions(
                         isMe: isMe,
                         connectionStatus: profile.connectionStatus,
@@ -157,9 +155,9 @@ class ProfileTab extends StatelessWidget {
                             context.read<ProfileCubit>().toggleEditing(),
                         onPublish: () => _handleNewPost(context),
                         isEditing: isEditing,
+                        phone: profile.phone,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
                       Opacity(
                         opacity: isEditing ? 0.3 : 1.0,
                         child: ProfilePostGrid(posts: posts),
