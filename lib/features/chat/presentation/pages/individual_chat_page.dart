@@ -10,6 +10,7 @@ import 'package:agrobravo/features/chat/presentation/cubit/chat_detail_state.dar
 import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class IndividualChatPage extends StatelessWidget {
   final GuideEntity guide;
@@ -130,232 +131,241 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
               : null,
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.chatBackgroundDark
-              : AppColors.chatBackground,
-          image: DecorationImage(
-            image: const AssetImage('assets/images/chat_pattern.png'),
-            repeat: ImageRepeat.repeat,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Colors.black.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.0),
-              BlendMode.dstATop,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: Theme.of(context).brightness == Brightness.dark
+                  ? 0.06
+                  : 0.1,
+              child: SvgPicture.asset(
+                'assets/images/chat_patterns.svg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
-            opacity: Theme.of(context).brightness == Brightness.dark
-                ? 0.05
-                : 0.1,
           ),
-        ),
-        child: Column(
-          children: [
-            if (_selectedMessageIds.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+          Column(
+            children: [
+              if (_selectedMessageIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      '${_selectedMessageIds.length} selecionada(s)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border(
+                      bottom: BorderSide(color: Theme.of(context).dividerColor),
                     ),
-                    const Spacer(),
-                    if (_selectedMessageIds.length == 1)
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${_selectedMessageIds.length} selecionada(s)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_selectedMessageIds.length == 1)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.edit,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () {
+                            context.read<ChatDetailCubit>().state.whenOrNull(
+                              loaded: (messages) {
+                                final msg = messages.firstWhere(
+                                  (m) => m.id == _selectedMessageIds.first,
+                                );
+                                setState(() {
+                                  _editingMessageId = msg.id;
+                                  _messageController.text = msg.text;
+                                  _selectedMessageIds.clear();
+                                });
+                              },
+                            );
+                          },
+                        ),
                       IconButton(
-                        icon: const Icon(Icons.edit, color: AppColors.primary),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
-                          context.read<ChatDetailCubit>().state.whenOrNull(
-                            loaded: (messages) {
-                              final msg = messages.firstWhere(
-                                (m) => m.id == _selectedMessageIds.first,
-                              );
-                              setState(() {
-                                _editingMessageId = msg.id;
-                                _messageController.text = msg.text;
-                                _selectedMessageIds.clear();
-                              });
-                            },
+                          context.read<ChatDetailCubit>().deleteMessages(
+                            _selectedMessageIds.toList(),
                           );
+                          setState(() {
+                            _selectedMessageIds.clear();
+                          });
                         },
                       ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        context.read<ChatDetailCubit>().deleteMessages(
-                          _selectedMessageIds.toList(),
-                        );
-                        setState(() {
-                          _selectedMessageIds.clear();
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: Theme.of(context).colorScheme.onSurface,
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedMessageIds.clear();
+                          });
+                        },
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _selectedMessageIds.clear();
-                        });
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    BlocConsumer<ChatDetailCubit, ChatDetailState>(
+                      listener: (context, state) {
+                        state.maybeWhen(
+                          loaded: (messages) {
+                            if (!_showScrollToBottom) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) _scrollToBottom();
+                              });
+                            }
+                          },
+                          orElse: () {},
+                        );
+                      },
+                      builder: (context, state) {
+                        return state.when(
+                          initial: () => const SizedBox.shrink(),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (msg) => Center(
+                            child: Text(
+                              'Erro: $msg',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                          loaded: (messages) {
+                            if (messages.isEmpty) {
+                              return const Center(child: Text('Sem mensagens'));
+                            }
+                            return ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                final msg = messages[index];
+                                final isSelected = _selectedMessageIds.contains(
+                                  msg.id,
+                                );
+                                return ChatBubble(
+                                  message: msg.text,
+                                  time:
+                                      '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                  type: _mapMessageType(msg.type),
+                                  userName: msg.userName,
+                                  userAvatarUrl: msg.userAvatarUrl,
+                                  guideRole: msg.guideRole,
+                                  attachmentUrl: msg.attachmentUrl,
+                                  isGroupChat: false,
+                                  showAvatar: false,
+                                  isEdited: msg.isEdited,
+                                  isDeleted: msg.isDeleted,
+                                  isSelected: isSelected,
+                                  onLongPress:
+                                      msg.type == MessageType.me &&
+                                          !msg.isDeleted
+                                      ? () {
+                                          setState(() {
+                                            _selectedMessageIds.add(msg.id);
+                                          });
+                                        }
+                                      : null,
+                                  onTap:
+                                      _selectedMessageIds.isNotEmpty &&
+                                          msg.type == MessageType.me &&
+                                          !msg.isDeleted
+                                      ? () {
+                                          setState(() {
+                                            if (isSelected) {
+                                              _selectedMessageIds.remove(
+                                                msg.id,
+                                              );
+                                            } else {
+                                              _selectedMessageIds.add(msg.id);
+                                            }
+                                          });
+                                        }
+                                      : null,
+                                );
+                              },
+                            );
+                          },
+                        );
                       },
                     ),
+                    if (_showScrollToBottom)
+                      Positioned(
+                        bottom: 16,
+                        right: 16,
+                        child: GestureDetector(
+                          onTap: _scrollToBottom,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.arrow_downward,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
-            Expanded(
-              child: Stack(
-                children: [
-                  BlocConsumer<ChatDetailCubit, ChatDetailState>(
-                    listener: (context, state) {
-                      state.maybeWhen(
-                        loaded: (messages) {
-                          if (!_showScrollToBottom) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) _scrollToBottom();
-                            });
-                          }
-                        },
-                        orElse: () {},
-                      );
-                    },
-                    builder: (context, state) {
-                      return state.when(
-                        initial: () => const SizedBox.shrink(),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (msg) => Center(
-                          child: Text(
-                            'Erro: $msg',
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                        loaded: (messages) {
-                          if (messages.isEmpty) {
-                            return const Center(child: Text('Sem mensagens'));
-                          }
-                          return ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) {
-                              final msg = messages[index];
-                              final isSelected = _selectedMessageIds.contains(
-                                msg.id,
-                              );
-                              return ChatBubble(
-                                message: msg.text,
-                                time:
-                                    '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                                type: _mapMessageType(msg.type),
-                                userName: msg.userName,
-                                userAvatarUrl: msg.userAvatarUrl,
-                                guideRole: msg.guideRole,
-                                attachmentUrl: msg.attachmentUrl,
-                                isGroupChat: false,
-                                showAvatar: false,
-                                isEdited: msg.isEdited,
-                                isDeleted: msg.isDeleted,
-                                isSelected: isSelected,
-                                onLongPress:
-                                    msg.type == MessageType.me && !msg.isDeleted
-                                    ? () {
-                                        setState(() {
-                                          _selectedMessageIds.add(msg.id);
-                                        });
-                                      }
-                                    : null,
-                                onTap:
-                                    _selectedMessageIds.isNotEmpty &&
-                                        msg.type == MessageType.me &&
-                                        !msg.isDeleted
-                                    ? () {
-                                        setState(() {
-                                          if (isSelected) {
-                                            _selectedMessageIds.remove(msg.id);
-                                          } else {
-                                            _selectedMessageIds.add(msg.id);
-                                          }
-                                        });
-                                      }
-                                    : null,
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  if (_showScrollToBottom)
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: GestureDetector(
-                        onTap: _scrollToBottom,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.arrow_downward,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            ChatInput(
-              controller: _messageController,
-              isEditing: _editingMessageId != null,
-              onCancelEdit: () {
-                setState(() {
-                  _editingMessageId = null;
-                });
-              },
-              onImagePicked: () => _pickImage(ImageSource.gallery),
-              onCameraPicked: () => _pickImage(ImageSource.camera),
-              onSendMessage: (text) {
-                if (_editingMessageId != null) {
-                  context.read<ChatDetailCubit>().editMessage(
-                    _editingMessageId!,
-                    text,
-                  );
+              ChatInput(
+                controller: _messageController,
+                isEditing: _editingMessageId != null,
+                onCancelEdit: () {
                   setState(() {
                     _editingMessageId = null;
                   });
-                } else {
-                  context.read<ChatDetailCubit>().sendMessage(text);
-                }
-              },
-            ),
-          ],
-        ),
+                },
+                onImagePicked: () => _pickImage(ImageSource.gallery),
+                onCameraPicked: () => _pickImage(ImageSource.camera),
+                onSendMessage: (text) {
+                  if (_editingMessageId != null) {
+                    context.read<ChatDetailCubit>().editMessage(
+                      _editingMessageId!,
+                      text,
+                    );
+                    setState(() {
+                      _editingMessageId = null;
+                    });
+                  } else {
+                    context.read<ChatDetailCubit>().sendMessage(text);
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

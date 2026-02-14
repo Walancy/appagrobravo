@@ -98,7 +98,9 @@ class _ChatInputState extends State<ChatInput> {
               ),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Theme.of(context).colorScheme.surfaceContainerHigh
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: const Border(
                   left: BorderSide(color: AppColors.primary, width: 4),
@@ -158,19 +160,10 @@ class _ChatInputState extends State<ChatInput> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(context).colorScheme.surfaceContainerHigh
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: Theme.of(context).brightness == Brightness.dark
-                              ? 0.2
-                              : 0.05,
-                        ),
-                        offset: const Offset(0, 1),
-                        blurRadius: 4,
-                      ),
-                    ],
                   ),
                   child: Row(
                     children: [

@@ -12,6 +12,7 @@ import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ChatDetailPage extends StatelessWidget {
   final ChatEntity chat;
@@ -144,309 +145,319 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.chatBackgroundDark
-              : AppColors.chatBackground,
-          image: DecorationImage(
-            image: const AssetImage('assets/images/chat_pattern.png'),
-            repeat: ImageRepeat.repeat,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Colors.black.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.0),
-              BlendMode.dstATop,
-            ),
-            opacity: Theme.of(context).brightness == Brightness.dark
-                ? 0.05
-                : 0.1, // Keep subtle overlay
-          ),
-        ),
-        child: Column(
-          children: [
-            if (_selectedMessageIds.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).dividerColor),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      '${_selectedMessageIds.length} selecionada(s)',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (_selectedMessageIds.length == 1)
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: AppColors.primary),
-                        onPressed: () {
-                          context.read<ChatDetailCubit>().state.whenOrNull(
-                            loaded: (messages) {
-                              final msg = messages.firstWhere(
-                                (m) => m.id == _selectedMessageIds.first,
-                              );
-                              setState(() {
-                                _editingMessageId = msg.id;
-                                _messageController.text = msg.text;
-                                _selectedMessageIds.clear();
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        context.read<ChatDetailCubit>().deleteMessages(
-                          _selectedMessageIds.toList(),
-                        );
-                        setState(() {
-                          _selectedMessageIds.clear();
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        setState(() {
-                          _selectedMessageIds.clear();
-                        });
-                      },
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: Theme.of(context).brightness == Brightness.dark
+                  ? 0.06
+                  : 0.1,
+              child: SvgPicture.asset(
+                'assets/images/chat_patterns.svg',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                  BlendMode.srcIn,
                 ),
               ),
-            Expanded(
-              child: Stack(
-                children: [
-                  BlocConsumer<ChatDetailCubit, ChatDetailState>(
-                    listener: (context, state) {
-                      state.maybeWhen(
-                        loaded: (messages) {
-                          // Auto scroll to bottom on new message or list changes if close to bottom
-                          if (!_showScrollToBottom) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) _scrollToBottom();
-                            });
-                          }
-                        },
-                        orElse: () {},
-                      );
-                    },
-                    builder: (context, state) {
-                      return state.when(
-                        initial: () => const SizedBox.shrink(),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (msg) => Center(
-                          child: Text(
-                            'Erro: $msg',
-                            style: const TextStyle(color: Colors.red),
-                          ),
+            ),
+          ),
+          Column(
+            children: [
+              if (_selectedMessageIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border(
+                      bottom: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${_selectedMessageIds.length} selecionada(s)',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
-                        loaded: (messages) {
-                          if (messages.isEmpty) {
-                            return const Center(child: Text('Sem mensagens'));
-                          }
-                          return ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) {
-                              final msg = messages[index];
-                              final isSelected = _selectedMessageIds.contains(
-                                msg.id,
-                              );
+                      ),
+                      const Spacer(),
+                      if (_selectedMessageIds.length == 1)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.edit,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () {
+                            context.read<ChatDetailCubit>().state.whenOrNull(
+                              loaded: (messages) {
+                                final msg = messages.firstWhere(
+                                  (m) => m.id == _selectedMessageIds.first,
+                                );
+                                setState(() {
+                                  _editingMessageId = msg.id;
+                                  _messageController.text = msg.text;
+                                  _selectedMessageIds.clear();
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          context.read<ChatDetailCubit>().deleteMessages(
+                            _selectedMessageIds.toList(),
+                          );
+                          setState(() {
+                            _selectedMessageIds.clear();
+                          });
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          setState(() {
+                            _selectedMessageIds.clear();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    BlocConsumer<ChatDetailCubit, ChatDetailState>(
+                      listener: (context, state) {
+                        state.maybeWhen(
+                          loaded: (messages) {
+                            // Auto scroll to bottom on new message or list changes if close to bottom
+                            if (!_showScrollToBottom) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) _scrollToBottom();
+                              });
+                            }
+                          },
+                          orElse: () {},
+                        );
+                      },
+                      builder: (context, state) {
+                        return state.when(
+                          initial: () => const SizedBox.shrink(),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (msg) => Center(
+                            child: Text(
+                              'Erro: $msg',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                          loaded: (messages) {
+                            if (messages.isEmpty) {
+                              return const Center(child: Text('Sem mensagens'));
+                            }
+                            return ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                final msg = messages[index];
+                                final isSelected = _selectedMessageIds.contains(
+                                  msg.id,
+                                );
 
-                              bool showDateHeader = false;
-                              if (index == 0) {
-                                showDateHeader = true;
-                              } else {
-                                final prevMsg = messages[index - 1];
-                                final currentDate = DateTime(
-                                  msg.timestamp.year,
-                                  msg.timestamp.month,
-                                  msg.timestamp.day,
-                                );
-                                final prevDate = DateTime(
-                                  prevMsg.timestamp.year,
-                                  prevMsg.timestamp.month,
-                                  prevMsg.timestamp.day,
-                                );
-                                if (currentDate.isAfter(prevDate)) {
+                                bool showDateHeader = false;
+                                if (index == 0) {
                                   showDateHeader = true;
+                                } else {
+                                  final prevMsg = messages[index - 1];
+                                  final currentDate = DateTime(
+                                    msg.timestamp.year,
+                                    msg.timestamp.month,
+                                    msg.timestamp.day,
+                                  );
+                                  final prevDate = DateTime(
+                                    prevMsg.timestamp.year,
+                                    prevMsg.timestamp.month,
+                                    prevMsg.timestamp.day,
+                                  );
+                                  if (currentDate.isAfter(prevDate)) {
+                                    showDateHeader = true;
+                                  }
                                 }
-                              }
 
-                              return Column(
-                                children: [
-                                  if (showDateHeader)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16.0,
-                                      ),
-                                      child: Center(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                return Column(
+                                  children: [
+                                    if (showDateHeader)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16.0,
+                                        ),
+                                        child: Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 4,
                                             ),
-                                          ),
-                                          child: Text(
-                                            _formatDateHeader(msg.timestamp),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(alpha: 0.6),
-                                              fontWeight: FontWeight.bold,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.withOpacity(
+                                                0.2,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              _formatDateHeader(msg.timestamp),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.6),
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ChatBubble(
-                                    message: msg.text,
-                                    time:
-                                        '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                                    type: _mapMessageType(msg.type),
-                                    userName: msg.userName,
-                                    userAvatarUrl: msg.userAvatarUrl,
-                                    guideRole: msg.guideRole,
-                                    attachmentUrl: msg.attachmentUrl,
-                                    isEdited: msg.isEdited,
-                                    isDeleted: msg.isDeleted,
-                                    isSelected: isSelected,
-                                    repliedMessage: msg.repliedToMessage?.text,
-                                    repliedUserName:
-                                        msg.repliedToMessage?.userName,
-                                    onReply: () {
-                                      setState(() {
-                                        _replyingToMessage = msg;
-                                        _editingMessageId = null;
-                                      });
-                                    },
-                                    onLongPress:
-                                        msg.type == MessageType.me &&
-                                            !msg.isDeleted
-                                        ? () {
-                                            setState(() {
-                                              _selectedMessageIds.add(msg.id);
-                                            });
-                                          }
-                                        : null,
-                                    onTap:
-                                        _selectedMessageIds.isNotEmpty &&
-                                            msg.type == MessageType.me &&
-                                            !msg.isDeleted
-                                        ? () {
-                                            setState(() {
-                                              if (isSelected) {
-                                                _selectedMessageIds.remove(
-                                                  msg.id,
-                                                );
-                                              } else {
+                                    ChatBubble(
+                                      message: msg.text,
+                                      time:
+                                          '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                      type: _mapMessageType(msg.type),
+                                      userName: msg.userName,
+                                      userAvatarUrl: msg.userAvatarUrl,
+                                      guideRole: msg.guideRole,
+                                      attachmentUrl: msg.attachmentUrl,
+                                      isEdited: msg.isEdited,
+                                      isDeleted: msg.isDeleted,
+                                      isSelected: isSelected,
+                                      repliedMessage:
+                                          msg.repliedToMessage?.text,
+                                      repliedUserName:
+                                          msg.repliedToMessage?.userName,
+                                      onReply: () {
+                                        setState(() {
+                                          _replyingToMessage = msg;
+                                          _editingMessageId = null;
+                                        });
+                                      },
+                                      onLongPress:
+                                          msg.type == MessageType.me &&
+                                              !msg.isDeleted
+                                          ? () {
+                                              setState(() {
                                                 _selectedMessageIds.add(msg.id);
-                                              }
-                                            });
-                                          }
-                                        : null,
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  if (_showScrollToBottom)
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: GestureDetector(
-                        onTap: _scrollToBottom,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.arrow_downward,
-                            color: Colors.white,
-                            size: 24,
+                                              });
+                                            }
+                                          : null,
+                                      onTap:
+                                          _selectedMessageIds.isNotEmpty &&
+                                              msg.type == MessageType.me &&
+                                              !msg.isDeleted
+                                          ? () {
+                                              setState(() {
+                                                if (isSelected) {
+                                                  _selectedMessageIds.remove(
+                                                    msg.id,
+                                                  );
+                                                } else {
+                                                  _selectedMessageIds.add(
+                                                    msg.id,
+                                                  );
+                                                }
+                                              });
+                                            }
+                                          : null,
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    if (_showScrollToBottom)
+                      Positioned(
+                        bottom: 16,
+                        right: 16,
+                        child: GestureDetector(
+                          onTap: _scrollToBottom,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.arrow_downward,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            ChatInput(
-              controller: _messageController,
-              isEditing: _editingMessageId != null,
-              onCancelEdit: () {
-                setState(() {
-                  _editingMessageId = null;
-                });
-              },
-              repliedMessage: _replyingToMessage?.text,
-              repliedUserName: _replyingToMessage?.userName,
-              onCancelReply: () {
-                setState(() {
-                  _replyingToMessage = null;
-                });
-              },
-              onImagePicked: () => _pickImage(ImageSource.gallery),
-              onCameraPicked: () => _pickImage(ImageSource.camera),
-              onSendMessage: (text) {
-                if (_editingMessageId != null) {
-                  context.read<ChatDetailCubit>().editMessage(
-                    _editingMessageId!,
-                    text,
-                  );
+              ChatInput(
+                controller: _messageController,
+                isEditing: _editingMessageId != null,
+                onCancelEdit: () {
                   setState(() {
                     _editingMessageId = null;
                   });
-                } else {
-                  context.read<ChatDetailCubit>().sendMessage(
-                    text,
-                    replyToId: _replyingToMessage?.id,
-                  );
+                },
+                repliedMessage: _replyingToMessage?.text,
+                repliedUserName: _replyingToMessage?.userName,
+                onCancelReply: () {
                   setState(() {
                     _replyingToMessage = null;
                   });
-                }
-              },
-            ),
-          ],
-        ),
+                },
+                onImagePicked: () => _pickImage(ImageSource.gallery),
+                onCameraPicked: () => _pickImage(ImageSource.camera),
+                onSendMessage: (text) {
+                  if (_editingMessageId != null) {
+                    context.read<ChatDetailCubit>().editMessage(
+                      _editingMessageId!,
+                      text,
+                    );
+                    setState(() {
+                      _editingMessageId = null;
+                    });
+                  } else {
+                    context.read<ChatDetailCubit>().sendMessage(
+                      text,
+                      replyToId: _replyingToMessage?.id,
+                    );
+                    setState(() {
+                      _replyingToMessage = null;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

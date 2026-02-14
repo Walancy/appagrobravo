@@ -63,7 +63,11 @@ class ChatBubble extends StatelessWidget {
 
     final bgColor = useGreen
         ? const Color(0xFF00AA6C)
-        : Theme.of(context).colorScheme.surface;
+        : (Theme.of(context).brightness == Brightness.dark
+              ? Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHigh // Lighter surface for dark mode
+              : Theme.of(context).colorScheme.surface);
     final textColor = useGreen
         ? Colors.white
         : Theme.of(context).colorScheme.onSurface;
