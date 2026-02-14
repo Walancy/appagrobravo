@@ -14,6 +14,13 @@ import 'package:flutter/widgets.dart';
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/app_icon.png
+  AssetGenImage get appIconPng =>
+      const AssetGenImage('assets/images/app_icon.png');
+
+  /// File path: assets/images/app_icon.svg
+  String get appIconSvg => 'assets/images/app_icon.svg';
+
   /// File path: assets/images/apple_logo.svg
   String get appleLogo => 'assets/images/apple_logo.svg';
 
@@ -24,6 +31,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/chat_pattern.png
   AssetGenImage get chatPattern =>
       const AssetGenImage('assets/images/chat_pattern.png');
+
+  /// File path: assets/images/chat_patterns.svg
+  String get chatPatterns => 'assets/images/chat_patterns.svg';
 
   /// File path: assets/images/google_logo.svg
   String get googleLogo => 'assets/images/google_logo.svg';
@@ -36,9 +46,12 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<dynamic> get values => [
+    appIconPng,
+    appIconSvg,
     appleLogo,
     background,
     chatPattern,
+    chatPatterns,
     googleLogo,
     logoBranca,
     logoColorida,
@@ -48,7 +61,11 @@ class $AssetsImagesGen {
 class Assets {
   const Assets._();
 
+  static const String aEnv = '.env';
   static const $AssetsImagesGen images = $AssetsImagesGen();
+
+  /// List of all assets
+  static List<String> get values => [aEnv];
 }
 
 class AssetGenImage {

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final PostEntity post;
   final VoidCallback onLike;
   final VoidCallback onComment;
@@ -28,6 +28,58 @@ class PostCard extends StatelessWidget {
   });
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _likeController;
+  late Animation<double> _likeAnimation;
+  bool _isLikeAnimating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _likeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _likeAnimation = Tween<double>(begin: 0.0, end: 1.2).animate(
+      CurvedAnimation(parent: _likeController, curve: Curves.elasticOut),
+    );
+
+    _likeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            _likeController.reverse();
+          }
+        });
+      } else if (status == AnimationStatus.dismissed) {
+        if (mounted) {
+          setState(() {
+            _isLikeAnimating = false;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _likeController.dispose();
+    super.dispose();
+  }
+
+  void _handleDoubleTapLike() {
+    widget.onLike();
+    setState(() {
+      _isLikeAnimating = true;
+    });
+    _likeController.forward(from: 0.0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
@@ -40,18 +92,18 @@ class PostCard extends StatelessWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: onProfileTap,
+                  onTap: widget.onProfileTap,
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundColor: post.userAvatar == null
+                    backgroundColor: widget.post.userAvatar == null
                         ? (Theme.of(context).brightness == Brightness.dark
                               ? Colors.white.withValues(alpha: 0.1)
                               : Colors.grey[100])
                         : Colors.transparent,
-                    backgroundImage: post.userAvatar != null
-                        ? CachedNetworkImageProvider(post.userAvatar!)
+                    backgroundImage: widget.post.userAvatar != null
+                        ? CachedNetworkImageProvider(widget.post.userAvatar!)
                         : null,
-                    child: post.userAvatar == null
+                    child: widget.post.userAvatar == null
                         ? Icon(
                             Icons.person_outline_rounded,
                             size: 20,
@@ -65,20 +117,20 @@ class PostCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: GestureDetector(
-                    onTap: onProfileTap,
+                    onTap: widget.onProfileTap,
                     behavior: HitTestBehavior.opaque,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          post.userName,
+                          widget.post.userName,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        if (post.missionName != null)
+                        if (widget.post.missionName != null)
                           Text(
-                            post.missionName!,
+                            widget.post.missionName!,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary.withValues(
                                 alpha: 0.7,
@@ -90,15 +142,15 @@ class PostCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (isOwner)
+                if (widget.isOwner)
                   PopupMenuButton<String>(
                     color: Theme.of(context).colorScheme.surface,
                     surfaceTintColor: Theme.of(context).colorScheme.surface,
                     onSelected: (value) {
                       if (value == 'delete') {
-                        onDelete?.call();
+                        widget.onDelete?.call();
                       } else if (value == 'edit') {
-                        onEdit?.call();
+                        widget.onEdit?.call();
                       }
                     },
                     itemBuilder: (context) => [
@@ -152,11 +204,35 @@ class PostCard extends StatelessWidget {
             ),
           ),
 
-          // Images PageView with dynamic aspect ratio
-          if (post.images.isNotEmpty)
+          // Images PageView with dynamic aspect ratio and Like Animation
+          if (widget.post.images.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: _PostImageSlider(images: post.images),
+              child: GestureDetector(
+                onDoubleTap: _handleDoubleTapLike,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    _PostImageSlider(images: widget.post.images),
+                    if (_isLikeAnimating)
+                      ScaleTransition(
+                        scale: _likeAnimation,
+                        child: ShaderMask(
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [Color(0xFF00FF88), Color(0xFF00CCFF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ).createShader(bounds),
+                          child: const Icon(
+                            Icons.favorite,
+                            color: Colors.white,
+                            size: 100,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
 
           // Actions (Like, Comment) - Instagram Style below image, aligned left
@@ -171,21 +247,21 @@ class PostCard extends StatelessWidget {
               children: [
                 _buildAction(
                   context,
-                  icon: post.isLiked
+                  icon: widget.post.isLiked
                       ? Icons.favorite_rounded
                       : Icons.favorite_outline_rounded,
-                  color: post.isLiked
+                  color: widget.post.isLiked
                       ? Colors.red
                       : Theme.of(context).colorScheme.onSurface,
-                  count: post.likesCount,
-                  onTap: onLike,
+                  count: widget.post.likesCount,
+                  onTap: widget.onLike,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 _buildAction(
                   context,
                   icon: Icons.chat_bubble_outline_rounded,
-                  count: post.commentsCount,
-                  onTap: onComment,
+                  count: widget.post.commentsCount,
+                  onTap: widget.onComment,
                 ),
               ],
             ),
@@ -198,7 +274,7 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: onProfileTap,
+                  onTap: widget.onProfileTap,
                   child: RichText(
                     text: TextSpan(
                       style: AppTextStyles.bodyMedium.copyWith(
@@ -206,11 +282,11 @@ class PostCard extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: '${post.userName} ',
+                          text: '${widget.post.userName} ',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         TextSpan(
-                          text: post.caption,
+                          text: widget.post.caption,
                           style: const TextStyle(fontWeight: FontWeight.normal),
                         ),
                       ],
@@ -221,7 +297,7 @@ class PostCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _formatDate(post.createdAt).toUpperCase(),
+                  _formatDate(widget.post.createdAt).toUpperCase(),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary.withValues(alpha: 0.5),
                     fontSize: 10,

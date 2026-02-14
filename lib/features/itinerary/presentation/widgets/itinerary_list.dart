@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/itinerary_item.dart';
+import '../../../../core/tokens/app_colors.dart';
 import 'itinerary_cards.dart';
 
 import 'itinerary_filter_modal.dart';
@@ -89,12 +90,62 @@ class ItineraryList extends StatelessWidget {
         }
 
         Widget card;
+
+        // Determine status
+        String? statusLabel;
+        Color? statusColor;
+
+        if (item.startDateTime != null) {
+          final now = DateTime.now();
+          final start = item.startDateTime!;
+          // Approx end if not set (1 hour)
+          final end = item.endDateTime ?? start.add(const Duration(hours: 1));
+
+          if (now.isAfter(start) && now.isBefore(end)) {
+            statusLabel = 'Acontecendo agora';
+            statusColor = AppColors.primary;
+          } else if (now.isBefore(start) &&
+              start.difference(now).inMinutes < 60 &&
+              start.day == now.day) {
+            statusLabel = 'Em breve';
+            statusColor = Colors.orange;
+          }
+        }
+
         if (item.type == ItineraryType.flight) {
           card = FlightCard(item: item, pendingDocs: pendingDocs);
         } else if (item.type == ItineraryType.transfer) {
           card = TransferCard(item: item, showNextDayTag: showNextDayTag);
         } else {
           card = GenericEventCard(item: item);
+        }
+
+        if (statusLabel != null) {
+          card = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(
+                  bottom: 8,
+                  left: 20,
+                ), // Indent to align with content
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  statusLabel.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              card,
+            ],
+          );
         }
 
         // Try to find travel time:

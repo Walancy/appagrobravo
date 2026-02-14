@@ -43,7 +43,9 @@ class DaySlider extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.primary
-                    : Theme.of(context).colorScheme.surface,
+                    : (Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF1E1E1E)
+                          : Theme.of(context).colorScheme.surface),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
                   color: isSelected

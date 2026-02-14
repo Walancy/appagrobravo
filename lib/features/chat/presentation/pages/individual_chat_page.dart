@@ -10,7 +10,6 @@ import 'package:agrobravo/features/chat/presentation/cubit/chat_detail_state.dar
 import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:agrobravo/core/di/injection.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class IndividualChatPage extends StatelessWidget {
   final GuideEntity guide;
@@ -136,19 +135,19 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
           Positioned.fill(
             child: Opacity(
               opacity: Theme.of(context).brightness == Brightness.dark
-                  ? 0.06
+                  ? 0.05
                   : 0.1,
-              child: SvgPicture.asset(
-                'assets/images/chat_patterns.svg',
+              child: Image.asset(
+                'assets/images/chat_pattern.png',
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
-                  BlendMode.srcIn,
-                ),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : null,
+                colorBlendMode: Theme.of(context).brightness == Brightness.dark
+                    ? BlendMode.srcIn
+                    : null,
               ),
             ),
           ),

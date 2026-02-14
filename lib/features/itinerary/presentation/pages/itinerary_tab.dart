@@ -76,8 +76,17 @@ class _ItineraryContentState extends State<ItineraryContent> {
   void initState() {
     super.initState();
     // Default to first day if valid range
+    // Default to current date if valid range
+    final now = DateTime.now();
     if (widget.group.startDate.year > 0) {
-      _selectedDate = widget.group.startDate;
+      if (now.isAfter(
+            widget.group.startDate.subtract(const Duration(days: 1)),
+          ) &&
+          now.isBefore(widget.group.endDate.add(const Duration(days: 1)))) {
+        _selectedDate = now;
+      } else {
+        _selectedDate = widget.group.startDate;
+      }
     }
   }
 
@@ -183,7 +192,9 @@ class _ItineraryContentState extends State<ItineraryContent> {
                     decoration: BoxDecoration(
                       color: _filters.isActive
                           ? AppColors.primary.withOpacity(0.1)
-                          : Theme.of(context).colorScheme.surface,
+                          : (Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF1E1E1E)
+                                : Theme.of(context).colorScheme.surface),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _filters.isActive

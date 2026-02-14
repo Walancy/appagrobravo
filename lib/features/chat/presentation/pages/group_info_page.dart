@@ -116,6 +116,8 @@ class _GroupInfoView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
+                        const Divider(height: 1),
+                        const SizedBox(height: 12),
 
                         // Media Section
                         if (media.isNotEmpty)
@@ -168,10 +170,62 @@ class _GroupInfoView extends StatelessWidget {
                                   height: 100,
                                   child: ListView.separated(
                                     scrollDirection: Axis.horizontal,
-                                    itemCount: media.length,
+                                    itemCount: media.length > 6
+                                        ? 6
+                                        : media.length,
                                     separatorBuilder: (_, __) =>
                                         const SizedBox(width: 8),
                                     itemBuilder: (context, index) {
+                                      if (index == 5 && media.length > 6) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                pageBuilder: (_, __, ___) =>
+                                                    GroupMediaPage(
+                                                      mediaUrls: media,
+                                                    ),
+                                                transitionDuration:
+                                                    Duration.zero,
+                                                reverseTransitionDuration:
+                                                    Duration.zero,
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(
+                                                0.5,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              image: DecorationImage(
+                                                image: NetworkImage(
+                                                  media[index],
+                                                ),
+                                                fit: BoxFit.cover,
+                                                colorFilter: ColorFilter.mode(
+                                                  Colors.black.withValues(
+                                                    alpha: 0.6,
+                                                  ),
+                                                  BlendMode.darken,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '+${media.length - 5}',
+                                                style: AppTextStyles.h3
+                                                    .copyWith(
+                                                      color: Colors.white,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
                                       return GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -206,7 +260,11 @@ class _GroupInfoView extends StatelessWidget {
                               ],
                             ),
                           ),
-                        const SizedBox(height: 12),
+                        if (media.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          const Divider(height: 1),
+                          const SizedBox(height: 12),
+                        ],
 
                         // Members Section
                         Container(
@@ -314,8 +372,22 @@ class _GroupInfoView extends StatelessWidget {
                                             member,
                                             chat.id,
                                           ),
-                                    onTap: () =>
-                                        context.push('/profile/${member.id}'),
+                                    onTap: () {
+                                      if (member.isGuide) {
+                                        final guide = GuideEntity(
+                                          id: member.id,
+                                          name: member.name,
+                                          role: member.role,
+                                          avatarUrl: member.avatarUrl,
+                                        );
+                                        context.push(
+                                          '/chat/individual',
+                                          extra: guide,
+                                        );
+                                      } else {
+                                        context.push('/profile/${member.id}');
+                                      }
+                                    },
                                   );
                                 },
                               ),
@@ -352,10 +424,15 @@ class _GroupInfoView extends StatelessWidget {
   ) {
     switch (member.connectionStatus) {
       case ConnectionStatus.connected:
-        return const Icon(
-          Icons.check_circle,
-          color: AppColors.primary,
-          size: 20,
+        return IconButton(
+          onPressed: () {
+            // Open WhatsApp logic here
+          },
+          icon: const Icon(
+            Icons.chat_bubble, // Using similar icon as requested or standard
+            color: Color(0xFF25D366), // WhatsApp Green
+            size: 24,
+          ),
         );
       case ConnectionStatus.pendingSent:
         return Text(

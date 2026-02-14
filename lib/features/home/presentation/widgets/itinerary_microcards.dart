@@ -24,6 +24,9 @@ class ItineraryMicrocards extends StatelessWidget {
                 .where(
                   (item) =>
                       item.startDateTime != null &&
+                      item.startDateTime!.year == now.year &&
+                      item.startDateTime!.month == now.month &&
+                      item.startDateTime!.day == now.day &&
                       item.startDateTime!.isAfter(
                         now.subtract(const Duration(hours: 2)),
                       ),
@@ -209,27 +212,28 @@ class ItineraryMicrocards extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  size: 14,
-                  color: Colors.grey[500],
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    item.fromCity ?? item.location ?? 'Local não inf.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.grey[500],
-                      fontSize: 11,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            if (item.type != ItineraryType.transfer)
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 14,
+                    color: Colors.grey[500],
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      item.fromCity ?? item.location ?? 'Local não inf.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Colors.grey[500],
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

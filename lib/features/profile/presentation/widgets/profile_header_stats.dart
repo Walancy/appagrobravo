@@ -7,6 +7,8 @@ class ProfileHeaderStats extends StatelessWidget {
   final int posts;
   final int missions;
   final VoidCallback? onConnectionsTap;
+  final VoidCallback? onPostsTap;
+  final VoidCallback? onMissionsTap;
 
   const ProfileHeaderStats({
     super.key,
@@ -14,6 +16,8 @@ class ProfileHeaderStats extends StatelessWidget {
     required this.posts,
     required this.missions,
     this.onConnectionsTap,
+    this.onPostsTap,
+    this.onMissionsTap,
   });
 
   @override
@@ -26,8 +30,16 @@ class ProfileHeaderStats extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           child: _buildStatItem(context, '$connections', 'conexões'),
         ),
-        _buildStatItem(context, '$posts', 'Posts'),
-        _buildStatItem(context, '$missions', 'Missões'),
+        GestureDetector(
+          onTap: onPostsTap,
+          behavior: HitTestBehavior.opaque,
+          child: _buildStatItem(context, '$posts', 'Posts'),
+        ),
+        GestureDetector(
+          onTap: onMissionsTap,
+          behavior: HitTestBehavior.opaque,
+          child: _buildStatItem(context, '$missions', 'Missões'),
+        ),
       ],
     );
   }

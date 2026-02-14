@@ -25,6 +25,12 @@ extension DocumentsStateX on DocumentsState {
       loaded: (documents, isAlertDismissed, profile, mission) {
         if (isAlertDismissed) return false;
 
+        // Don't show if mission is ended
+        if (mission?.endDate != null &&
+            mission!.endDate!.isBefore(DateTime.now())) {
+          return false;
+        }
+
         // Calculate Age
         bool isUnder18 = false;
         if (profile?.birthDate != null) {

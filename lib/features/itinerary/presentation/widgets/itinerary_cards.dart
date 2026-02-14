@@ -14,7 +14,9 @@ class GenericEventCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
@@ -164,7 +166,9 @@ class FlightCard extends StatelessWidget {
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
       margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
@@ -712,7 +716,9 @@ class TransferCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),

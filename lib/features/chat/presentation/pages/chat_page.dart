@@ -1,16 +1,12 @@
+import 'package:agrobravo/core/components/app_header.dart'; // Re-added for HeaderSpacer and AppHeader
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
-import 'package:agrobravo/core/components/app_header.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:agrobravo/core/tokens/assets.gen.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/presentation/cubit/chat_cubit.dart';
-import 'package:agrobravo/features/chat/presentation/widgets/chat_group_card.dart';
-import 'package:agrobravo/features/chat/presentation/widgets/guide_card.dart';
 import 'package:agrobravo/features/chat/presentation/pages/chat_detail_page.dart';
 import 'package:agrobravo/features/chat/presentation/pages/individual_chat_page.dart';
 import 'package:intl/intl.dart';
@@ -24,153 +20,244 @@ class ChatPage extends StatelessWidget {
       create: (context) => getIt<ChatCubit>()..loadChatData(),
       child: BlocBuilder<ChatCubit, ChatState>(
         builder: (context, state) {
-          return state.when(
-            initial: () => const SizedBox.shrink(),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (message) => Center(child: Text('Erro: $message')),
-            loaded: (data) {
-              if (data.currentMission == null && data.history.isEmpty) {
-                return const Center(child: Text('Nenhum chat encontrado.'));
-              }
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: state.when(
+              initial: () => const SizedBox.shrink(),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (message) => Center(child: Text('Erro: $message')),
+              loaded: (data) {
+                // Active chats: Only Current Mission
+                final activeChats = <Widget>[];
 
-              return ListView(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                children: [
-                  const HeaderSpacer(),
-                  const SizedBox(height: 20),
-                  if (data.currentMission != null) ...[
-                    Text(
-                      'Meu Grupo',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
+                // History Row
+                activeChats.add(
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 8,
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildChatCard(
-                      context,
-                      data.currentMission!,
+                    leading: const Icon(Icons.archive_outlined),
+                    title: const Text(
+                      'Histórico',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  _HistoryPage(
+                                    historyChats: data.history,
+                                    guideChats: data.guides,
+                                  ),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
+                  ),
+                );
+
+                if (data.currentMission != null) {
+                  activeChats.add(
+                    _WhatsAppListItem(
+                      context: context,
+                      chat: data.currentMission!,
                       isCurrent: true,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
-                  if (data.guides.isNotEmpty) ...[
-                    Text(
-                      'Guias',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...data.guides.map(
-                      (g) => GuideCard(
-                        name: g.name,
-                        role: g.role,
-                        avatarUrl: g.avatarUrl ?? 'https://i.pravatar.cc/150',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      IndividualChatPage(guide: g),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
-                  if (data.history.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.history,
-                          color: AppColors.textPrimary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Histórico',
-                          style: AppTextStyles.h3.copyWith(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    ...data.history.map(
-                      (m) => _buildChatCard(context, m, isCurrent: false),
-                    ),
-                  ],
-                  const SizedBox(height: 100),
-                ],
-              );
-            },
+                  );
+                }
+
+                // If there are no active mission, maybe show a message?
+                // For now, if currentMission is null, the list only has History Row.
+
+                return SafeArea(child: ListView(children: activeChats));
+              },
+            ),
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildChatCard(
-    BuildContext context,
-    ChatEntity mission, {
-    required bool isCurrent,
-  }) {
-    String? status;
-    if (!isCurrent) {
-      if (mission.endDate != null) {
-        status =
-            'Encerrado em: ${DateFormat('dd/MM/yyyy').format(mission.endDate!)}';
-      } else {
-        status = 'Encerrado';
-      }
-    }
+class _HistoryPage extends StatelessWidget {
+  final List<ChatEntity> historyChats;
+  final List<GuideEntity> guideChats;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ChatDetailPage(chat: mission),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
+  const _HistoryPage({required this.historyChats, required this.guideChats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          AppHeader(
+            mode: HeaderMode.back,
+            title: 'Histórico',
+            subtitle: 'Todas as conversas',
           ),
-        );
-      },
-      child: ChatGroupCard(
-        title: mission.title,
-        subtitle: mission.subtitle,
-        leading: _buildMissionImage(mission.imageUrl),
-        time: isCurrent ? DateFormat('HH:mm').format(DateTime.now()) : null,
-        unreadCount: isCurrent ? mission.unreadCount : null,
-        statusText: status,
-        memberCount: 0,
-        memberAvatars: const [],
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                if (guideChats.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Text(
+                      'Guias',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  ...guideChats.map(
+                    (g) => _WhatsAppListItem(
+                      context: context,
+                      guide: g,
+                      isCurrent: true,
+                    ),
+                  ),
+                ],
+                if (historyChats.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Text(
+                      'Antigos',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  ...historyChats.map(
+                    (m) => _WhatsAppListItem(
+                      context: context,
+                      chat: m,
+                      isCurrent: false,
+                    ),
+                  ),
+                ],
+                if (guideChats.isEmpty && historyChats.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('Nenhum histórico encontrado'),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildMissionImage(String? url) {
-    if (url == null || url.isEmpty) {
-      return SvgPicture.asset(
-        Assets.images.logoColorida,
-        width: 30,
-        height: 30,
-      );
-    }
-    if (url.endsWith('.svg')) {
-      return SvgPicture.network(url, width: 50, height: 50, fit: BoxFit.cover);
-    }
-    return Image.network(
-      url,
-      width: 50,
-      height: 50,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const Icon(Icons.group),
+class _WhatsAppListItem extends StatelessWidget {
+  final BuildContext context;
+  final ChatEntity? chat;
+  final GuideEntity? guide;
+  final bool isCurrent;
+
+  const _WhatsAppListItem({
+    required this.context,
+    this.chat,
+    this.guide,
+    required this.isCurrent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final title = chat?.title ?? guide?.name ?? '';
+    final subtitle = chat?.subtitle ?? guide?.role ?? '';
+    final imageUrl = chat?.imageUrl ?? guide?.avatarUrl;
+    final time = isCurrent
+        ? DateFormat('HH:mm').format(DateTime.now())
+        : '--:--';
+    final unreadCount = chat?.unreadCount ?? 0;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 8,
+      ),
+      leading: CircleAvatar(
+        radius: 24,
+        backgroundColor: Colors.grey[200],
+        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+        child: imageUrl == null
+            ? Icon(
+                guide != null ? Icons.person : Icons.group,
+                color: Colors.grey,
+              )
+            : null,
+      ),
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        subtitle,
+        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            time,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: unreadCount > 0 ? AppColors.primary : Colors.grey,
+              fontSize: 10,
+              fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          if (unreadCount > 0) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                unreadCount.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ),
+          ],
+        ],
+      ),
+      onTap: () {
+        if (chat != null) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => ChatDetailPage(chat: chat!),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        } else if (guide != null) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => IndividualChatPage(guide: guide!),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        }
+      },
     );
   }
 }

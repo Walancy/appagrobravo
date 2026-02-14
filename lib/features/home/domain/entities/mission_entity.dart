@@ -10,6 +10,7 @@ abstract class MissionEntity with _$MissionEntity {
     String? logo,
     String? location,
     DateTime? startDate,
+    DateTime? endDate,
     String? groupName,
     String? groupLogo,
     int? pendingDocsCount,

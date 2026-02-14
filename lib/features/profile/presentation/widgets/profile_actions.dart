@@ -107,9 +107,9 @@ class ProfileActions extends StatelessWidget {
             children: [
               Expanded(
                 child: _ProfileActionButton(
-                  label: 'WhatsApp',
-                  icon: Icons.chat,
-                  backgroundColor: Colors.green,
+                  label: '',
+                  icon: Icons.chat_bubble,
+                  backgroundColor: const Color(0xFF25D366),
                   onPressed: () async {
                     final cleanPhone = phone!.replaceAll(RegExp(r'\D'), '');
                     final url = Uri.parse(
@@ -130,6 +130,7 @@ class ProfileActions extends StatelessWidget {
                   label: 'Desconectar',
                   icon: Icons.person_remove_outlined,
                   backgroundColor: Colors.grey[200],
+                  foregroundColor: Colors.black, // Ensure contrast
                   onPressed: onDisconnect ?? () {},
                 ),
               ),
@@ -140,6 +141,7 @@ class ProfileActions extends StatelessWidget {
           label: 'Desconectar',
           icon: Icons.person_remove_outlined,
           backgroundColor: Colors.grey[200],
+          foregroundColor: Colors.black, // Ensure contrast
           onPressed: onDisconnect ?? () {},
         );
     }
@@ -151,12 +153,14 @@ class _ProfileActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final Color? backgroundColor;
+  final Color? foregroundColor;
 
   const _ProfileActionButton({
     required this.label,
     required this.icon,
     required this.onPressed,
     this.backgroundColor,
+    this.foregroundColor,
   });
 
   @override
@@ -166,7 +170,7 @@ class _ProfileActionButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppColors.primary,
-          foregroundColor: AppColors.surface,
+          foregroundColor: foregroundColor ?? AppColors.surface,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),

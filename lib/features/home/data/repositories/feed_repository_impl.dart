@@ -576,7 +576,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final groupResponse = await _supabaseClient
           .from('gruposParticipantes')
           .select(
-            'grupo_id, grupos:grupo_id (nome, data_inicio, logo, missoes:missao_id (id, nome, logo, localizacao, passaporte_obrigatorio, visto_obrigatorio, vacina_obrigatorio, seguro_obrigatorio, cnh_obrigatorio, autorizacao_obrigatorio))',
+            'grupo_id, grupos:grupo_id (nome, data_inicio, data_fim, logo, missoes:missao_id (id, nome, logo, localizacao, passaporte_obrigatorio, visto_obrigatorio, vacina_obrigatorio, seguro_obrigatorio, cnh_obrigatorio, autorizacao_obrigatorio))',
           )
           .eq('user_id', userId)
           .order('id', ascending: false)
@@ -592,6 +592,13 @@ class FeedRepositoryImpl implements FeedRepository {
       if (missionData == null) return const Right(null);
 
       final missionId = missionData['id'] as String;
+
+      final startDate = grupoData['data_inicio'] != null
+          ? DateTime.tryParse(grupoData['data_inicio'].toString())
+          : null;
+      final endDate = grupoData['data_fim'] != null
+          ? DateTime.tryParse(grupoData['data_fim'].toString())
+          : null;
 
       // 2. Count pending documents
       final docsResponse = await _supabaseClient
@@ -675,6 +682,8 @@ class FeedRepositoryImpl implements FeedRepository {
           seguroObrigatorio: segReq,
           carteiraObrigatoria: cnhReq,
           autorizacaoObrigatoria: autReq,
+          startDate: startDate,
+          endDate: endDate,
         ),
       );
     } catch (e) {

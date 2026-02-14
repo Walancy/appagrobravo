@@ -119,6 +119,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
+        if (logo != null) ...[const SizedBox(width: AppSpacing.sm), logo!],
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: GestureDetector(
