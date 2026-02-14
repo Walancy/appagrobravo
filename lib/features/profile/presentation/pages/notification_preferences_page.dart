@@ -23,7 +23,7 @@ class _NotificationPreferencesPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const AppHeader(mode: HeaderMode.back, title: 'Notificações'),
       body: ListView(
         children: [
@@ -65,7 +65,7 @@ class _NotificationPreferencesPageState
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: SizedBox(
               width: double.infinity,
-              height: 55,
+              height: 48,
               child: ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -108,7 +108,7 @@ class _NotificationPreferencesPageState
       child: Text(
         title.toUpperCase(),
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
@@ -132,11 +132,16 @@ class _NotificationPreferencesPageState
       ),
       title: Text(
         title,
-        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+        style: AppTextStyles.bodyLarge.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
       subtitle: Text(
         subtitle,
-        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+        style: AppTextStyles.bodySmall.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
       ),
     );
   }

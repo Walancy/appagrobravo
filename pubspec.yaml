@@ -55,6 +55,7 @@ dependencies:
   http: ^1.2.2
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,16 @@ dev_dependencies:
   json_serializable: ^6.12.0
   mocktail: ^1.0.4
   flutter_gen_runner: ^5.12.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  remove_alpha_ios: true # Ensures no transparency for iOS.
+  min_sdk_android: 21 # Support older android versions.
+  adaptive_icon_background: "#FFFFFF" # Use a solid background for adaptive icons.
+  adaptive_icon_foreground: "assets/images/app_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -117,6 +128,7 @@ flutter:
 
   assets:
     - assets/images/
+    - .env
 
 flutter_gen:
   output: lib/core/tokens/

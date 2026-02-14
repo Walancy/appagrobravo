@@ -30,7 +30,7 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: Colors.white),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -44,16 +44,20 @@ class PostCard extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 18,
                     backgroundColor: post.userAvatar == null
-                        ? Colors.grey[100]
+                        ? (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.grey[100])
                         : Colors.transparent,
                     backgroundImage: post.userAvatar != null
                         ? CachedNetworkImageProvider(post.userAvatar!)
                         : null,
                     child: post.userAvatar == null
-                        ? const Icon(
+                        ? Icon(
                             Icons.person_outline_rounded,
                             size: 20,
-                            color: Colors.grey,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
                           )
                         : null,
                   ),
@@ -88,8 +92,8 @@ class PostCard extends StatelessWidget {
                 ),
                 if (isOwner)
                   PopupMenuButton<String>(
-                    color: Colors.white,
-                    surfaceTintColor: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
+                    surfaceTintColor: Theme.of(context).colorScheme.surface,
                     onSelected: (value) {
                       if (value == 'delete') {
                         onDelete?.call();
@@ -98,19 +102,21 @@ class PostCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'edit',
                         child: Row(
                           children: [
                             Icon(
                               Icons.edit_outlined,
                               size: 20,
-                              color: AppColors.textPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             Text(
                               'Editar',
-                              style: TextStyle(color: AppColors.textPrimary),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
@@ -133,12 +139,12 @@ class PostCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: Icon(
                         Icons.more_vert_rounded,
                         size: 20,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -164,15 +170,19 @@ class PostCard extends StatelessWidget {
             child: Row(
               children: [
                 _buildAction(
+                  context,
                   icon: post.isLiked
                       ? Icons.favorite_rounded
                       : Icons.favorite_outline_rounded,
-                  color: post.isLiked ? Colors.red : AppColors.textPrimary,
+                  color: post.isLiked
+                      ? Colors.red
+                      : Theme.of(context).colorScheme.onSurface,
                   count: post.likesCount,
                   onTap: onLike,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 _buildAction(
+                  context,
                   icon: Icons.chat_bubble_outline_rounded,
                   count: post.commentsCount,
                   onTap: onComment,
@@ -192,7 +202,7 @@ class PostCard extends StatelessWidget {
                   child: RichText(
                     text: TextSpan(
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       children: [
                         TextSpan(
@@ -227,7 +237,8 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAction({
+  Widget _buildAction(
+    BuildContext context, {
     required IconData icon,
     required int count,
     required VoidCallback onTap,
@@ -246,7 +257,7 @@ class PostCard extends StatelessWidget {
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
               fontSize: 14,
-              color: color ?? AppColors.textPrimary,
+              color: color ?? Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -354,7 +365,9 @@ class _PostImageSliderState extends State<_PostImageSlider>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF121212)
+                  : Colors.grey[200],
               borderRadius: BorderRadius.circular(20),
             ),
           ),
@@ -373,16 +386,25 @@ class _PostImageSliderState extends State<_PostImageSlider>
                   imageUrl: widget.images[index],
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800]!
+                        : Colors.grey[300]!,
+                    highlightColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[700]!
+                        : Colors.grey[100]!,
                     child: Container(color: Colors.white),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[200],
-                    child: const Center(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF121212)
+                        : Colors.grey[200],
+                    child: Center(
                       child: Icon(
                         Icons.broken_image,
-                        color: Colors.grey,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.3),
                         size: 40,
                       ),
                     ),

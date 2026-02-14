@@ -20,8 +20,12 @@ class _PostShimmerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? const Color(0xFF1E1E1E) : Colors.grey[300]!;
+    final highlightColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey[100]!;
+
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,8 +36,8 @@ class _PostShimmerItem extends StatelessWidget {
             child: Row(
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: const CircleAvatar(
                     radius: 18,
                     backgroundColor: Colors.white,
@@ -44,8 +48,8 @@ class _PostShimmerItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
+                      baseColor: baseColor,
+                      highlightColor: highlightColor,
                       child: Container(
                         width: 120,
                         height: 14,
@@ -57,8 +61,8 @@ class _PostShimmerItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
+                      baseColor: baseColor,
+                      highlightColor: highlightColor,
                       child: Container(
                         width: 80,
                         height: 10,
@@ -76,8 +80,8 @@ class _PostShimmerItem extends StatelessWidget {
 
           // Image Shimmer
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: baseColor,
+            highlightColor: highlightColor,
             child: Container(
               height: 300,
               width: double.infinity,
@@ -91,8 +95,8 @@ class _PostShimmerItem extends StatelessWidget {
             child: Row(
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: 24,
                     height: 24,
@@ -104,8 +108,8 @@ class _PostShimmerItem extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: 24,
                     height: 24,
@@ -126,8 +130,8 @@ class _PostShimmerItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: double.infinity,
                     height: 12,
@@ -139,8 +143,8 @@ class _PostShimmerItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: 200,
                     height: 12,

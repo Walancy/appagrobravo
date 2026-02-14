@@ -21,7 +21,12 @@ class ChatInput extends StatefulWidget {
     this.repliedMessage,
     this.repliedUserName,
     this.onCancelReply,
+    this.onImagePicked,
+    this.onCameraPicked,
   });
+
+  final VoidCallback? onImagePicked;
+  final VoidCallback? onCameraPicked;
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -62,12 +67,12 @@ class _ChatInputState extends State<ChatInput> {
                 children: [
                   const Icon(Icons.edit, size: 14, color: AppColors.primary),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Editando mensagem',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -93,7 +98,7 @@ class _ChatInputState extends State<ChatInput> {
               ),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: const Border(
                   left: BorderSide(color: AppColors.primary, width: 4),
@@ -109,10 +114,10 @@ class _ChatInputState extends State<ChatInput> {
                       children: [
                         Text(
                           widget.repliedUserName ?? 'Usuário',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         Text(
@@ -145,7 +150,7 @@ class _ChatInputState extends State<ChatInput> {
             AppSpacing.md,
             widget.isEditing ? 0 : AppSpacing.sm,
             AppSpacing.md,
-            MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+            MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
           ),
           decoration: const BoxDecoration(color: Colors.transparent),
           child: Row(
@@ -153,11 +158,15 @@ class _ChatInputState extends State<ChatInput> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(
+                          alpha: Theme.of(context).brightness == Brightness.dark
+                              ? 0.2
+                              : 0.05,
+                        ),
                         offset: const Offset(0, 1),
                         blurRadius: 4,
                       ),
@@ -172,22 +181,45 @@ class _ChatInputState extends State<ChatInput> {
                           minLines: 1,
                           maxLines: 6,
                           keyboardType: TextInputType.multiline,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Mensagem',
-                            hintStyle: TextStyle(color: Colors.grey),
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).hintColor,
+                            ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 12,
                             ),
                           ),
                           onSubmitted: (_) {
-                            // Optional: handle enter key if needed, but usually multiline uses enter for new line
-                            // If we want enter to send, we need to handle that.
-                            // User didn't specify enter behavior, so default multiline behavior is fine.
+                            // implementation...
                           },
                         ),
                       ),
+                      IconButton(
+                        onPressed: widget.onImagePicked,
+                        icon: Icon(
+                          Icons.attach_file_outlined,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      IconButton(
+                        onPressed: widget.onCameraPicked,
+                        icon: Icon(
+                          Icons.camera_alt_outlined,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 8),
                     ],
                   ),
                 ),

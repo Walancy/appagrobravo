@@ -52,7 +52,10 @@ class ProfileHeaderCover extends StatelessWidget {
                     Positioned(
                       right: 16,
                       bottom: 16,
-                      child: _buildCameraButton(onTap: onUpdateCover ?? () {}),
+                      child: _buildCameraButton(
+                        context,
+                        onTap: onUpdateCover ?? () {},
+                      ),
                     ),
                 ],
               ),
@@ -73,9 +76,14 @@ class ProfileHeaderCover extends StatelessWidget {
                   width: 110,
                   height: 110,
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800]
+                        : Colors.grey[100],
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 4),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 4,
+                    ),
                   ),
                   child: ClipOval(
                     child: (avatarUrl != null && avatarUrl!.isNotEmpty)
@@ -84,23 +92,36 @@ class ProfileHeaderCover extends StatelessWidget {
                             fit: BoxFit.cover,
                             height: 110,
                             width: 110,
-                            placeholder: (context, url) =>
-                                Container(color: Colors.grey[200]),
+                            placeholder: (context, url) => Container(
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[800]
+                                  : Colors.grey[200],
+                            ),
                             errorWidget: (context, error, stackTrace) {
-                              return const Center(
+                              return Center(
                                 child: Icon(
                                   Icons.person,
                                   size: 60,
-                                  color: Colors.grey,
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.grey[600]
+                                      : Colors.grey,
                                 ),
                               );
                             },
                           )
-                        : const Center(
+                        : Center(
                             child: Icon(
                               Icons.person,
                               size: 60,
-                              color: Colors.grey,
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[600]
+                                  : Colors.grey,
                             ),
                           ),
                   ),
@@ -110,6 +131,7 @@ class ProfileHeaderCover extends StatelessWidget {
                     right: 0,
                     bottom: 0,
                     child: _buildCameraButton(
+                      context,
                       onTap: onUpdateAvatar ?? () {},
                       backgroundColor: AppColors.primary,
                       iconColor: Colors.white,
@@ -124,12 +146,16 @@ class ProfileHeaderCover extends StatelessWidget {
     );
   }
 
-  Widget _buildCameraButton({
+  Widget _buildCameraButton(
+    BuildContext context, {
     required VoidCallback onTap,
-    Color backgroundColor = Colors.white,
-    Color iconColor = Colors.black,
+    Color? backgroundColor,
+    Color? iconColor,
     double size = 36,
   }) {
+    final finalBg = backgroundColor ?? Theme.of(context).colorScheme.surface;
+    final finalIcon = iconColor ?? Theme.of(context).colorScheme.onSurface;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -137,12 +163,12 @@ class ProfileHeaderCover extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.8),
+          color: finalBg.withOpacity(0.8),
           shape: BoxShape.circle,
         ),
         child: Icon(
           Icons.camera_alt_outlined,
-          color: iconColor,
+          color: finalIcon,
           size: size * 0.6,
         ),
       ),

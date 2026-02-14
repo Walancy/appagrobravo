@@ -33,299 +33,312 @@ class _GroupInfoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppHeader(
-        mode: HeaderMode.back,
-        title: 'Detalhes do grupo',
-        subtitle: 'Visualize mais detalhes',
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: AppColors.textPrimary,
-            ),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textPrimary,
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: BlocBuilder<GroupInfoCubit, GroupInfoState>(
         builder: (context, state) {
-          return state.when(
-            initial: () => const SizedBox.shrink(),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (msg) => Center(
-              child: Text(
-                'Erro: $msg',
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-            loaded: (details) {
-              final members = details.members;
-              final media = details.mediaUrls;
+          return Stack(
+            children: [
+              state.when(
+                initial: () => const SizedBox.shrink(),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (msg) => Center(
+                  child: Text(
+                    'Erro: $msg',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+                loaded: (details) {
+                  final members = details.members;
+                  final media = details.mediaUrls;
 
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    // Header Section
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 24,
-                        horizontal: 16,
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey.shade200,
-                              image: chat.imageUrl != null
-                                  ? DecorationImage(
-                                      image: NetworkImage(chat.imageUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            child: chat.imageUrl == null
-                                ? const Icon(
-                                    Icons.group,
-                                    size: 50,
-                                    color: Colors.grey,
-                                  )
-                                : null,
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const HeaderSpacer(),
+                        const SizedBox(height: 20),
+                        // Header Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 24,
+                            horizontal: 16,
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            chat.title,
-                            style: AppTextStyles.h2.copyWith(fontSize: 22),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Missão: ${chat.subtitle}',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${members.length} membros',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Media Section
-                    if (media.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                        ) => GroupMediaPage(mediaUrls: media),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ),
-                                );
-                              },
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Mídias, links e docs',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    color: Colors.grey,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 100,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: media.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: 8),
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        PageRouteBuilder(
-                                          pageBuilder: (_, __, ___) =>
-                                              FullScreenMediaPage(
-                                                imageUrl: media[index],
-                                              ),
-                                          transitionDuration: Duration.zero,
-                                          reverseTransitionDuration:
-                                              Duration.zero,
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        image: DecorationImage(
-                                          image: NetworkImage(media[index]),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.grey.shade800
+                                      : Colors.grey.shade200,
+                                  image: chat.imageUrl != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(chat.imageUrl!),
                                           fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 12),
-
-                    // Members Section
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${members.length} membros',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Members List
-                          ListView.builder(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: members.length,
-                            itemBuilder: (context, index) {
-                              final member = members[index];
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey.shade200,
-                                    image: member.avatarUrl != null
-                                        ? DecorationImage(
-                                            image: NetworkImage(
-                                              member.avatarUrl!,
-                                            ),
-                                            fit: BoxFit.cover,
-                                            onError: (_, __) => {},
-                                          )
-                                        : null,
-                                  ),
-                                  child: member.avatarUrl == null
-                                      ? const Icon(
-                                          Icons.person,
-                                          color: Colors.grey,
                                         )
                                       : null,
                                 ),
-                                title: Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        '${member.name}${member.isMe ? ' (você)' : ''}',
-                                        style: AppTextStyles.bodyMedium,
-                                        overflow: TextOverflow.ellipsis,
+                                child: chat.imageUrl == null
+                                    ? const Icon(
+                                        Icons.group,
+                                        size: 50,
+                                        color: Colors.grey,
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                chat.title,
+                                style: AppTextStyles.h2.copyWith(fontSize: 22),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Missão: ${chat.subtitle}',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${members.length} membros',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Media Section
+                        if (media.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => GroupMediaPage(
+                                              mediaUrls: media,
+                                            ),
+                                        transitionDuration: Duration.zero,
+                                        reverseTransitionDuration:
+                                            Duration.zero,
                                       ),
-                                    ),
-                                    if (member.isGuide) ...[
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Mídias, links e docs',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.6),
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(
-                                            0xFF00AA6C,
-                                          ).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(0xFF00AA6C),
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Guia',
-                                          style: AppTextStyles.bodySmall
-                                              .copyWith(
-                                                fontSize: 10,
-                                                color: const Color(0xFF00AA6C),
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.chevron_right,
+                                        color: Colors.grey,
                                       ),
                                     ],
-                                  ],
-                                ),
-                                subtitle: Text(
-                                  member.role,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.grey,
                                   ),
                                 ),
-                                trailing: (member.isMe || member.isGuide)
-                                    ? null
-                                    : _buildConnectionButton(
-                                        context,
-                                        member,
-                                        chat.id,
-                                      ),
-                                onTap: () =>
-                                    context.push('/profile/${member.id}'),
-                              );
-                            },
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  height: 100,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: media.length,
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(width: 8),
+                                    itemBuilder: (context, index) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (_, __, ___) =>
+                                                  FullScreenMediaPage(
+                                                    imageUrl: media[index],
+                                                  ),
+                                              transitionDuration: Duration.zero,
+                                              reverseTransitionDuration:
+                                                  Duration.zero,
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            image: DecorationImage(
+                                              image: NetworkImage(media[index]),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
+                        const SizedBox(height: 12),
+
+                        // Members Section
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${members.length} membros',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Members List
+                              ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: members.length,
+                                itemBuilder: (context, index) {
+                                  final member = members[index];
+                                  return ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.grey.shade800
+                                            : Colors.grey.shade200,
+                                        image: member.avatarUrl != null
+                                            ? DecorationImage(
+                                                image: NetworkImage(
+                                                  member.avatarUrl!,
+                                                ),
+                                                fit: BoxFit.cover,
+                                                onError: (_, __) => {},
+                                              )
+                                            : null,
+                                      ),
+                                      child: member.avatarUrl == null
+                                          ? const Icon(
+                                              Icons.person,
+                                              color: Colors.grey,
+                                            )
+                                          : null,
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            '${member.name}${member.isMe ? ' (você)' : ''}',
+                                            style: AppTextStyles.bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (member.isGuide) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFF00AA6C,
+                                              ).withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: const Color(0xFF00AA6C),
+                                                width: 0.5,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Guia',
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(
+                                                    fontSize: 10,
+                                                    color: const Color(
+                                                      0xFF00AA6C,
+                                                    ),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    subtitle: Text(
+                                      member.role,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    trailing: (member.isMe || member.isGuide)
+                                        ? null
+                                        : _buildConnectionButton(
+                                            context,
+                                            member,
+                                            chat.id,
+                                          ),
+                                    onTap: () =>
+                                        context.push('/profile/${member.id}'),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                     ),
-                    const SizedBox(height: 40),
-                  ],
+                  );
+                },
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: AppHeader(
+                  mode: HeaderMode.back,
+                  title: 'Detalhes do grupo',
+                  subtitle: 'Visualize mais detalhes',
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),

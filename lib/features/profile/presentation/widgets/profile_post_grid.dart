@@ -34,7 +34,11 @@ class ProfilePostGrid extends StatelessWidget {
               if (firstImage.isNotEmpty)
                 Image.network(firstImage, fit: BoxFit.cover)
               else
-                Container(color: Colors.grey[200]),
+                Container(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.grey[200],
+                ),
               if (isCarousel)
                 const Positioned(
                   top: 8,

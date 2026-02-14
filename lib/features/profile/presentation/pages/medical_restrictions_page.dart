@@ -30,7 +30,7 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
     return BlocProvider(
       create: (context) => getIt<ProfileCubit>()..loadProfile(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(
           mode: HeaderMode.back,
           title: 'Restrições médicas',
@@ -73,30 +73,38 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
                       Text(
                         'Informe alergias, condições crônicas ou medicamentos de uso contínuo para sua segurança durante a missão.',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       TextField(
                         controller: _controller,
                         maxLines: 10,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           hintText:
                               'Ex: Alergia a amendoim, uso contínuo de insulina, intolerância a lactose...',
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               AppSpacing.radiusLg,
                             ),
-                            borderSide: const BorderSide(
-                              color: AppColors.backgroundLight,
+                            borderSide: BorderSide(
+                              color: Theme.of(context).dividerColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               AppSpacing.radiusLg,
                             ),
-                            borderSide: const BorderSide(
-                              color: AppColors.backgroundLight,
+                            borderSide: BorderSide(
+                              color: Theme.of(context).dividerColor,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -108,13 +116,16 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
                             ),
                           ),
                           filled: true,
-                          fillColor: const Color(0xFFFAFAFA),
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                              ? Theme.of(context).colorScheme.surface
+                              : const Color(0xFFFAFAFA),
                         ),
                       ),
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,
-                        height: 55,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () {
                             context

@@ -184,9 +184,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -196,7 +196,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -255,9 +255,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       ),
       child: Column(
         children: [
@@ -267,7 +267,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -295,10 +295,14 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
               MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(
+                    alpha: Theme.of(context).brightness == Brightness.dark
+                        ? 0.2
+                        : 0.05,
+                  ),
                   offset: const Offset(0, -2),
                   blurRadius: 10,
                 ),
@@ -369,7 +373,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                           horizontal: AppSpacing.md,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(
                             AppSpacing.radiusLg,
                           ),
@@ -434,12 +440,21 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 onTap: () => context.push('/profile/${comment.userId}'),
                 child: CircleAvatar(
                   radius: 16,
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey[100],
                   backgroundImage: comment.userAvatar != null
                       ? CachedNetworkImageProvider(comment.userAvatar!)
                       : null,
                   child: comment.userAvatar == null
-                      ? const Icon(Icons.person, size: 18)
+                      ? Icon(
+                          Icons.person,
+                          size: 18,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
+                        )
                       : null,
                 ),
               ),

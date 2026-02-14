@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
@@ -25,7 +26,6 @@ class SettingsPage extends StatelessWidget {
         ),
       ],
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: const AppHeader(mode: HeaderMode.back, title: 'Configurações'),
         body: BlocBuilder<ProfileCubit, ProfileState>(
           builder: (context, state) {
@@ -34,8 +34,11 @@ class SettingsPage extends StatelessWidget {
                 return ListView(
                   padding: EdgeInsets.zero,
                   children: [
-                    _buildUserHeader(profile),
-                    const Divider(height: 1, color: AppColors.backgroundLight),
+                    _buildUserHeader(context, profile),
+                    Divider(
+                      height: 1,
+                      color: Theme.of(context).dividerColor.withOpacity(0.5),
+                    ),
                     BlocBuilder<DocumentsCubit, DocumentsState>(
                       builder: (context, state) {
                         return _buildOption(
@@ -64,6 +67,29 @@ class SettingsPage extends StatelessWidget {
                       icon: Icons.medical_services_outlined,
                       title: 'Restrições médicas',
                       onTap: () => context.push('/medical-restrictions'),
+                    ),
+                    BlocBuilder<ThemeCubit, ThemeMode>(
+                      builder: (context, mode) {
+                        return _buildOption(
+                          context,
+                          icon: mode == ThemeMode.dark
+                              ? Icons.dark_mode
+                              : Icons.light_mode,
+                          title: 'Modo Escuro',
+                          trailing: Switch(
+                            value: mode == ThemeMode.dark,
+                            onChanged: (value) {
+                              context.read<ThemeCubit>().setThemeMode(
+                                value ? ThemeMode.dark : ThemeMode.light,
+                              );
+                            },
+                            activeColor: AppColors.primary,
+                          ),
+                          onTap: () {
+                            context.read<ThemeCubit>().toggleTheme();
+                          },
+                        );
+                      },
                     ),
                     _buildOption(
                       context,
@@ -105,7 +131,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildUserHeader(profile) {
+  Widget _buildUserHeader(BuildContext context, profile) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -120,7 +146,9 @@ class SettingsPage extends StatelessWidget {
                 height: 90,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.backgroundLight,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : AppColors.backgroundLight,
                   image: profile.avatarUrl != null
                       ? DecorationImage(
                           image: NetworkImage(profile.avatarUrl!),
@@ -140,7 +168,10 @@ class SettingsPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 2,
+                    ),
                   ),
                   child: const Icon(
                     Icons.camera_alt,
@@ -167,21 +198,27 @@ class SettingsPage extends StatelessWidget {
                 Text(
                   '${profile.missionName ?? ''}${profile.missionName != null && profile.groupName != null ? ' - ' : ''}${profile.groupName ?? ''}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     height: 1.2,
                   ),
                 ),
                 Text(
                   profile.email ?? '',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     height: 1.2,
                   ),
                 ),
                 Text(
                   profile.phone ?? '',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     height: 1.2,
                   ),
                 ),
@@ -200,6 +237,7 @@ class SettingsPage extends StatelessWidget {
     required VoidCallback onTap,
     bool isDestructive = false,
     bool hasBadge = false,
+    Widget? trailing,
   }) {
     return Column(
       children: [
@@ -210,7 +248,9 @@ class SettingsPage extends StatelessWidget {
           ),
           leading: Icon(
             icon,
-            color: isDestructive ? AppColors.error : AppColors.textPrimary,
+            color: isDestructive
+                ? AppColors.error
+                : Theme.of(context).colorScheme.onSurface,
             size: 24,
           ),
           title: Row(
@@ -220,7 +260,7 @@ class SettingsPage extends StatelessWidget {
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: isDestructive
                       ? AppColors.error
-                      : AppColors.textPrimary,
+                      : Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -247,16 +287,23 @@ class SettingsPage extends StatelessWidget {
               ],
             ],
           ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            size: 20,
-            color: AppColors.textSecondary,
-          ),
+          trailing:
+              trailing ??
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
           onTap: onTap,
         ),
-        const Padding(
-          padding: EdgeInsets.only(left: 64, right: AppSpacing.lg),
-          child: Divider(height: 1, color: Color(0xFFF5F5F5)),
+        Padding(
+          padding: const EdgeInsets.only(left: 64, right: AppSpacing.lg),
+          child: Divider(
+            height: 1,
+            color: Theme.of(context).dividerColor.withOpacity(0.3),
+          ),
         ),
       ],
     );

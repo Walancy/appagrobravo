@@ -14,9 +14,12 @@ class GenericEventCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +50,9 @@ class GenericEventCard extends StatelessWidget {
                         item.location!,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: 11,
-                          color: AppColors.textSecondary.withOpacity(0.7),
+                          color: Theme.of(context).colorScheme.onSurface
+                              .withValues(alpha: 0.6)
+                              .withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -70,7 +75,7 @@ class GenericEventCard extends StatelessWidget {
               item.description!,
               style: AppTextStyles.bodySmall.copyWith(
                 fontSize: 12,
-                color: AppColors.textPrimary.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
               ),
             ),
           ],
@@ -159,9 +164,12 @@ class FlightCard extends StatelessWidget {
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
       margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
@@ -169,9 +177,15 @@ class FlightCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.orange.shade900.withValues(alpha: 0.2)
+                    : Colors.orange.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.orange.shade700.withValues(alpha: 0.5)
+                      : Colors.orange.shade200,
+                ),
               ),
               child: Row(
                 children: [
@@ -211,14 +225,16 @@ class FlightCard extends StatelessWidget {
                     'Voo',
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                   Text(
                     item.name, // e.g., LATAM LA 3400
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -243,7 +259,7 @@ class FlightCard extends StatelessWidget {
                     style: AppTextStyles.h2.copyWith(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -252,7 +268,9 @@ class FlightCard extends StatelessWidget {
                       DateFormat('HH:mm').format(item.startDateTime!),
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   const SizedBox(height: 12),
@@ -261,7 +279,9 @@ class FlightCard extends StatelessWidget {
                       'de ${item.fromCity}',
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
-                        color: AppColors.textSecondary.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(alpha: 0.6)
+                            .withOpacity(0.7),
                       ),
                     ),
                 ],
@@ -278,12 +298,20 @@ class FlightCard extends StatelessWidget {
                           _formatDuration(item.durationString!),
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: 10,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       Row(
                         children: [
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                          Expanded(
+                            child: Divider(
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.2),
+                            ),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: Icon(
@@ -292,7 +320,13 @@ class FlightCard extends StatelessWidget {
                               size: 16,
                             ),
                           ),
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
+                          Expanded(
+                            child: Divider(
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.2),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -309,7 +343,7 @@ class FlightCard extends StatelessWidget {
                     style: AppTextStyles.h2.copyWith(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -346,7 +380,9 @@ class FlightCard extends StatelessWidget {
                           timeText,
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         );
                       }
@@ -359,7 +395,9 @@ class FlightCard extends StatelessWidget {
                       'para ${item.toCity}',
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
-                        color: AppColors.textSecondary.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withValues(alpha: 0.6)
+                            .withOpacity(0.7),
                       ),
                     ),
                 ],
@@ -381,12 +419,14 @@ class FlightCard extends StatelessWidget {
                 title: Text(
                   'Escalas (${connections.length})',
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 children: connections
-                    .map((conn) => _buildConnectionItem(conn))
+                    .map((conn) => _buildConnectionItem(context, conn))
                     .toList(),
               ),
             )
@@ -398,7 +438,9 @@ class FlightCard extends StatelessWidget {
                   Text(
                     'Voo direto',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -409,7 +451,7 @@ class FlightCard extends StatelessWidget {
     );
   }
 
-  Widget _buildConnectionItem(Map<String, dynamic> conn) {
+  Widget _buildConnectionItem(BuildContext context, Map<String, dynamic> conn) {
     // Parse fields handling both flat and nested structures
     final originMap = conn['origin'] is Map ? conn['origin'] : null;
     final destMap = conn['destination'] is Map ? conn['destination'] : null;
@@ -448,13 +490,17 @@ class FlightCard extends StatelessWidget {
                 Icon(
                   Icons.access_time_rounded,
                   size: 14,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Tempo de conexão: $layoverTime',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                     fontSize: 12,
                   ),
@@ -466,9 +512,13 @@ class FlightCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.grey.shade50,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +558,9 @@ class FlightCard extends StatelessWidget {
                       Text(
                         originTime,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -524,13 +576,19 @@ class FlightCard extends StatelessWidget {
                             _formatDuration(flightDuration),
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize: 9,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           Row(
                             children: [
                               Expanded(
-                                child: Divider(color: Colors.grey.shade300),
+                                child: Divider(
+                                  color: Theme.of(
+                                    context,
+                                  ).dividerColor.withValues(alpha: 0.2),
+                                ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -543,7 +601,11 @@ class FlightCard extends StatelessWidget {
                                 ),
                               ),
                               Expanded(
-                                child: Divider(color: Colors.grey.shade300),
+                                child: Divider(
+                                  color: Theme.of(
+                                    context,
+                                  ).dividerColor.withValues(alpha: 0.2),
+                                ),
                               ),
                             ],
                           ),
@@ -565,7 +627,9 @@ class FlightCard extends StatelessWidget {
                       Text(
                         destTime,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -648,9 +712,12 @@ class TransferCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -674,7 +741,9 @@ class TransferCard extends StatelessWidget {
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     if (showNextDayTag) ...[
@@ -708,7 +777,7 @@ class TransferCard extends StatelessWidget {
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -743,7 +812,9 @@ class TravelTimeWidget extends StatelessWidget {
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
-                color: hasDuration ? AppColors.textPrimary : AppColors.error,
+                color: hasDuration
+                    ? Theme.of(context).colorScheme.onSurface
+                    : AppColors.error,
               ),
             ),
           ),

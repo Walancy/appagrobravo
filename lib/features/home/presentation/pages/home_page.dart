@@ -106,16 +106,21 @@ class _HomePageState extends State<HomePage> {
           );
         },
         child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
+          value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             systemNavigationBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarIconBrightness: Brightness.dark,
+            statusBarIconBrightness:
+                Theme.of(context).brightness == Brightness.dark
+                ? Brightness.light
+                : Brightness.dark,
+            systemNavigationBarIconBrightness:
+                Theme.of(context).brightness == Brightness.dark
+                ? Brightness.light
+                : Brightness.dark,
             systemNavigationBarDividerColor: Colors.transparent,
             systemNavigationBarContrastEnforced: false,
           ),
           child: Scaffold(
-            backgroundColor: Colors.white,
             extendBodyBehindAppBar: true,
             appBar: _buildHeader(context),
             body: _buildBody(),
@@ -144,7 +149,9 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(
                   Icons.add_circle_outline_rounded,
                   size: 28,
-                  color: canPost ? AppColors.textPrimary : Colors.grey,
+                  color: canPost
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Colors.grey,
                 ),
               );
             },
@@ -158,11 +165,7 @@ class _HomePageState extends State<HomePage> {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(
-                      Icons.settings_outlined,
-                      size: 28,
-                      color: AppColors.textPrimary,
-                    ),
+                    const Icon(Icons.settings_outlined, size: 28),
                     if (hasPending)
                       Positioned(
                         right: 0,
@@ -173,7 +176,10 @@ class _HomePageState extends State<HomePage> {
                           decoration: BoxDecoration(
                             color: Colors.redAccent,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -190,10 +196,10 @@ class _HomePageState extends State<HomePage> {
               icon: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.notifications_none_rounded,
                     size: 28,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   if (hasUnread)
                     Positioned(
@@ -204,8 +210,10 @@ class _HomePageState extends State<HomePage> {
                         height: 10,
                         decoration: BoxDecoration(
                           color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.surface,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -413,19 +421,15 @@ class _HomePageState extends State<HomePage> {
         MediaQuery.of(context).padding.bottom + 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, -5),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.1),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -467,7 +471,9 @@ class _HomePageState extends State<HomePage> {
     bool hasBadge = false,
   }) {
     final isSelected = _selectedIndex == index;
-    final color = isSelected ? AppColors.primary : AppColors.textPrimary;
+    final color = isSelected
+        ? AppColors.primary
+        : Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
@@ -491,7 +497,10 @@ class _HomePageState extends State<HomePage> {
                       decoration: BoxDecoration(
                         color: Colors.redAccent,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),

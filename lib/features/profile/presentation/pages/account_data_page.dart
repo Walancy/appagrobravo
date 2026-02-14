@@ -92,7 +92,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
     return BlocProvider(
       create: (context) => getIt<ProfileCubit>()..loadProfile(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(mode: HeaderMode.back, title: 'Dados da conta'),
         body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
@@ -116,17 +116,23 @@ class _AccountDataPageState extends State<AccountDataPage> {
                         style: AppTextStyles.h3.copyWith(fontSize: 18),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _buildTextField(_nameController, 'Nome Completo'),
                       _buildTextField(
+                        context,
+                        _nameController,
+                        'Nome Completo',
+                      ),
+                      _buildTextField(
+                        context,
                         _phoneController,
                         'Telefone',
                         keyboardType: TextInputType.phone,
                       ),
-                      _buildTextField(_companyController, 'Empresa'),
+                      _buildTextField(context, _companyController, 'Empresa'),
                       Row(
                         children: [
                           Expanded(
                             child: _buildTextField(
+                              context,
                               _cpfController,
                               'CPF',
                               keyboardType: TextInputType.number,
@@ -135,6 +141,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: _buildTextField(
+                              context,
                               _ssnController,
                               'SSN',
                               keyboardType: TextInputType.number,
@@ -153,6 +160,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _buildTextField(
+                        context,
                         _zipCodeController,
                         'CEP',
                         keyboardType: TextInputType.number,
@@ -160,25 +168,42 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildTextField(_stateController, 'Estado'),
+                            child: _buildTextField(
+                              context,
+                              _stateController,
+                              'Estado',
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
-                            child: _buildTextField(_cityController, 'Cidade'),
+                            child: _buildTextField(
+                              context,
+                              _cityController,
+                              'Cidade',
+                            ),
                           ),
                         ],
                       ),
-                      _buildTextField(_neighborhoodController, 'Bairro'),
-                      _buildTextField(_streetController, 'Rua'),
+                      _buildTextField(
+                        context,
+                        _neighborhoodController,
+                        'Bairro',
+                      ),
+                      _buildTextField(context, _streetController, 'Rua'),
                       Row(
                         children: [
                           Expanded(
-                            child: _buildTextField(_numberController, 'Número'),
+                            child: _buildTextField(
+                              context,
+                              _numberController,
+                              'Número',
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             flex: 2,
                             child: _buildTextField(
+                              context,
                               _complementController,
                               'Complemento',
                             ),
@@ -192,13 +217,21 @@ class _AccountDataPageState extends State<AccountDataPage> {
                         style: AppTextStyles.h3.copyWith(fontSize: 18),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _buildTextField(_nationalityController, 'Nacionalidade'),
-                      _buildTextField(_passportController, 'Passaporte'),
+                      _buildTextField(
+                        context,
+                        _nationalityController,
+                        'Nacionalidade',
+                      ),
+                      _buildTextField(
+                        context,
+                        _passportController,
+                        'Passaporte',
+                      ),
 
                       const SizedBox(height: AppSpacing.xl),
                       SizedBox(
                         width: double.infinity,
-                        height: 55,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () {
                             final data = {
@@ -261,6 +294,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
   }
 
   Widget _buildTextField(
+    BuildContext context,
     TextEditingController controller,
     String label, {
     TextInputType keyboardType = TextInputType.text,
@@ -274,22 +308,30 @@ class _AccountDataPageState extends State<AccountDataPage> {
             label,
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           TextField(
             controller: controller,
             keyboardType: keyboardType,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFFAFAFA),
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Theme.of(context).colorScheme.surface
+                  : const Color(0xFFFAFAFA),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -312,6 +354,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
             label,
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -320,9 +363,11 @@ class _AccountDataPageState extends State<AccountDataPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFAFAFA),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Theme.of(context).colorScheme.surface
+                    : const Color(0xFFFAFAFA),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -331,12 +376,16 @@ class _AccountDataPageState extends State<AccountDataPage> {
                     _birthDate == null
                         ? 'Selecionar data'
                         : '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}',
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.calendar_today,
                     size: 20,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ],
               ),

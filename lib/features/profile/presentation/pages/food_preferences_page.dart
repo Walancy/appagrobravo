@@ -29,7 +29,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
     return BlocProvider(
       create: (context) => getIt<ProfileCubit>()..loadProfile(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(
           mode: HeaderMode.back,
           title: 'Preferências alimentares',
@@ -62,30 +62,38 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
                       Text(
                         'Suas preferências ajudam a AgroBravo a preparar as melhores experiências gastronômicas para você.',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       TextField(
                         controller: _controller,
                         maxLines: 10,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           hintText:
                               'Ex: Prefiro pratos vegetarianos, não gosto de pimenta, amo café...',
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               AppSpacing.radiusLg,
                             ),
-                            borderSide: const BorderSide(
-                              color: AppColors.backgroundLight,
+                            borderSide: BorderSide(
+                              color: Theme.of(context).dividerColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               AppSpacing.radiusLg,
                             ),
-                            borderSide: const BorderSide(
-                              color: AppColors.backgroundLight,
+                            borderSide: BorderSide(
+                              color: Theme.of(context).dividerColor,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
@@ -97,13 +105,16 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
                             ),
                           ),
                           filled: true,
-                          fillColor: const Color(0xFFFAFAFA),
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                              ? Theme.of(context).colorScheme.surface
+                              : const Color(0xFFFAFAFA),
                         ),
                       ),
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,
-                        height: 55,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () {
                             context.read<ProfileCubit>().updateFoodPreferences(

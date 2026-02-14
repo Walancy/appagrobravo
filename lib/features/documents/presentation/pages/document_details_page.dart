@@ -128,7 +128,6 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppHeader(mode: HeaderMode.back, title: widget.type.label),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -174,7 +173,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                fillColor: const Color(0xFFFAFAFA),
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
 
@@ -204,9 +203,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                   vertical: 15,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor.withOpacity(0.2),
+                  ),
                   borderRadius: BorderRadius.circular(12),
-                  color: const Color(0xFFFAFAFA),
+                  color: Theme.of(context).colorScheme.surface,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -347,9 +348,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       width: double.infinity,
       height: 220,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),

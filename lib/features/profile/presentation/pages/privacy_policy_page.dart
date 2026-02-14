@@ -10,7 +10,7 @@ class PrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const AppHeader(
         mode: HeaderMode.back,
         title: 'Política de Privacidade',
@@ -22,38 +22,47 @@ class PrivacyPolicyPage extends StatelessWidget {
           children: [
             Text(
               'AgroBravo Enterprises - Compromisso com sua Privacidade',
-              style: AppTextStyles.h3,
+              style: AppTextStyles.h3.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               'A AgroBravo Enterprises, com sede em Ames, Iowa (EUA) e filial no Brasil, valoriza a confiança que você deposita em nós. Esta política descreve como tratamos suas informações pessoais.',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
 
             _buildSection(
+              context,
               '1. Coleta de Informações',
               'Coletamos informações quando você utiliza nossos serviços, preenche formulários ou participa de nossas missões. Isso inclui nome completo, e-mail, telefone, nome da empresa, informações de pagamento e detalhes necessários para logística de viagens (como passaporte e vistos).',
             ),
 
             _buildSection(
+              context,
               '2. Uso dos Dados',
               'Utilizamos seus dados para:\n• Processar e gerenciar missões técnicas e viagens.\n• Enviar atualizações sobre o mercado e novas oportunidades de negócios.\n• Prestar suporte personalizado durante eventos.\n• Cumprir obrigações legais e regulatórias.',
             ),
 
             _buildSection(
+              context,
               '3. Compartilhamento e Proteção',
               'Não compartilhamos informações com terceiros, exceto quando necessário para a prestação de serviços (parcerias logísticas, hotéis, órgãos governamentais) ou por obrigação legal. Adotamos práticas de criptografia e medidas de segurança para proteger sua privacidade.',
             ),
 
             _buildSection(
+              context,
               '4. Aplicativo Móvel',
               'Nosso aplicativo pode coletar fotos e vídeos fornecidos por você para funcionalidade social e registro de missões. Estes dados não são compartilhados com fins comerciais externos e você pode solicitar a eliminação de sua conta e dados a qualquer momento.',
             ),
 
             _buildSection(
+              context,
               '5. Seus Direitos',
               'Você tem o direito de acessar, retificar ou solicitar a exclusão de seus dados pessoais. Para exercer esses direitos, entre em contato conosco através dos canais de suporte no aplicativo.',
             ),
@@ -74,7 +83,7 @@ class PrivacyPolicyPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, String content) {
+  Widget _buildSection(BuildContext context, String title, String content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
@@ -84,14 +93,16 @@ class PrivacyPolicyPage extends StatelessWidget {
             title,
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             content,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.5,
             ),
           ),

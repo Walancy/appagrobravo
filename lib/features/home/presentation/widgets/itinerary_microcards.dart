@@ -76,7 +76,7 @@ class ItineraryMicrocards extends StatelessWidget {
                     itemCount: upcomingItems.length,
                     itemBuilder: (context, index) {
                       final item = upcomingItems[index];
-                      return _buildMicrocard(item);
+                      return _buildMicrocard(context, item);
                     },
                   ),
                 ),
@@ -89,7 +89,7 @@ class ItineraryMicrocards extends StatelessWidget {
     );
   }
 
-  Widget _buildMicrocard(ItineraryItemEntity item) {
+  Widget _buildMicrocard(BuildContext context, ItineraryItemEntity item) {
     IconData icon;
     String typeLabel;
 
@@ -139,11 +139,17 @@ class ItineraryMicrocards extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.all(10), // Reduced internal padding
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF1E1E1E)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.2
+                    : 0.04,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -187,7 +193,7 @@ class ItineraryMicrocards extends StatelessWidget {
             Text(
               typeLabel,
               style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontSize: 10, // Smaller type label
               ),
             ),
@@ -197,7 +203,7 @@ class ItineraryMicrocards extends StatelessWidget {
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 13, // Smaller item name
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

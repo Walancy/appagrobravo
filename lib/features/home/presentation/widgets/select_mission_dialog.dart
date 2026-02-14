@@ -22,7 +22,7 @@ class SelectMissionDialog extends StatelessWidget {
         selectedMission ?? (missions.isNotEmpty ? missions.first : null);
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -51,7 +51,7 @@ class SelectMissionDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            const Divider(),
+            Divider(color: Theme.of(context).dividerColor.withOpacity(0.5)),
             const SizedBox(height: AppSpacing.md),
 
             // Mission List (assuming a few for now, otherwise scrollable)
@@ -73,7 +73,9 @@ class SelectMissionDialog extends StatelessWidget {
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.primary
-                                  : Colors.black12,
+                                  : Theme.of(
+                                      context,
+                                    ).dividerColor.withOpacity(0.5),
                               width: isSelected ? 2 : 1,
                             ),
                           ),
@@ -81,7 +83,11 @@ class SelectMissionDialog extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: 24,
-                                backgroundColor: Colors.grey[100],
+                                backgroundColor:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : AppColors.background,
                                 backgroundImage: mission.logo != null
                                     ? NetworkImage(mission.logo!)
                                     : null,

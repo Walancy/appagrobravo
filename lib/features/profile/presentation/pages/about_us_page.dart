@@ -11,7 +11,7 @@ class AboutUsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const AppHeader(mode: HeaderMode.back, title: 'Sobre nós'),
       body: SingleChildScrollView(
         child: Column(
@@ -28,11 +28,11 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            _buildAboutContent(),
+            _buildAboutContent(context),
             const SizedBox(height: AppSpacing.xxl),
-            _buildValues(),
+            _buildValues(context),
             const SizedBox(height: AppSpacing.xxl),
-            _buildVersionInfo(),
+            _buildVersionInfo(context),
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
@@ -40,7 +40,7 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutContent() {
+  Widget _buildAboutContent(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
@@ -55,7 +55,9 @@ class AboutUsPage extends StatelessWidget {
             'Nossa visão é construir pontes estratégicas para impulsionar o agronegócio além das fronteiras, proporcionando acesso exclusivo às tecnologias mais avançadas e networking de alto nível.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.6,
             ),
           ),
@@ -64,25 +66,28 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildValues() {
+  Widget _buildValues(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
       color: AppColors.primary.withOpacity(0.05),
       child: Column(
         children: [
           _buildValueItem(
+            context,
             Icons.public,
             'Conexão Global',
             'Presença estratégica na Ásia, Europa, EUA e América Latina.',
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildValueItem(
+            context,
             Icons.lightbulb_outline,
             'Expertise Técnica',
             'Conhecimento tático e inteligência de mercado aplicada ao campo.',
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildValueItem(
+            context,
             Icons.groups_outlined,
             'Networking de Alto Nível',
             'Ecossistema completo de facilitação de negócios internacionais.',
@@ -92,7 +97,12 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildValueItem(IconData icon, String title, String description) {
+  Widget _buildValueItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String description,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -112,7 +122,9 @@ class AboutUsPage extends StatelessWidget {
               Text(
                 description,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -122,7 +134,7 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVersionInfo() {
+  Widget _buildVersionInfo(BuildContext context) {
     return Column(
       children: [
         Text(
@@ -133,7 +145,9 @@ class AboutUsPage extends StatelessWidget {
         Text(
           'Versão 1.0.0 (Build 2026)',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: AppSpacing.md),

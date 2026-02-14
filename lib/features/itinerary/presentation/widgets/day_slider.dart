@@ -41,10 +41,14 @@ class DaySlider extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               width: 50,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.white,
+                color: isSelected
+                    ? AppColors.primary
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : Colors.grey.shade100,
+                  color: isSelected
+                      ? AppColors.primary
+                      : Theme.of(context).dividerColor.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -59,7 +63,9 @@ class DaySlider extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isSelected
                           ? Colors.white
-                          : AppColors.textSecondary,
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                       fontSize: 10,
                       fontWeight: isSelected
                           ? FontWeight.w600
@@ -70,7 +76,9 @@ class DaySlider extends StatelessWidget {
                   Text(
                     date.day.toString(),
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),

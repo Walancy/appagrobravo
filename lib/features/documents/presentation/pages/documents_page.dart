@@ -21,7 +21,6 @@ class DocumentsPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => getIt<DocumentsCubit>()..loadDocuments(),
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: const AppHeader(
           mode: HeaderMode.back,
           title: 'Meus documentos',
@@ -215,17 +214,17 @@ class _DocumentTypeButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
               color: (isPending || isAlert)
                   ? statusColor.withOpacity(0.5)
-                  : AppColors.backgroundLight,
+                  : Theme.of(context).dividerColor.withOpacity(0.1),
               width: (isPending || isAlert) ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withOpacity(0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

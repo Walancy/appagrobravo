@@ -184,7 +184,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
     // Helper to build image provider based on path type
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppHeader(
         mode: HeaderMode.back,
         title: _isEditing ? 'Editar post' : 'Novo post',
@@ -434,17 +433,21 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   // Caption Input
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextField(
                       controller: _captionController,
                       maxLines: 3,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Adicione uma legenda',
                         border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: TextStyle(
+                          color: Theme.of(context).hintColor,
+                        ),
                       ),
                     ),
                   ),

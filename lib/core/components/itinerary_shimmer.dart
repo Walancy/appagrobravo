@@ -7,6 +7,10 @@ class ItineraryShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Column(
@@ -20,8 +24,8 @@ class ItineraryShimmer extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: 5,
               itemBuilder: (context, index) => Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
+                baseColor: baseColor,
+                highlightColor: highlightColor,
                 child: Container(
                   width: 60,
                   margin: const EdgeInsets.only(right: 12),
@@ -43,8 +47,8 @@ class ItineraryShimmer extends StatelessWidget {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
+                baseColor: baseColor,
+                highlightColor: highlightColor,
                 child: Container(
                   height: 120,
                   decoration: BoxDecoration(

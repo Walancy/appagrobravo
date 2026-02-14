@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/components/app_header.dart';
@@ -80,10 +81,28 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    try {
+      final image = await picker.pickImage(source: source);
+      if (image != null && mounted) {
+        context.read<ChatDetailCubit>().sendMessage('', image: image);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao selecionar imagem')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.chatBackground,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.chatBackgroundDark
+          : AppColors.chatBackground,
       appBar: AppHeader(
         mode: HeaderMode.back,
         title: widget.guide.name,
@@ -92,7 +111,7 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            color: Theme.of(context).colorScheme.surface,
             shape: BoxShape.circle,
             image: widget.guide.avatarUrl != null
                 ? DecorationImage(
@@ -102,21 +121,32 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                 : null,
           ),
           child: widget.guide.avatarUrl == null
-              ? const Icon(Icons.person, color: Colors.grey)
+              ? Icon(
+                  Icons.person,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.5),
+                )
               : null,
         ),
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: AppColors.chatBackground,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.chatBackgroundDark
+              : AppColors.chatBackground,
           image: DecorationImage(
             image: const AssetImage('assets/images/chat_pattern.png'),
             repeat: ImageRepeat.repeat,
             colorFilter: ColorFilter.mode(
-              Colors.white.withOpacity(0.0),
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.5)
+                  : Colors.white.withOpacity(0.0),
               BlendMode.dstATop,
             ),
-            opacity: 0.1,
+            opacity: Theme.of(context).brightness == Brightness.dark
+                ? 0.05
+                : 0.1,
           ),
         ),
         child: Column(
@@ -128,18 +158,18 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    bottom: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                 ),
                 child: Row(
                   children: [
                     Text(
                       '${_selectedMessageIds.length} selecionada(s)',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const Spacer(),
@@ -173,7 +203,10 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(
+                        Icons.close,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                       onPressed: () {
                         setState(() {
                           _selectedMessageIds.clear();
@@ -305,6 +338,8 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                   _editingMessageId = null;
                 });
               },
+              onImagePicked: () => _pickImage(ImageSource.gallery),
+              onCameraPicked: () => _pickImage(ImageSource.camera),
               onSendMessage: (text) {
                 if (_editingMessageId != null) {
                   context.read<ChatDetailCubit>().editMessage(

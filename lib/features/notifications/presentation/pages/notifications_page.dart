@@ -19,7 +19,6 @@ class NotificationsPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => getIt<NotificationsCubit>()..loadNotifications(),
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: const AppHeader(mode: HeaderMode.back, title: 'Notificações'),
         body: BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
@@ -128,9 +127,17 @@ class NotificationsPage extends StatelessWidget {
                   backgroundImage: followRequests[0].userAvatar != null
                       ? NetworkImage(followRequests[0].userAvatar!)
                       : null,
-                  backgroundColor: AppColors.backgroundLight,
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : AppColors.backgroundLight,
                   child: followRequests[0].userAvatar == null
-                      ? const Icon(Icons.person, color: AppColors.textSecondary)
+                      ? Icon(
+                          Icons.person,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
+                        )
                       : null,
                 ),
                 if (followRequests.length > 1)
@@ -139,8 +146,8 @@ class NotificationsPage extends StatelessWidget {
                     top: 12,
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
                         shape: BoxShape.circle,
                       ),
                       child: CircleAvatar(
@@ -148,11 +155,16 @@ class NotificationsPage extends StatelessWidget {
                         backgroundImage: followRequests[1].userAvatar != null
                             ? NetworkImage(followRequests[1].userAvatar!)
                             : null,
-                        backgroundColor: AppColors.backgroundLight,
+                        backgroundColor:
+                            Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : AppColors.backgroundLight,
                         child: followRequests[1].userAvatar == null
-                            ? const Icon(
+                            ? Icon(
                                 Icons.person,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
                               )
                             : null,
                       ),
@@ -174,7 +186,9 @@ class NotificationsPage extends StatelessWidget {
                   Text(
                     '${followRequests[0].userName}${followRequests.length > 1 ? ' + outras ${followRequests.length - 1} contas' : ''}',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -210,9 +224,13 @@ class NotificationsPage extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.black12),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
-              child: const Icon(Icons.check, size: 18, color: Colors.black),
+              child: Icon(
+                Icons.check,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             const SizedBox(width: 12),
             Column(
@@ -227,7 +245,9 @@ class NotificationsPage extends StatelessWidget {
                 Text(
                   'Você viu todas as notificações',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -251,7 +271,7 @@ class NotificationsPage extends StatelessWidget {
         title,
         style: AppTextStyles.h3.copyWith(
           fontSize: 16,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -306,7 +326,7 @@ class _NotificationItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _buildLeading(),
+            _buildLeading(context),
             const SizedBox(width: 12),
             Expanded(
               child: RichText(
@@ -314,7 +334,7 @@ class _NotificationItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 text: TextSpan(
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   children: [
                     TextSpan(
@@ -327,7 +347,9 @@ class _NotificationItem extends StatelessWidget {
                     TextSpan(
                       text: _formatTime(notification.createdAt),
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                         fontSize: 13,
                       ),
                     ),
@@ -343,7 +365,7 @@ class _NotificationItem extends StatelessWidget {
     );
   }
 
-  Widget _buildLeading() {
+  Widget _buildLeading(BuildContext context) {
     IconData? icon;
     Color? bgColor;
     Color iconColor = AppColors.primary;
@@ -387,9 +409,16 @@ class _NotificationItem extends StatelessWidget {
       backgroundImage: notification.userAvatar != null
           ? NetworkImage(notification.userAvatar!)
           : null,
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.1)
+          : AppColors.backgroundLight,
       child: notification.userAvatar == null
-          ? const Icon(Icons.person, color: AppColors.textSecondary)
+          ? Icon(
+              Icons.person,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
+            )
           : null,
     );
   }
@@ -450,10 +479,12 @@ class _NotificationItem extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.close,
               size: 18,
-              color: AppColors.textSecondary,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             onPressed: () {
               if (notification.solicitacaoUserId != null) {

@@ -30,6 +30,7 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
@@ -64,7 +65,10 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            const Divider(height: 1),
+            Divider(
+              height: 1,
+              color: Theme.of(context).dividerColor.withOpacity(0.5),
+            ),
             const SizedBox(height: AppSpacing.lg),
 
             // Location and Date
@@ -122,7 +126,10 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
             ),
 
             const SizedBox(height: AppSpacing.xl),
-            const Divider(height: 1),
+            Divider(
+              height: 1,
+              color: Theme.of(context).dividerColor.withOpacity(0.5),
+            ),
             const SizedBox(height: AppSpacing.xl),
 
             // Pending Docs Warning
@@ -183,7 +190,10 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
             ),
 
             const SizedBox(height: AppSpacing.lg),
-            const Divider(height: 1),
+            Divider(
+              height: 1,
+              color: Theme.of(context).dividerColor.withOpacity(0.5),
+            ),
             const SizedBox(height: AppSpacing.xl),
 
             // Buttons
@@ -202,10 +212,10 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Fechar',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -253,11 +263,17 @@ class _MissionAlertDialogState extends State<MissionAlertDialog> {
           width: 54,
           height: 54,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.dark
+                      ? 0.2
+                      : 0.05,
+                ),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

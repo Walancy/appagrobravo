@@ -61,8 +61,12 @@ class ChatBubble extends StatelessWidget {
 
     final bool useGreen = isMe;
 
-    final bgColor = useGreen ? const Color(0xFF00AA6C) : Colors.white;
-    final textColor = useGreen ? Colors.white : Colors.black87;
+    final bgColor = useGreen
+        ? const Color(0xFF00AA6C)
+        : Theme.of(context).colorScheme.surface;
+    final textColor = useGreen
+        ? Colors.white
+        : Theme.of(context).colorScheme.onSurface;
 
     final align = isMe ? MainAxisAlignment.end : MainAxisAlignment.start;
     final borderRadius = BorderRadius.only(
@@ -96,7 +100,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
               if (!isMe && showAvatar) ...[
-                _buildAvatarWidget(),
+                _buildAvatarWidget(context),
                 const SizedBox(width: 8),
               ],
               Flexible(
@@ -116,7 +120,13 @@ class ChatBubble extends StatelessWidget {
                           borderRadius: borderRadius,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(
+                                alpha:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? 0.2
+                                    : 0.05,
+                              ),
                               blurRadius: 2,
                               offset: const Offset(0, 1),
                             ),
@@ -189,7 +199,11 @@ class ChatBubble extends StatelessWidget {
                                           height: 200,
                                           placeholder: (context, url) => Container(
                                             height: 200,
-                                            color: Colors.grey.shade200,
+                                            color:
+                                                Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[200],
                                             child: const Center(
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
@@ -224,8 +238,10 @@ class ChatBubble extends StatelessWidget {
                                       color:
                                           (isMe
                                                   ? Colors.white
-                                                  : Colors.grey.shade100)
-                                              .withOpacity(0.2),
+                                                  : Theme.of(
+                                                      context,
+                                                    ).dividerColor)
+                                              .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border(
                                         left: BorderSide(
@@ -440,7 +456,7 @@ class ChatBubble extends StatelessWidget {
           Text(
             'Ver mais...',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFF00AA6C),
+              color: AppColors.primary,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -454,12 +470,14 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatarWidget() {
+  Widget _buildAvatarWidget(BuildContext context) {
     return Container(
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[800]
+            : Colors.grey[300],
         shape: BoxShape.circle,
       ),
       clipBehavior: Clip.antiAlias,
@@ -467,10 +485,21 @@ class ChatBubble extends StatelessWidget {
           ? Image.network(
               userAvatarUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.person, color: Colors.white, size: 20),
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.person,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                size: 20,
+              ),
             )
-          : const Icon(Icons.person, color: Colors.white, size: 20),
+          : Icon(
+              Icons.person,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
+              size: 20,
+            ),
     );
   }
 

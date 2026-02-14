@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/components/app_header.dart';
@@ -83,10 +84,28 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    try {
+      final image = await picker.pickImage(source: source);
+      if (image != null && mounted) {
+        context.read<ChatDetailCubit>().sendMessage('', image: image);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao selecionar imagem')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.chatBackground,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.chatBackgroundDark
+          : AppColors.chatBackground,
       appBar: AppHeader(
         mode: HeaderMode.back,
         title: widget.chat.title,
@@ -117,27 +136,31 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(
+            icon: Icon(
               Icons.notifications_none_rounded,
               size: 28,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: AppColors.chatBackground,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.chatBackgroundDark
+              : AppColors.chatBackground,
           image: DecorationImage(
             image: const AssetImage('assets/images/chat_pattern.png'),
             repeat: ImageRepeat.repeat,
             colorFilter: ColorFilter.mode(
-              Colors.white.withOpacity(
-                0.0,
-              ), // No opacity needed if image is already good, or adjust
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.5)
+                  : Colors.white.withOpacity(0.0),
               BlendMode.dstATop,
             ),
-            opacity: 0.1, // Keep subtle overlay
+            opacity: Theme.of(context).brightness == Brightness.dark
+                ? 0.05
+                : 0.1, // Keep subtle overlay
           ),
         ),
         child: Column(
@@ -149,9 +172,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    bottom: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                 ),
                 child: Row(
@@ -287,9 +310,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                           ),
                                           child: Text(
                                             _formatDateHeader(msg.timestamp),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 12,
-                                              color: Colors.black54,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.6),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -397,6 +423,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   _replyingToMessage = null;
                 });
               },
+              onImagePicked: () => _pickImage(ImageSource.gallery),
+              onCameraPicked: () => _pickImage(ImageSource.camera),
               onSendMessage: (text) {
                 if (_editingMessageId != null) {
                   context.read<ChatDetailCubit>().editMessage(

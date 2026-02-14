@@ -26,7 +26,6 @@ class ProfileTab extends StatelessWidget {
     return BlocProvider(
       create: (context) => getIt<ProfileCubit>()..loadProfile(userId),
       child: Scaffold(
-        backgroundColor: Colors.white,
         extendBodyBehindAppBar: true,
         appBar: userId != null
             ? const AppHeader(mode: HeaderMode.back, title: 'Perfil')

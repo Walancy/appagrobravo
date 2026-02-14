@@ -25,7 +25,9 @@ class GuideCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF1E1E1E)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -39,7 +41,9 @@ class GuideCard extends StatelessWidget {
                   image: NetworkImage(avatarUrl),
                   fit: BoxFit.cover,
                 ),
-                color: Colors.grey[200],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.grey[200],
               ),
             ),
             const SizedBox(width: AppSpacing.md),

@@ -7,6 +7,10 @@ class ProfileShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -19,16 +23,16 @@ class ProfileShimmer extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(height: 180, color: Colors.white),
                 ),
                 Positioned(
                   top: 120,
                   left: 16,
                   child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: baseColor,
+                    highlightColor: highlightColor,
                     child: Container(
                       width: 110,
                       height: 110,
@@ -50,8 +54,8 @@ class ProfileShimmer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: 200,
                     height: 24,
@@ -63,8 +67,8 @@ class ProfileShimmer extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   child: Container(
                     width: 150,
                     height: 16,
@@ -85,8 +89,8 @@ class ProfileShimmer extends StatelessWidget {
               children: [
                 Expanded(
                   child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: baseColor,
+                    highlightColor: highlightColor,
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
@@ -101,8 +105,8 @@ class ProfileShimmer extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: baseColor,
+                    highlightColor: highlightColor,
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
@@ -130,8 +134,8 @@ class ProfileShimmer extends StatelessWidget {
             ),
             itemCount: 9,
             itemBuilder: (context, index) => Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
-              highlightColor: Colors.grey[100]!,
+              baseColor: baseColor,
+              highlightColor: highlightColor,
               child: Container(color: Colors.white),
             ),
           ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:agrobravo/core/tokens/app_colors.dart';
+
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 
@@ -46,7 +46,9 @@ class ProfileInfo extends StatelessWidget {
                   if (groupName != null && groupName!.isNotEmpty) groupName,
                 ].join(' - '),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 12,
                 ),
                 maxLines: 2,
@@ -59,7 +61,7 @@ class ProfileInfo extends StatelessWidget {
             Text(
               jobTitle!,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 2,
@@ -73,7 +75,9 @@ class ProfileInfo extends StatelessWidget {
             Text(
               bio!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               maxLines: 5,
               overflow: TextOverflow.ellipsis,

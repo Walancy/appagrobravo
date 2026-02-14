@@ -51,10 +51,14 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                       height: 90,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.7),
                         border: Border(
                           bottom: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.1),
                             width: 1,
                           ),
                         ),

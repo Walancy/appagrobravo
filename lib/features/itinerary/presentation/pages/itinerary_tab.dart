@@ -22,7 +22,6 @@ class ItineraryTab extends StatelessWidget {
       create: (context) => GetIt.I<ItineraryCubit>()..loadUserItinerary(),
       child: Scaffold(
         // Inner scaffold to handle background and body
-        backgroundColor: AppColors.backgroundLight,
         body: BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
             return state.maybeWhen(
@@ -92,7 +91,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
     final result = await showDialog<ItineraryFilters>(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ItineraryFilterModal(
@@ -115,7 +114,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF5F5F5), // Light grey background
+      color: Theme.of(context).colorScheme.surface, // Theme-aware background
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -128,7 +127,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
             child: Text(
               'Termina em 7 dias', // Dynamic in future
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -166,7 +165,9 @@ class _ItineraryContentState extends State<ItineraryContent> {
                   style: AppTextStyles.bodySmall.copyWith(
                     color: _filters.isActive
                         ? AppColors.primary
-                        : AppColors.textSecondary,
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: _filters.isActive
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -182,12 +183,12 @@ class _ItineraryContentState extends State<ItineraryContent> {
                     decoration: BoxDecoration(
                       color: _filters.isActive
                           ? AppColors.primary.withOpacity(0.1)
-                          : Colors.white,
+                          : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _filters.isActive
                             ? AppColors.primary
-                            : Colors.grey.shade200,
+                            : Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                     ),
                     child: Row(
@@ -197,7 +198,9 @@ class _ItineraryContentState extends State<ItineraryContent> {
                           size: 16,
                           color: _filters.isActive
                               ? AppColors.primary
-                              : AppColors.textSecondary,
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -206,7 +209,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
                             fontWeight: FontWeight.w600,
                             color: _filters.isActive
                                 ? AppColors.primary
-                                : AppColors.textPrimary,
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],

@@ -81,7 +81,9 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
             children: [
               Text(
                 'Filtros',
-                style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+                style: AppTextStyles.h3.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -114,12 +116,17 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                     ),
                     label: Text(_getTypeLabel(type)),
                     labelStyle: AppTextStyles.bodySmall.copyWith(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.normal,
                     ),
-                    backgroundColor: Colors.grey.shade100,
+                    backgroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.shade100,
                     selectedColor: AppColors.primary,
                     onSelected: (_) => _toggleType(type),
                     shape: RoundedRectangleBorder(
@@ -127,7 +134,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       side: BorderSide(
                         color: isSelected
                             ? AppColors.primary
-                            : Colors.grey.shade200,
+                            : Theme.of(context).dividerColor.withOpacity(0.1),
                       ),
                     ),
                     showCheckmark: false,
@@ -163,16 +170,18 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_today,
                               size: 16,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -181,7 +190,9 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                                       'dd/MM/yyyy',
                                     ).format(_selectedDate!)
                                   : 'Selecionar',
-                              style: AppTextStyles.bodySmall,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
@@ -210,23 +221,27 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.access_time,
                               size: 16,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               _selectedTime != null
                                   ? _selectedTime!.format(context)
                                   : 'Selecionar',
-                              style: AppTextStyles.bodySmall,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
@@ -257,7 +272,12 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Limpar'),
+                  child: Text(
+                    'Limpar',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -347,7 +367,10 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppColors.primary),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.primary,
+              brightness: Theme.of(context).brightness,
+            ),
           ),
           child: child!,
         );
@@ -365,7 +388,10 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppColors.primary),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.primary,
+              brightness: Theme.of(context).brightness,
+            ),
           ),
           child: child!,
         );

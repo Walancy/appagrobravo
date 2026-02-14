@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:agrobravo/core/tokens/app_colors.dart';
+
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 
 class ProfileHeaderStats extends StatelessWidget {
@@ -24,22 +24,24 @@ class ProfileHeaderStats extends StatelessWidget {
         GestureDetector(
           onTap: onConnectionsTap,
           behavior: HitTestBehavior.opaque,
-          child: _buildStatItem('$connections', 'conexões'),
+          child: _buildStatItem(context, '$connections', 'conexões'),
         ),
-        _buildStatItem('$posts', 'Posts'),
-        _buildStatItem('$missions', 'Missões'),
+        _buildStatItem(context, '$posts', 'Posts'),
+        _buildStatItem(context, '$missions', 'Missões'),
       ],
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
+  Widget _buildStatItem(BuildContext context, String value, String label) {
     return Column(
       children: [
         Text(value, style: AppTextStyles.h2.copyWith(fontSize: 20)),
         Text(
           label,
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

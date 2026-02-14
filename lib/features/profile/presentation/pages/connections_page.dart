@@ -98,7 +98,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppHeader(mode: HeaderMode.back, title: 'Conexões'),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -112,7 +112,9 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey.shade800
+                          : Colors.grey[100],
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                     child: TextField(
@@ -120,9 +122,11 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                       style: AppTextStyles.bodyMedium,
                       decoration: InputDecoration(
                         hintText: 'Pesquisar',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.search,
-                          color: Colors.grey,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                           size: 20,
                         ),
                         border: InputBorder.none,
@@ -141,10 +145,12 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                 if (_isMe)
                   TabBar(
                     controller: _tabController,
-                    indicatorColor: Colors.black,
+                    indicatorColor: Theme.of(context).colorScheme.onSurface,
                     indicatorWeight: 1,
-                    labelColor: Colors.black,
-                    unselectedLabelColor: Colors.grey,
+                    labelColor: Theme.of(context).colorScheme.onSurface,
+                    unselectedLabelColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     labelStyle: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -231,7 +237,10 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                 onTap: () => context.push('/profile/${user.id}'),
                 child: CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : Colors.grey[100],
                   backgroundImage: user.avatarUrl != null
                       ? NetworkImage(user.avatarUrl!)
                       : null,
@@ -260,7 +269,9 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                         Text(
                           user.jobTitle!,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.grey,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                     ],
@@ -365,8 +376,14 @@ class _ConnectionsPageState extends State<ConnectionsPage>
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary ? AppColors.primary : Colors.grey[200],
-          foregroundColor: isPrimary ? Colors.white : Colors.black,
+          backgroundColor: isPrimary
+              ? AppColors.primary
+              : (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey.shade800
+                    : Colors.grey[200]),
+          foregroundColor: isPrimary
+              ? Colors.white
+              : Theme.of(context).colorScheme.onSurface,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -376,7 +393,9 @@ class _ConnectionsPageState extends State<ConnectionsPage>
           style: AppTextStyles.bodySmall.copyWith(
             fontWeight: FontWeight.w600,
             fontSize: 13,
-            color: isPrimary ? Colors.white : Colors.black,
+            color: isPrimary
+                ? Colors.white
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),

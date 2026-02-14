@@ -19,7 +19,7 @@ class ItineraryPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => GetIt.I<ItineraryCubit>()..loadItinerary(groupId),
       child: Scaffold(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
           title: Text(
             'Itinerário',
