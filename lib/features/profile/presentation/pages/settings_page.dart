@@ -12,6 +12,7 @@ import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart
 import 'package:go_router/go_router.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -141,24 +142,30 @@ class SettingsPage extends StatelessWidget {
         children: [
           Stack(
             children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : AppColors.backgroundLight,
-                  image: profile.avatarUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(profile.avatarUrl!),
+              ClipOval(
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : AppColors.backgroundLight,
+                  ),
+                  child: profile.avatarUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: profile.avatarUrl!,
                           fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
                         )
-                      : null,
+                      : const Icon(Icons.person, size: 50, color: Colors.grey),
                 ),
-                child: profile.avatarUrl == null
-                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                    : null,
               ),
               Positioned(
                 right: 0,

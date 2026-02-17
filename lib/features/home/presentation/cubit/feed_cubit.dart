@@ -12,6 +12,17 @@ class FeedCubit extends Cubit<FeedState> {
 
   FeedCubit(this._feedRepository) : super(const FeedState.initial());
 
+  String _mapFailure(Object failure) {
+    final message = failure.toString();
+    if (message.contains('SocketException') ||
+        message.contains('ClientException') ||
+        message.contains('Network is unreachable') ||
+        message.contains('Failed host lookup')) {
+      return 'Sem conexão com a internet. Verifique sua rede.';
+    }
+    return message.replaceAll('Exception: ', '');
+  }
+
   Future<void> loadFeed() async {
     emit(const FeedState.loading());
 
@@ -22,7 +33,7 @@ class FeedCubit extends Cubit<FeedState> {
     final canPost = canPostResult.getOrElse(() => false);
     final missionAlert = missionAlertResult.getOrElse(() => null);
 
-    feedResult.fold((error) => emit(FeedState.error(error.toString())), (
+    feedResult.fold((error) => emit(FeedState.error(_mapFailure(error))), (
       posts,
     ) async {
       MissionEntity? missionToAlert;
@@ -118,6 +129,8 @@ class FeedCubit extends Cubit<FeedState> {
           // Rollback
           // In this case, we'd theoretically re-fetch or put it back,
           // but for simplicity we reload the feed on error to restore state
+          // Using strict reload might show error state if offline, so careful.
+          // But deletePost likely requires online.
           loadFeed();
         }, (_) => null);
       },

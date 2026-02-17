@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -113,12 +114,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         // Using logo param to show group image, similar to home showing app logo
         logo: ClipOval(
           child: widget.chat.imageUrl != null
-              ? Image.network(
-                  widget.chat.imageUrl!,
+              ? CachedNetworkImage(
+                  imageUrl: widget.chat.imageUrl!,
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildPlaceholderAvatar(),
+                  placeholder: (_, __) => _buildPlaceholderAvatar(),
+                  errorWidget: (_, __, ___) => _buildPlaceholderAvatar(),
                 )
               : _buildPlaceholderAvatar(),
         ),

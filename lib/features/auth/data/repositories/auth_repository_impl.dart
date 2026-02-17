@@ -6,12 +6,36 @@ import 'package:agrobravo/features/auth/domain/entities/user_entity.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/data/models/user_model.dart';
 import 'dart:developer';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseClient _supabaseClient;
 
   AuthRepositoryImpl(this._supabaseClient);
+
+  Future<void> _saveUserToPreferences(UserModel user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_user_profile', jsonEncode(user.toJson()));
+    } catch (e) {
+      log('Erro ao salvar usuário no cache: $e');
+    }
+  }
+
+  Future<UserModel?> _getUserFromPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_user_profile');
+      if (jsonString != null) {
+        return UserModel.fromJson(jsonDecode(jsonString));
+      }
+    } catch (e) {
+      log('Erro ao recuperar usuário do cache: $e');
+    }
+    return null;
+  }
 
   @override
   Future<Either<Exception, UserEntity>> signInWithEmailAndPassword({
@@ -36,6 +60,8 @@ class AuthRepositoryImpl implements AuthRepository {
           .single();
 
       final userModel = UserModel.fromJson(userProfile);
+      await _saveUserToPreferences(userModel);
+
       return Right(userModel.toEntity());
     } on AuthException catch (e) {
       log('Auth Error: ${e.message}');
@@ -82,14 +108,18 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Retorna a entidade (construída manualmente pois o fetch pode ter delay)
-      return Right(
-        UserEntity(
-          id: response.user!.id,
-          email: email,
-          name: name,
-          roles: [userType],
-        ),
+      final userModel = UserModel(
+        id: response.user!.id,
+        email: email,
+        nome: name,
+        roles: [userType],
+        foto: null,
       );
+
+      // Cache this basic model as well so subsequent immediate offline starts have something
+      await _saveUserToPreferences(userModel);
+
+      return Right(userModel.toEntity());
     } on AuthException catch (e) {
       return Left(Exception(e.message));
     } catch (e) {
@@ -100,6 +130,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() async {
     await _supabaseClient.auth.signOut();
+    // Clear cache on sign out
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('cached_user_profile');
   }
 
   @override
@@ -115,11 +148,17 @@ class AuthRepositoryImpl implements AuthRepository {
           .single();
 
       final userModel = UserModel.fromJson(userProfile);
+      await _saveUserToPreferences(userModel);
       return some(userModel.toEntity());
     } catch (e) {
-      log('Erro ao recuperar usuário atual: $e');
-      // Se falhar ao pegar o perfil, desloga ou retorna none?
-      // Retornar none força um novo login, o que é seguro.
+      log('Erro ao recuperar usuário atual: $e. Tentando cache offline.');
+      final cachedUser = await _getUserFromPreferences();
+      if (cachedUser != null && cachedUser.id == user.id) {
+        return some(cachedUser.toEntity());
+      }
+      // If we are offline and have no cache, we currently force logout/none.
+      // Alternatively, we could construct a basic UserEntity from Supabase User metadata if available,
+      // but complete functional offline usage likely requires the profile.
       return none();
     }
   }

@@ -7,6 +7,8 @@ import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
 import 'package:agrobravo/features/home/data/models/post_model.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: ProfileRepository)
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -14,13 +16,101 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   ProfileRepositoryImpl(this._supabaseClient);
 
+  Future<void> _saveProfileToCache(ProfileEntity profile) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final Map<String, dynamic> json = {
+        'id': profile.id,
+        'name': profile.name,
+        'avatarUrl': profile.avatarUrl,
+        'coverUrl': profile.coverUrl,
+        'jobTitle': profile.jobTitle,
+        'company': profile.company,
+        'bio': profile.bio,
+        'missionName': profile.missionName,
+        'groupName': profile.groupName,
+        'email': profile.email,
+        'phone': profile.phone,
+        'cpf': profile.cpf,
+        'ssn': profile.ssn,
+        'zipCode': profile.zipCode,
+        'state': profile.state,
+        'city': profile.city,
+        'street': profile.street,
+        'number': profile.number,
+        'neighborhood': profile.neighborhood,
+        'complement': profile.complement,
+        'birthDate': profile.birthDate?.toIso8601String(),
+        'nationality': profile.nationality,
+        'passport': profile.passport,
+        'foodPreferences': profile.foodPreferences,
+        'medicalRestrictions': profile.medicalRestrictions,
+        'connectionsCount': profile.connectionsCount,
+        'postsCount': profile.postsCount,
+        'missionsCount': profile.missionsCount,
+        'connectionStatus': profile.connectionStatus.index,
+      };
+      await prefs.setString('cached_profile_${profile.id}', jsonEncode(json));
+    } catch (e) {
+      debugPrint('Erro ao salvar perfil no cache: $e');
+    }
+  }
+
+  Future<ProfileEntity?> _getProfileFromCache(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_profile_$userId');
+      if (jsonString != null) {
+        final Map<String, dynamic> json = jsonDecode(jsonString);
+        return ProfileEntity(
+          id: json['id'],
+          name: json['name'],
+          avatarUrl: json['avatarUrl'],
+          coverUrl: json['coverUrl'],
+          jobTitle: json['jobTitle'],
+          company: json['company'],
+          bio: json['bio'],
+          missionName: json['missionName'],
+          groupName: json['groupName'],
+          email: json['email'],
+          phone: json['phone'],
+          cpf: json['cpf'],
+          ssn: json['ssn'],
+          zipCode: json['zipCode'],
+          state: json['state'],
+          city: json['city'],
+          street: json['street'],
+          number: json['number'],
+          neighborhood: json['neighborhood'],
+          complement: json['complement'],
+          birthDate: json['birthDate'] != null
+              ? DateTime.parse(json['birthDate'])
+              : null,
+          nationality: json['nationality'],
+          passport: json['passport'],
+          foodPreferences: (json['foodPreferences'] as List?)?.cast<String>(),
+          medicalRestrictions: (json['medicalRestrictions'] as List?)
+              ?.cast<String>(),
+          connectionsCount: json['connectionsCount'] ?? 0,
+          postsCount: json['postsCount'] ?? 0,
+          missionsCount: json['missionsCount'] ?? 0,
+          connectionStatus:
+              ConnectionStatus.values[json['connectionStatus'] ?? 0],
+        );
+      }
+    } catch (e) {
+      debugPrint('Erro ao recuperar perfil do cache: $e');
+    }
+    return null;
+  }
+
   @override
   Future<Either<Exception, ProfileEntity>> getProfile(String userId) async {
     try {
       final userResponse = await _supabaseClient
           .from('users')
           .select(
-            'id, nome, foto, cargo, observacoes, capa_perfil, email, telefone, restricoes_alimentares, restricoes_medicas',
+            'id, nome, foto, cargo, observacoes, capa_perfil, email, telefone, restricoes_alimentares, restricoes_medicas, empresa, cpf, ssn, cep, estado, cidade, rua, numero, bairro, complemento, datanascimento, data_nascimento, nacionalidade, n_passaporte',
           )
           .eq('id', userId)
           .single();
@@ -91,7 +181,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
             .maybeSingle();
 
         if (missionRes != null && missionRes['grupo'] != null) {
-          debugPrint('MissionRes: $missionRes');
           final g = missionRes['grupo'];
           if (g is Map) {
             groupName = g['nome'];
@@ -105,48 +194,185 @@ class ProfileRepositoryImpl implements ProfileRepository {
         debugPrint('Error fetching mission/group: $e');
       }
 
-      return Right(
-        ProfileEntity(
-          id: userResponse['id'],
-          name: userResponse['nome'] ?? 'Sem nome',
-          avatarUrl: userResponse['foto'],
-          coverUrl: userResponse['capa_perfil'],
-          jobTitle: userResponse['cargo'],
-          bio: userResponse['observacoes'],
-          missionName: missionName,
-          groupName: groupName,
-          email: userResponse['email'],
-          phone: userResponse['telefone'],
-          cpf: userResponse['cpf'],
-          ssn: userResponse['ssn'],
-          company: userResponse['empresa'],
-          zipCode: userResponse['cep'],
-          state: userResponse['estado'],
-          city: userResponse['cidade'],
-          street: userResponse['rua'],
-          number: userResponse['numero'],
-          neighborhood: userResponse['bairro'],
-          complement: userResponse['complemento'],
-          birthDate: userResponse['datanascimento'] != null
-              ? DateTime.tryParse(userResponse['datanascimento'])
-              : (userResponse['data_nascimento'] != null
-                    ? DateTime.tryParse(userResponse['data_nascimento'])
-                    : null),
-          nationality: userResponse['nacionalidade'],
-          passport: userResponse['n_passaporte'],
-          foodPreferences: (userResponse['restricoes_alimentares'] as List?)
-              ?.cast<String>(),
-          medicalRestrictions: (userResponse['restricoes_medicas'] as List?)
-              ?.cast<String>(),
-          connectionsCount: connectionsCount,
-          postsCount: postsCount,
-          missionsCount: missionsCount,
-          connectionStatus: connectionStatus,
-        ),
+      final profile = ProfileEntity(
+        id: userResponse['id'],
+        name: userResponse['nome'] ?? 'Sem nome',
+        avatarUrl: userResponse['foto'],
+        coverUrl: userResponse['capa_perfil'],
+        jobTitle: userResponse['cargo'],
+        bio: userResponse['observacoes'],
+        missionName: missionName,
+        groupName: groupName,
+        email: userResponse['email'],
+        phone: userResponse['telefone'],
+        cpf: userResponse['cpf'],
+        ssn: userResponse['ssn'],
+        company: userResponse['empresa'],
+        zipCode: userResponse['cep'],
+        state: userResponse['estado'],
+        city: userResponse['cidade'],
+        street: userResponse['rua'],
+        number: userResponse['numero'],
+        neighborhood: userResponse['bairro'],
+        complement: userResponse['complemento'],
+        birthDate: userResponse['datanascimento'] != null
+            ? DateTime.tryParse(userResponse['datanascimento'])
+            : (userResponse['data_nascimento'] != null
+                  ? DateTime.tryParse(userResponse['data_nascimento'])
+                  : null),
+        nationality: userResponse['nacionalidade'],
+        passport: userResponse['n_passaporte'],
+        foodPreferences: (userResponse['restricoes_alimentares'] as List?)
+            ?.cast<String>(),
+        medicalRestrictions: (userResponse['restricoes_medicas'] as List?)
+            ?.cast<String>(),
+        connectionsCount: connectionsCount,
+        postsCount: postsCount,
+        missionsCount: missionsCount,
+        connectionStatus: connectionStatus,
       );
+
+      await _saveProfileToCache(profile);
+
+      return Right(profile);
     } catch (e) {
-      return Left(Exception('Erro ao buscar perfil: $e'));
+      debugPrint('Erro ao buscar perfil online: $e. Tentando cache.');
+      final cachedProfile = await _getProfileFromCache(userId);
+      if (cachedProfile != null) {
+        return Right(cachedProfile);
+      }
+      return Left(Exception('Erro ao buscar perfil e sem cache: $e'));
     }
+  }
+
+  Future<void> _saveUserPostsToCache(
+    String userId,
+    List<dynamic> jsonList,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_user_posts_$userId', jsonEncode(jsonList));
+    } catch (e) {
+      debugPrint('Erro ao salvar posts do usuário no cache: $e');
+    }
+  }
+
+  Future<List<PostEntity>> _getUserPostsFromCache(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_user_posts_$userId');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        final currentUserId = _supabaseClient.auth.currentUser?.id;
+
+        return jsonList.map((postMap) {
+          final user = postMap['users'] as Map<String, dynamic>?;
+          final missao = postMap['missoes'] as Map<String, dynamic>?;
+          final curtidasList = postMap['curtidas'] as List?;
+          final commentsList = postMap['comentarios'] as List?;
+          final likesCount = curtidasList?.length ?? 0;
+          final commentsCount = commentsList?.length ?? 0;
+          final isLiked =
+              currentUserId != null &&
+              curtidasList != null &&
+              curtidasList.any((c) => c['user_id'] == currentUserId);
+
+          return PostModel.fromJson(postMap).toEntity().copyWith(
+            userName: user?['nome'] ?? 'Usuário',
+            userAvatar: user?['foto'],
+            missionName: missao?['nome'],
+            likesCount: likesCount,
+            commentsCount: commentsCount,
+            isLiked: isLiked,
+          );
+        }).toList();
+      }
+    } catch (e) {
+      debugPrint('Erro ao recuperar posts do usuário do cache: $e');
+    }
+    return [];
+  }
+
+  Future<void> _saveConnectionsToCache(
+    String userId,
+    List<ProfileEntity> list,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = list
+          .map(
+            (p) => {
+              'id': p.id,
+              'name': p.name,
+              'avatarUrl': p.avatarUrl,
+              'coverUrl': p.coverUrl,
+              'jobTitle': p.jobTitle,
+              'company': p.company,
+              'bio': p.bio,
+              'email': p.email,
+              'phone': p.phone,
+              'city': p.city,
+              'state': p.state,
+              // minimalistic cache for list view? or full?
+              // storing basic info needed for list usually
+              'connectionStatus': p.connectionStatus.index,
+            },
+          )
+          .toList();
+      await prefs.setString('cached_connections_$userId', jsonEncode(jsonList));
+    } catch (e) {
+      debugPrint('Erro ao salvar conexões no cache: $e');
+    }
+  }
+
+  Future<List<ProfileEntity>> _getConnectionsFromCache(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_connections_$userId');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        return jsonList
+            .map(
+              (json) => ProfileEntity(
+                id: json['id'],
+                name: json['name'],
+                avatarUrl: json['avatarUrl'],
+                coverUrl: json['coverUrl'],
+                jobTitle: json['jobTitle'],
+                company: json['company'],
+                bio: json['bio'],
+                email: json['email'],
+                phone: json['phone'],
+                city: json['city'],
+                state: json['state'],
+                connectionStatus:
+                    ConnectionStatus.values[json['connectionStatus'] ?? 0],
+                // Defaults for others
+                connectionsCount: 0,
+                postsCount: 0,
+                missionsCount: 0,
+                zipCode: null,
+                street: null,
+                number: null,
+                neighborhood: null,
+                complement: null,
+                birthDate: null,
+                nationality: null,
+                passport: null,
+                cpf: null,
+                ssn: null,
+                foodPreferences: null,
+                medicalRestrictions: null,
+                missionName: null,
+                groupName: null,
+              ),
+            )
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Erro ao recuperar conexões do cache: $e');
+    }
+    return [];
   }
 
   @override
@@ -167,7 +393,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      final posts = (response as List).map((postMap) {
+      final List<dynamic> data = response as List;
+      await _saveUserPostsToCache(userId, data);
+
+      final posts = data.map((postMap) {
         final post = PostModel.fromJson(postMap);
         final user = postMap['users'] as Map<String, dynamic>?;
         final missao = postMap['missoes'] as Map<String, dynamic>?;
@@ -195,6 +424,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(posts);
     } catch (e) {
+      debugPrint('Erro ao buscar posts do usuário online: $e. Tentando cache.');
+      final cachedPosts = await _getUserPostsFromCache(userId);
+      if (cachedPosts.isNotEmpty) {
+        return Right(cachedPosts);
+      }
       return Left(Exception('Erro ao buscar posts do usuário: $e'));
     }
   }
@@ -269,12 +503,103 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .toSet()
           .toList();
 
-      if (connectionIds.isEmpty) return const Right([]);
+      if (connectionIds.isEmpty) {
+        await _saveConnectionsToCache(userId, []);
+        return const Right([]);
+      }
 
-      return _fetchProfiles(connectionIds);
+      final result = await _fetchProfiles(connectionIds);
+
+      // If result is valid, cache it
+      result.fold(
+        (l) {}, // error, ignore
+        (profiles) => _saveConnectionsToCache(userId, profiles),
+      );
+
+      return result;
     } catch (e) {
+      debugPrint('Erro ao buscar conexões online: $e. Tentando cache.');
+      final cached = await _getConnectionsFromCache(userId);
+      if (cached.isNotEmpty) {
+        return Right(cached);
+      }
       return Left(Exception('Erro ao buscar conexões: $e'));
     }
+  }
+
+  Future<void> _saveRequestsToCache(
+    String userId,
+    List<ProfileEntity> list,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Reuse connection serialization logic or simplified one
+      final jsonList = list
+          .map(
+            (p) => {
+              'id': p.id,
+              'name': p.name,
+              'avatarUrl': p.avatarUrl,
+              // Requests usually just show name/avatar
+              'jobTitle': p.jobTitle,
+              'company': p.company,
+            },
+          )
+          .toList();
+      await prefs.setString('cached_requests_$userId', jsonEncode(jsonList));
+    } catch (e) {
+      debugPrint('Erro ao salvar solicitações no cache: $e');
+    }
+  }
+
+  Future<List<ProfileEntity>> _getRequestsFromCache(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_requests_$userId');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        return jsonList
+            .map(
+              (json) => ProfileEntity(
+                id: json['id'],
+                name: json['name'],
+                avatarUrl: json['avatarUrl'],
+                jobTitle: json['jobTitle'],
+                company: json['company'],
+                // Defaults
+                coverUrl: null,
+                bio: null,
+                email: null,
+                phone: null,
+                city: null,
+                state: null,
+                connectionStatus:
+                    ConnectionStatus.pendingReceived, // It is a request!
+                connectionsCount: 0,
+                postsCount: 0,
+                missionsCount: 0,
+                zipCode: null,
+                street: null,
+                number: null,
+                neighborhood: null,
+                complement: null,
+                birthDate: null,
+                nationality: null,
+                passport: null,
+                cpf: null,
+                ssn: null,
+                foodPreferences: null,
+                medicalRestrictions: null,
+                missionName: null,
+                groupName: null,
+              ),
+            )
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Erro ao recuperar solicitações do cache: $e');
+    }
+    return [];
   }
 
   @override
@@ -292,10 +617,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .map((c) => c['seguidor_id'])
           .toList();
 
-      if (requestIds.isEmpty) return const Right([]);
+      if (requestIds.isEmpty) {
+        await _saveRequestsToCache(userId, []);
+        return const Right([]);
+      }
 
-      return _fetchProfiles(requestIds);
+      final result = await _fetchProfiles(requestIds);
+
+      result.fold(
+        (l) {}, // ignore error
+        (profiles) => _saveRequestsToCache(userId, profiles),
+      );
+
+      return result;
     } catch (e) {
+      debugPrint('Erro ao buscar solicitações online: $e. Tentando cache.');
+      final cached = await _getRequestsFromCache(userId);
+      if (cached.isNotEmpty) {
+        return Right(cached);
+      }
       return Left(Exception('Erro ao buscar solicitações: $e'));
     }
   }

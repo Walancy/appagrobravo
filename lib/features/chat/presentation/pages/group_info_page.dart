@@ -1,4 +1,5 @@
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
@@ -77,7 +78,9 @@ class _GroupInfoView extends StatelessWidget {
                                       : Colors.grey.shade200,
                                   image: chat.imageUrl != null
                                       ? DecorationImage(
-                                          image: NetworkImage(chat.imageUrl!),
+                                          image: CachedNetworkImageProvider(
+                                            chat.imageUrl!,
+                                          ),
                                           fit: BoxFit.cover,
                                         )
                                       : null,
@@ -202,9 +205,10 @@ class _GroupInfoView extends StatelessWidget {
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                               image: DecorationImage(
-                                                image: NetworkImage(
-                                                  media[index],
-                                                ),
+                                                image:
+                                                    CachedNetworkImageProvider(
+                                                      media[index],
+                                                    ),
                                                 fit: BoxFit.cover,
                                                 colorFilter: ColorFilter.mode(
                                                   Colors.black.withValues(
@@ -248,7 +252,9 @@ class _GroupInfoView extends StatelessWidget {
                                               8,
                                             ),
                                             image: DecorationImage(
-                                              image: NetworkImage(media[index]),
+                                              image: CachedNetworkImageProvider(
+                                                media[index],
+                                              ),
                                               fit: BoxFit.cover,
                                             ),
                                           ),
@@ -302,9 +308,10 @@ class _GroupInfoView extends StatelessWidget {
                                             : Colors.grey.shade200,
                                         image: member.avatarUrl != null
                                             ? DecorationImage(
-                                                image: NetworkImage(
-                                                  member.avatarUrl!,
-                                                ),
+                                                image:
+                                                    CachedNetworkImageProvider(
+                                                      member.avatarUrl!,
+                                                    ),
                                                 fit: BoxFit.cover,
                                                 onError: (_, __) => {},
                                               )

@@ -486,10 +486,15 @@ class ChatBubble extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: userAvatarUrl != null
-          ? Image.network(
-              userAvatarUrl!,
+          ? CachedNetworkImage(
+              imageUrl: userAvatarUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
+              placeholder: (_, __) => Container(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[300],
+              ),
+              errorWidget: (_, __, ___) => Icon(
                 Icons.person,
                 color: Theme.of(
                   context,

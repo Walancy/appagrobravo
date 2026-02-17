@@ -16,37 +16,40 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
+  String _mapFailure(Exception failure) {
+    final message = failure.toString();
+    if (message.contains('SocketException') ||
+        message.contains('ClientException') ||
+        message.contains('Network is unreachable') ||
+        message.contains('Failed host lookup')) {
+      return 'Sem conexão com a internet. Verifique sua rede.';
+    }
+    return message.replaceAll('Exception: ', '');
+  }
+
   Future<void> loadItinerary(String groupId) async {
     emit(const ItineraryState.loading());
 
     final groupResult = await _repository.getGroupDetails(groupId);
 
-    await groupResult.fold(
-      (failure) async => emit(ItineraryState.error(failure.toString())),
+    groupResult.fold(
+      (failure) => emit(ItineraryState.error(_mapFailure(failure))),
       (group) async {
         final itemsResult = await _repository.getItinerary(groupId);
-        final travelResult = await _repository.getTravelTimes(groupId);
-        final pendingDocsResult = await _repository.getUserPendingDocuments();
 
         itemsResult.fold(
-          (failure) => emit(ItineraryState.error(failure.toString())),
-          (items) {
-            travelResult.fold(
-              (failure) => emit(ItineraryState.error(failure.toString())),
-              (travelTimes) {
-                pendingDocsResult.fold(
-                  (failure) => emit(ItineraryState.error(failure.toString())),
-                  (pendingDocs) => emit(
-                    ItineraryState.loaded(
-                      group,
-                      items,
-                      travelTimes,
-                      pendingDocs,
-                    ),
-                  ),
-                );
-              },
-            );
+          (failure) => emit(ItineraryState.error(_mapFailure(failure))),
+          (items) async {
+            // Non-critical data: Travel Times
+            final travelResult = await _repository.getTravelTimes(groupId);
+            final travelTimes = travelResult.getOrElse(() => []);
+
+            // Non-critical data: Pending Docs
+            final pendingDocsResult = await _repository
+                .getUserPendingDocuments();
+            final pendingDocs = pendingDocsResult.getOrElse(() => []);
+
+            emit(ItineraryState.loaded(group, items, travelTimes, pendingDocs));
           },
         );
       },
@@ -57,8 +60,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     emit(const ItineraryState.loading());
     final userGroupResult = await _repository.getUserGroupId();
 
-    await userGroupResult.fold(
-      (failure) async => emit(ItineraryState.error(failure.toString())),
+    userGroupResult.fold(
+      (failure) => emit(ItineraryState.error(_mapFailure(failure))),
       (groupId) async {
         if (groupId == null) {
           emit(

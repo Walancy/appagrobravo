@@ -6,12 +6,99 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:agrobravo/features/chat/domain/entities/message_entity.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: ChatRepository)
 class ChatRepositoryImpl implements ChatRepository {
   final SupabaseClient _supabaseClient;
 
   ChatRepositoryImpl(this._supabaseClient);
+
+  Future<void> _saveChatDataToCache(ChatData data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      Map<String, dynamic> guideToJson(GuideEntity g) => {
+        'id': g.id,
+        'name': g.name,
+        'role': g.role,
+        'avatarUrl': g.avatarUrl,
+      };
+
+      Map<String, dynamic> chatToJson(ChatEntity c) => {
+        'id': c.id,
+        'title': c.title,
+        'subtitle': c.subtitle,
+        'imageUrl': c.imageUrl,
+        'startDate': c.startDate?.toIso8601String(),
+        'endDate': c.endDate?.toIso8601String(),
+        'memberCount': c.memberCount,
+      };
+
+      final json = {
+        'currentMission': data.currentMission != null
+            ? chatToJson(data.currentMission!)
+            : null,
+        'guides': data.guides.map(guideToJson).toList(),
+        'history': data.history.map(chatToJson).toList(),
+      };
+
+      await prefs.setString('cached_chat_data', jsonEncode(json));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<ChatData?> _getChatDataFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_chat_data');
+      if (jsonString != null) {
+        final Map<String, dynamic> json = jsonDecode(jsonString);
+
+        GuideEntity guideFromJson(Map<String, dynamic> map) => GuideEntity(
+          id: map['id'],
+          name: map['name'],
+          role: map['role'],
+          avatarUrl: map['avatarUrl'],
+        );
+
+        ChatEntity chatFromJson(Map<String, dynamic> map) => ChatEntity(
+          id: map['id'],
+          title: map['title'],
+          subtitle: map['subtitle'],
+          imageUrl: map['imageUrl'],
+          startDate: map['startDate'] != null
+              ? DateTime.parse(map['startDate'])
+              : null,
+          endDate: map['endDate'] != null
+              ? DateTime.parse(map['endDate'])
+              : null,
+          memberCount: map['memberCount'] ?? 0,
+        );
+
+        final current = json['currentMission'] != null
+            ? chatFromJson(json['currentMission'])
+            : null;
+        final guides = (json['guides'] as List)
+            .map((e) => guideFromJson(e))
+            .toList();
+        final history = (json['history'] as List)
+            .map((e) => chatFromJson(e))
+            .toList();
+
+        return ChatData(
+          currentMission: current,
+          guides: guides,
+          history: history,
+        );
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }
 
   @override
   Future<Either<Exception, ChatData>> getChatData() async {
@@ -180,12 +267,93 @@ class ChatRepositoryImpl implements ChatRepository {
         }
       }
 
-      return Right(
-        ChatData(currentMission: current, guides: guides, history: history),
+      final chatData = ChatData(
+        currentMission: current,
+        guides: guides,
+        history: history,
       );
+      await _saveChatDataToCache(chatData);
+
+      return Right(chatData);
     } catch (e) {
+      final cached = await _getChatDataFromCache();
+      if (cached != null) {
+        return Right(cached);
+      }
       return Left(Exception('Erro ao carregar chat: $e'));
     }
+  }
+
+  Future<void> _saveMessagesToCache(
+    String identifier,
+    List<MessageEntity> messages,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = messages
+          .map(
+            (m) => {
+              'id': m.id,
+              'text': m.text,
+              'timestamp': m.timestamp.toIso8601String(),
+              'typeIndex': m.type.index,
+              'userName': m.userName,
+              'userAvatarUrl': m.userAvatarUrl,
+              'guideRole': m.guideRole,
+              'attachmentUrl': m.attachmentUrl,
+              // serialize partial repliedToMessage if needed, simplistic version here:
+              'repliedToId': m.repliedToMessage?.id,
+              'isEdited': m.isEdited,
+              'isDeleted': m.isDeleted,
+            },
+          )
+          .toList();
+
+      await prefs.setString(
+        'cached_messages_$identifier',
+        jsonEncode(jsonList),
+      );
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<List<MessageEntity>> _getMessagesFromCache(String identifier) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_messages_$identifier');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        return jsonList.map((json) {
+          // Reconstruct simple message
+          return MessageEntity(
+            id: json['id'],
+            text: json['text'],
+            timestamp: DateTime.parse(json['timestamp']),
+            type: MessageType.values[json['typeIndex'] ?? 0],
+            userName: json['userName'],
+            userAvatarUrl: json['userAvatarUrl'],
+            guideRole: json['guideRole'],
+            attachmentUrl: json['attachmentUrl'],
+            repliedToMessage: json['repliedToId'] != null
+                ? MessageEntity(
+                    id: json['repliedToId'],
+                    text: 'Carregando...',
+                    timestamp: DateTime.now(),
+                    type: MessageType.other,
+                    isEdited: false,
+                    isDeleted: false,
+                  )
+                : null, // Full reconstruction of reply not supported in simple cache
+            isEdited: json['isEdited'] ?? false,
+            isDeleted: json['isDeleted'] ?? false,
+          );
+        }).toList();
+      }
+    } catch (e) {
+      // ignore
+    }
+    return [];
   }
 
   @override
@@ -193,13 +361,30 @@ class ChatRepositoryImpl implements ChatRepository {
     String chatId, {
     bool isGroup = true,
   }) async* {
-    try {
-      final realChatId = await _resolveChatId(chatId, isGroup);
-      if (realChatId == null) {
-        yield [];
-        return;
-      }
+    final cacheKey = isGroup ? 'group_$chatId' : 'dm_$chatId';
 
+    // 1. Yield details from cache immediately
+    final cachedMsgs = await _getMessagesFromCache(cacheKey);
+    if (cachedMsgs.isNotEmpty) {
+      yield cachedMsgs;
+    }
+
+    // 2. Try online
+    String? realChatId;
+    try {
+      realChatId = await _resolveChatId(chatId, isGroup);
+    } catch (e) {
+      // If offline, _resolveChatId fails. We stop here if we couldn't resolve ID.
+      // If we yielded cached data, the user at least sees that.
+      return;
+    }
+
+    if (realChatId == null) {
+      if (cachedMsgs.isEmpty) yield [];
+      return;
+    }
+
+    try {
       yield* _supabaseClient
           .from('mensagens')
           .stream(primaryKey: ['id'])
@@ -224,9 +409,7 @@ class ChatRepositoryImpl implements ChatRepository {
                   userMap[u['id']] = u as Map<String, dynamic>;
                 }
               } catch (e) {
-                print('Error fetching users for messages: $e');
-                print(StackTrace.current);
-                // Continue with empty userMap - messages will show without user details
+                // Offline or error fetching users
               }
             }
 
@@ -255,22 +438,14 @@ class ChatRepositoryImpl implements ChatRepository {
                   repliedToMessage: msg['id_mensagem_respondida'] != null
                       ? messages.firstWhere(
                           (m) => m.id == msg['id_mensagem_respondida'],
-                          orElse: () =>
-                              // Return a dummy entity or null. Since orElse expects MessageEntity (non-nullable return for firstWhere unless collection is nullable but here it's List<MessageEntity>),
-                              // actually firstWhere(..., orElse: () => null) is valid ONLY if the return type is nullable.
-                              // But List.firstWhere returns E, not E?.
-                              // Given the error "type 'Null' is not a subtype of type 'MessageEntity'", it means orElse returned null but firstWhere expects MessageEntity.
-                              // We should change how we find the message.
-                              MessageEntity(
-                                id: 'deleted',
-                                text: 'Mensagem não encontrada',
-                                timestamp: DateTime.fromMicrosecondsSinceEpoch(
-                                  0,
-                                ),
-                                type: MessageType.other,
-                                isEdited: false,
-                                isDeleted: true,
-                              ),
+                          orElse: () => MessageEntity(
+                            id: 'deleted',
+                            text: 'Mensagem não encontrada',
+                            timestamp: DateTime.fromMicrosecondsSinceEpoch(0),
+                            type: MessageType.other,
+                            isEdited: false,
+                            isDeleted: true,
+                          ),
                         )
                       : null,
                   isEdited: msg['editado'] ?? false,
@@ -278,12 +453,16 @@ class ChatRepositoryImpl implements ChatRepository {
                 ),
               );
             }
+
+            // Side-effect: Update cache
+            _saveMessagesToCache(cacheKey, messages);
+
             return messages;
           });
     } catch (e) {
+      // If stream fails (shouldn't throw easily as Supabase handles reconnects, but if initial conn fails...),
+      // We rely on the initial yield.
       print('Error in stream: $e');
-      print(StackTrace.current);
-      yield [];
     }
   }
 
@@ -345,6 +524,67 @@ class ChatRepositoryImpl implements ChatRepository {
       'id_mensagem_respondida': replyToId,
       'created_at': DateTime.now().toIso8601String(),
     });
+  }
+
+  Future<void> _saveGroupDetailsToCache(
+    String groupId,
+    GroupDetailEntity details,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final membersJson = details.members
+          .map(
+            (m) => {
+              'id': m.id,
+              'name': m.name,
+              'role': m.role,
+              'isGuide': m.isGuide,
+              'isMe': m.isMe,
+              'avatarUrl': m.avatarUrl,
+              'connectionStatus': m.connectionStatus.index,
+            },
+          )
+          .toList();
+
+      final json = {'members': membersJson, 'mediaUrls': details.mediaUrls};
+
+      await prefs.setString('cached_group_details_$groupId', jsonEncode(json));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<GroupDetailEntity?> _getGroupDetailsFromCache(String groupId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_group_details_$groupId');
+
+      if (jsonString != null) {
+        final json = jsonDecode(jsonString);
+        final members = (json['members'] as List)
+            .map(
+              (m) => GroupMemberEntity(
+                id: m['id'],
+                name: m['name'],
+                role: m['role'],
+                isGuide: m['isGuide'],
+                isMe: m['isMe'],
+                avatarUrl: m['avatarUrl'],
+                connectionStatus:
+                    ConnectionStatus.values[m['connectionStatus'] ?? 0],
+              ),
+            )
+            .toList();
+
+        final mediaUrls = (json['mediaUrls'] as List).cast<String>();
+
+        return GroupDetailEntity(members: members, mediaUrls: mediaUrls);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
   }
 
   @override
@@ -461,8 +701,15 @@ class ChatRepositoryImpl implements ChatRepository {
         return a.name.toLowerCase().compareTo(b.name.toLowerCase());
       });
 
-      return Right(GroupDetailEntity(members: members, mediaUrls: mediaUrls));
+      final result = GroupDetailEntity(members: members, mediaUrls: mediaUrls);
+      await _saveGroupDetailsToCache(groupId, result);
+
+      return Right(result);
     } catch (e) {
+      final cached = await _getGroupDetailsFromCache(groupId);
+      if (cached != null) {
+        return Right(cached);
+      }
       return Left(Exception('Erro ao carregar detalhes do grupo: $e'));
     }
   }

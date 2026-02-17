@@ -17,10 +17,10 @@ abstract class PostModel with _$PostModel {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'privado') @Default(false) bool privado,
     // Joined data
-    @JsonKey(includeToJson: false) String? userName,
-    @JsonKey(includeToJson: false) String? userAvatar,
-    @JsonKey(includeToJson: false) String? missionName,
-    @JsonKey(includeToJson: false) @Default(false) bool isLiked,
+    String? userName,
+    String? userAvatar,
+    String? missionName,
+    @Default(false) bool isLiked,
   }) = _PostModel;
 
   const PostModel._();

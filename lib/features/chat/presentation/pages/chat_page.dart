@@ -1,4 +1,5 @@
 import 'package:agrobravo/core/components/app_header.dart'; // Re-added for HeaderSpacer and AppHeader
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/di/injection.dart';
@@ -189,7 +190,9 @@ class _WhatsAppListItem extends StatelessWidget {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: Colors.grey[200],
-        backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+        backgroundImage: imageUrl != null
+            ? CachedNetworkImageProvider(imageUrl)
+            : null,
         child: imageUrl == null
             ? Icon(
                 guide != null ? Icons.person : Icons.group,

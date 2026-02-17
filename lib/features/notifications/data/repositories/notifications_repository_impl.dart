@@ -4,12 +4,70 @@ import 'package:agrobravo/features/notifications/domain/repositories/notificatio
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: NotificationsRepository)
 class NotificationsRepositoryImpl implements NotificationsRepository {
   final SupabaseClient _supabaseClient;
 
   NotificationsRepositoryImpl(this._supabaseClient);
+
+  Future<void> _saveNotificationsToCache(List<NotificationEntity> list) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = list
+          .map(
+            (e) => {
+              'id': e.id,
+              'userName': e.userName,
+              'userAvatar': e.userAvatar,
+              'typeIndex': e.type.index,
+              'postImage': e.postImage,
+              'postId': e.postId,
+              'solicitacaoUserId': e.solicitacaoUserId,
+              'docId': e.docId,
+              'postOwnerId': e.postOwnerId,
+              'message': e.message,
+              'createdAt': e.createdAt.toIso8601String(),
+              'isRead': e.isRead,
+            },
+          )
+          .toList();
+      await prefs.setString('cached_notifications', jsonEncode(jsonList));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<List<NotificationEntity>> _getNotificationsFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_notifications');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        return jsonList.map((json) {
+          return NotificationEntity(
+            id: json['id'],
+            userName: json['userName'],
+            userAvatar: json['userAvatar'],
+            type: NotificationType.values[json['typeIndex'] ?? 0],
+            postImage: json['postImage'],
+            postId: json['postId'],
+            solicitacaoUserId: json['solicitacaoUserId'],
+            docId: json['docId'],
+            postOwnerId: json['postOwnerId'],
+            message: json['message'],
+            createdAt: DateTime.parse(json['createdAt']),
+            isRead: json['isRead'] ?? false,
+          );
+        }).toList();
+      }
+    } catch (e) {
+      // ignore
+    }
+    return [];
+  }
 
   @override
   Future<Either<Exception, List<NotificationEntity>>> getNotifications() async {
@@ -90,8 +148,16 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
             .copyWith(postImage: postThumbnail, postOwnerId: postOwnerId);
       }).toList();
 
+      // Cache
+      await _saveNotificationsToCache(notifications);
+
       return Right(notifications);
     } catch (e) {
+      // Try cache
+      final cached = await _getNotificationsFromCache();
+      if (cached.isNotEmpty) {
+        return Right(cached);
+      }
       return Left(Exception('Erro ao buscar notificações: $e'));
     }
   }

@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
 import '../../domain/repositories/documents_repository.dart';
@@ -12,6 +14,31 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
   final SupabaseClient _supabaseClient;
 
   DocumentsRepositoryImpl(this._supabaseClient);
+
+  Future<void> _saveDocumentsToCache(List<dynamic> jsonList) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_documents', jsonEncode(jsonList));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<List<DocumentEntity>> _getDocumentsFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_documents');
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        return jsonList
+            .map((json) => DocumentModel.fromJson(json).toEntity())
+            .toList();
+      }
+    } catch (e) {
+      // ignore
+    }
+    return [];
+  }
 
   @override
   Future<Either<Exception, List<DocumentEntity>>> getDocuments() async {
@@ -26,12 +53,21 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
           .order('data_envio', ascending: false);
 
       final List<dynamic> data = response as List;
+
+      // Cache
+      await _saveDocumentsToCache(data);
+
       final documents = data
           .map((json) => DocumentModel.fromJson(json).toEntity())
           .toList();
 
       return Right(documents);
     } catch (e) {
+      // Try cache
+      final cachedDocs = await _getDocumentsFromCache();
+      if (cachedDocs.isNotEmpty) {
+        return Right(cachedDocs);
+      }
       return Left(Exception('Erro ao buscar documentos: $e'));
     }
   }

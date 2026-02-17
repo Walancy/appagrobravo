@@ -33,4 +33,8 @@ Map<String, dynamic> _$PostModelToJson(_PostModel instance) =>
       'n_comentarios': instance.commentsCount,
       'created_at': instance.createdAt.toIso8601String(),
       'privado': instance.privado,
+      'userName': instance.userName,
+      'userAvatar': instance.userAvatar,
+      'missionName': instance.missionName,
+      'isLiked': instance.isLiked,
     };

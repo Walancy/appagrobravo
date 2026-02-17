@@ -28,4 +28,8 @@ Map<String, dynamic> _$CommentModelToJson(_CommentModel instance) =>
       'comentario': instance.text,
       'id_comentario': instance.parentId,
       'created_at': instance.createdAt.toIso8601String(),
+      'userName': instance.userName,
+      'userAvatar': instance.userAvatar,
+      'likesCount': instance.likesCount,
+      'isLiked': instance.isLiked,
     };

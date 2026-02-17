@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -115,7 +116,7 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
             shape: BoxShape.circle,
             image: widget.guide.avatarUrl != null
                 ? DecorationImage(
-                    image: NetworkImage(widget.guide.avatarUrl!),
+                    image: CachedNetworkImageProvider(widget.guide.avatarUrl!),
                     fit: BoxFit.cover,
                   )
                 : null,

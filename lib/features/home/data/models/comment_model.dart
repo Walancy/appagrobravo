@@ -14,10 +14,11 @@ abstract class CommentModel with _$CommentModel {
     @JsonKey(name: 'id_comentario') String? parentId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     // Joined data
-    @JsonKey(includeToJson: false) String? userName,
-    @JsonKey(includeToJson: false) String? userAvatar,
-    @JsonKey(includeToJson: false) @Default(0) int likesCount,
-    @JsonKey(includeToJson: false) @Default(false) bool isLiked,
+    // Joined data
+    String? userName,
+    String? userAvatar,
+    @Default(0) int likesCount,
+    @Default(false) bool isLiked,
   }) = _CommentModel;
 
   const CommentModel._();

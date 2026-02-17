@@ -75,7 +75,6 @@ class _UserFeedPageState extends State<UserFeedPage> {
     return BlocProvider(
       create: (context) => getIt<FeedCubit>(),
       child: Scaffold(
-        backgroundColor: Colors.white,
         extendBodyBehindAppBar: true,
         appBar: AppHeader(mode: HeaderMode.back, title: 'Publicações'),
         body: _isLoading

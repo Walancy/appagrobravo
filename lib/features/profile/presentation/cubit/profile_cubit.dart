@@ -15,6 +15,17 @@ class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit(this._profileRepository, this._authRepository)
     : super(const ProfileState.initial());
 
+  String _mapFailure(Object failure) {
+    final message = failure.toString();
+    if (message.contains('SocketException') ||
+        message.contains('ClientException') ||
+        message.contains('Network is unreachable') ||
+        message.contains('Failed host lookup')) {
+      return 'Sem conexão com a internet. Verifique sua rede.';
+    }
+    return message.replaceAll('Exception: ', '');
+  }
+
   Future<void> loadProfile([String? userId]) async {
     emit(const ProfileState.loading());
 
@@ -41,10 +52,10 @@ class ProfileCubit extends Cubit<ProfileState> {
       final postsResult = await _profileRepository.getUserPosts(targetUserId);
 
       profileResult.fold(
-        (error) => emit(ProfileState.error(error.toString())),
+        (error) => emit(ProfileState.error(_mapFailure(error))),
         (profile) {
           postsResult.fold(
-            (error) => emit(ProfileState.error(error.toString())),
+            (error) => emit(ProfileState.error(_mapFailure(error))),
             (posts) => emit(
               ProfileState.loaded(profile: profile, posts: posts, isMe: isMe),
             ),
@@ -52,7 +63,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         },
       );
     } catch (e) {
-      emit(ProfileState.error('Erro ao carregar perfil: $e'));
+      emit(ProfileState.error('Erro ao carregar perfil: ${_mapFailure(e)}'));
     }
   }
 
@@ -66,7 +77,7 @@ class ProfileCubit extends Cubit<ProfileState> {
           extension,
         );
 
-        result.fold((error) => emit(ProfileState.error(error.toString())), (
+        result.fold((error) => emit(ProfileState.error(_mapFailure(error))), (
           newUrl,
         ) {
           emit(
@@ -90,7 +101,7 @@ class ProfileCubit extends Cubit<ProfileState> {
           extension,
         );
 
-        result.fold((error) => emit(ProfileState.error(error.toString())), (
+        result.fold((error) => emit(ProfileState.error(_mapFailure(error))), (
           newUrl,
         ) {
           emit(
@@ -122,7 +133,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> requestConnection(String userId) async {
     final result = await _profileRepository.requestConnection(userId);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(userId),
     );
   }
@@ -130,7 +141,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> cancelConnection(String userId) async {
     final result = await _profileRepository.cancelConnection(userId);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(userId),
     );
   }
@@ -138,7 +149,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> acceptConnection(String userId) async {
     final result = await _profileRepository.acceptConnection(userId);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) =>
           loadProfile(), // Reload current user profile to update counts if needed
     );
@@ -147,7 +158,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> rejectConnection(String userId) async {
     final result = await _profileRepository.rejectConnection(userId);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(),
     );
   }
@@ -155,7 +166,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> removeConnection(String userId) async {
     final result = await _profileRepository.removeConnection(userId);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(userId),
     );
   }
@@ -163,7 +174,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> updateFoodPreferences(String preferences) async {
     final result = await _profileRepository.updateFoodPreferences(preferences);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(),
     );
   }
@@ -173,7 +184,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       restrictions,
     );
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(),
     );
   }
@@ -181,7 +192,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> updateAccountData(Map<String, dynamic> data) async {
     final result = await _profileRepository.updateAccountData(data: data);
     result.fold(
-      (error) => emit(ProfileState.error(error.toString())),
+      (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(),
     );
   }
