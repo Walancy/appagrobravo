@@ -42,6 +42,10 @@ class ChatRepositoryImpl implements ChatRepository {
             : null,
         'guides': data.guides.map(guideToJson).toList(),
         'history': data.history.map(chatToJson).toList(),
+        'lastMessages': data.lastMessages,
+        'lastMessageTimes': data.lastMessageTimes.map(
+          (k, v) => MapEntry(k, v.toIso8601String()),
+        ),
       };
 
       await prefs.setString('cached_chat_data', jsonEncode(json));
@@ -88,10 +92,23 @@ class ChatRepositoryImpl implements ChatRepository {
             .map((e) => chatFromJson(e))
             .toList();
 
+        final lastMessages =
+            (json['lastMessages'] as Map<String, dynamic>?)?.map(
+              (k, v) => MapEntry(k, v as String),
+            ) ??
+            {};
+        final lastMessageTimes =
+            (json['lastMessageTimes'] as Map<String, dynamic>?)?.map(
+              (k, v) => MapEntry(k, DateTime.parse(v as String)),
+            ) ??
+            {};
+
         return ChatData(
           currentMission: current,
           guides: guides,
           history: history,
+          lastMessages: lastMessages,
+          lastMessageTimes: lastMessageTimes,
         );
       }
     } catch (e) {
@@ -267,10 +284,50 @@ class ChatRepositoryImpl implements ChatRepository {
         }
       }
 
+      // 6. Fetch Last Messages for each chat
+      Map<String, String> lastMessages = {};
+      Map<String, DateTime> lastMessageTimes = {};
+
+      final allChatEntities = [if (current != null) current, ...history];
+      final allGuideEntities = guides;
+
+      // Helper to fetch last msg
+      Future<void> fetchLastMsg(String identifier, bool isGroup) async {
+        try {
+          final chatId = await _resolveChatId(identifier, isGroup);
+          if (chatId == null) return;
+
+          final response = await _supabaseClient
+              .from('mensagens')
+              .select('mensagem, created_at')
+              .eq('batepapo_id', chatId)
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle();
+
+          if (response != null) {
+            lastMessages[identifier] =
+                response['mensagem'] as String? ?? 'Imagem/Arquivo';
+            if (response['created_at'] != null) {
+              lastMessageTimes[identifier] = DateTime.parse(
+                response['created_at'],
+              );
+            }
+          }
+        } catch (_) {}
+      }
+
+      await Future.wait([
+        ...allChatEntities.map((c) => fetchLastMsg(c.id, true)),
+        ...allGuideEntities.map((g) => fetchLastMsg(g.id, false)),
+      ]);
+
       final chatData = ChatData(
         currentMission: current,
         guides: guides,
         history: history,
+        lastMessages: lastMessages,
+        lastMessageTimes: lastMessageTimes,
       );
       await _saveChatDataToCache(chatData);
 

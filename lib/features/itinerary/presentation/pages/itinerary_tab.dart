@@ -53,7 +53,6 @@ class ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
-
   final List<String> pendingDocs;
 
   const ItineraryContent({
@@ -78,15 +77,24 @@ class _ItineraryContentState extends State<ItineraryContent> {
     // Default to first day if valid range
     // Default to current date if valid range
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     if (widget.group.startDate.year > 0) {
-      if (now.isAfter(
+      if (today.isAfter(
             widget.group.startDate.subtract(const Duration(days: 1)),
           ) &&
-          now.isBefore(widget.group.endDate.add(const Duration(days: 1)))) {
-        _selectedDate = now;
+          today.isBefore(widget.group.endDate.add(const Duration(days: 1)))) {
+        _selectedDate = today;
       } else {
         _selectedDate = widget.group.startDate;
       }
+    }
+    // Normalize _selectedDate to start of day
+    if (_selectedDate != null) {
+      _selectedDate = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+      );
     }
   }
 
@@ -114,7 +122,12 @@ class _ItineraryContentState extends State<ItineraryContent> {
       setState(() {
         _filters = result;
         if (result.date != null) {
-          _selectedDate = result.date;
+          // Normalize selected date from filter modal
+          _selectedDate = DateTime(
+            result.date!.year,
+            result.date!.month,
+            result.date!.day,
+          );
         }
       });
     }
@@ -130,18 +143,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
           const HeaderSpacer(),
           const SizedBox(height: 10),
 
-          // "Termina em X dias"
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text(
-              'Termina em 7 dias', // Dynamic in future
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-
           // Day Slider
           DaySlider(
             startDate: widget.group.startDate,
@@ -149,11 +150,12 @@ class _ItineraryContentState extends State<ItineraryContent> {
             selectedDate: _selectedDate,
             onDateSelected: (date) {
               setState(() {
-                _selectedDate = date;
+                // Normalize selected date from slider
+                _selectedDate = DateTime(date.year, date.month, date.day);
                 // If filter had a different date, we clear it or sync it
                 if (_filters.date != null &&
-                    !_isSameDay(_filters.date!, date)) {
-                  _filters = _filters.copyWith(date: date);
+                    !_isSameDay(_filters.date!, _selectedDate!)) {
+                  _filters = _filters.copyWith(date: _selectedDate);
                 }
               });
             },
@@ -176,7 +178,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
                         ? AppColors.primary
                         : Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                     fontWeight: _filters.isActive
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -194,7 +196,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
                           ? AppColors.primary.withOpacity(0.1)
                           : (Theme.of(context).brightness == Brightness.dark
                                 ? const Color(0xFF1E1E1E)
-                                : Theme.of(context).colorScheme.surface),
+                                : const Color(0xFFF2F4F7)),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _filters.isActive
@@ -211,7 +213,7 @@ class _ItineraryContentState extends State<ItineraryContent> {
                               ? AppColors.primary
                               : Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                                ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                         const SizedBox(width: 8),
                         Text(

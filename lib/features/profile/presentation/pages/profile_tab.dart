@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dartz/dartz.dart' as dartz;
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
@@ -17,6 +18,10 @@ import 'package:go_router/go_router.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 import 'package:agrobravo/core/components/profile_shimmer.dart';
+import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
+import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
 
 class ProfileTab extends StatefulWidget {
   final String? userId;
@@ -74,24 +79,119 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             const Divider(),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.flag_outlined,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Histórico de missões em breve',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.grey,
+              child: FutureBuilder<dartz.Either<Exception, List<MissionEntity>>>(
+                future: getIt<FeedRepository>().getUserMissions(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final result = snapshot.data;
+                  final missions =
+                      result?.fold((l) => <MissionEntity>[], (r) => r) ?? [];
+
+                  if (missions.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.flag_outlined,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhuma missão encontrada',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: missions.length,
+                    padding: const EdgeInsets.all(16),
+                    itemBuilder: (context, index) {
+                      final mission = missions[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(
+                              context,
+                            ).dividerColor.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: mission.logo != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: mission.logo!,
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.image,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          Container(
+                                            color: Colors.grey[200],
+                                            child: const Icon(
+                                              Icons.broken_image,
+                                              size: 20,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                    )
+                                  : Container(
+                                      width: 50,
+                                      height: 50,
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      child: const Icon(
+                                        Icons.flag,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    mission.name,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  // Add dates if available in MissionEntity?
+                                  // MissionEntity usually has date range?
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, color: Colors.grey),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],

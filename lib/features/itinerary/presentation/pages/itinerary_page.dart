@@ -39,11 +39,15 @@ class ItineraryPage extends StatelessWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (msg) => Center(child: Text('Erro: $msg')),
               loaded: (group, items, travelTimes, pendingDocs) {
+                final isEnded = group.endDate.isBefore(DateTime.now());
+                final displayPendingDocs = isEnded ? <String>[] : pendingDocs;
+
                 return _ItineraryContent(
                   group: group,
                   items: items,
                   travelTimes: travelTimes,
-                  pendingDocs: pendingDocs,
+                  pendingDocs: displayPendingDocs,
+                  isEnded: isEnded,
                 );
               },
               orElse: () => const SizedBox.shrink(),
@@ -60,12 +64,14 @@ class _ItineraryContent extends StatefulWidget {
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
   final List<String> pendingDocs;
+  final bool isEnded;
 
   const _ItineraryContent({
     required this.group,
     required this.items,
     required this.travelTimes,
     required this.pendingDocs,
+    required this.isEnded,
   });
 
   @override
@@ -78,9 +84,25 @@ class _ItineraryContentState extends State<_ItineraryContent> {
   @override
   void initState() {
     super.initState();
-    // Default to first day if valid range
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     if (widget.group.startDate.year > 0) {
-      _selectedDate = widget.group.startDate;
+      if (today.isAfter(
+            widget.group.startDate.subtract(const Duration(days: 1)),
+          ) &&
+          today.isBefore(widget.group.endDate.add(const Duration(days: 1)))) {
+        _selectedDate = today;
+      } else {
+        _selectedDate = widget.group.startDate;
+      }
+    }
+    // Normalize
+    if (_selectedDate != null) {
+      _selectedDate = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+      );
     }
   }
 
@@ -88,6 +110,23 @@ class _ItineraryContentState extends State<_ItineraryContent> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        if (widget.isEnded)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            color: Colors.grey[800],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Missão encerrada',
+                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
         DaySlider(
           startDate: widget.group.startDate,
           endDate: widget.group.endDate,

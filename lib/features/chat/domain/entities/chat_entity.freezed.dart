@@ -558,7 +558,7 @@ as String?,
 /// @nodoc
 mixin _$ChatData {
 
- ChatEntity? get currentMission; List<GuideEntity> get guides; List<ChatEntity> get history;
+ ChatEntity? get currentMission; List<GuideEntity> get guides; List<ChatEntity> get history; Map<String, String> get lastMessages; Map<String, DateTime> get lastMessageTimes;
 /// Create a copy of ChatData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -569,16 +569,16 @@ $ChatDataCopyWith<ChatData> get copyWith => _$ChatDataCopyWithImpl<ChatData>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatData&&(identical(other.currentMission, currentMission) || other.currentMission == currentMission)&&const DeepCollectionEquality().equals(other.guides, guides)&&const DeepCollectionEquality().equals(other.history, history));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatData&&(identical(other.currentMission, currentMission) || other.currentMission == currentMission)&&const DeepCollectionEquality().equals(other.guides, guides)&&const DeepCollectionEquality().equals(other.history, history)&&const DeepCollectionEquality().equals(other.lastMessages, lastMessages)&&const DeepCollectionEquality().equals(other.lastMessageTimes, lastMessageTimes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentMission,const DeepCollectionEquality().hash(guides),const DeepCollectionEquality().hash(history));
+int get hashCode => Object.hash(runtimeType,currentMission,const DeepCollectionEquality().hash(guides),const DeepCollectionEquality().hash(history),const DeepCollectionEquality().hash(lastMessages),const DeepCollectionEquality().hash(lastMessageTimes));
 
 @override
 String toString() {
-  return 'ChatData(currentMission: $currentMission, guides: $guides, history: $history)';
+  return 'ChatData(currentMission: $currentMission, guides: $guides, history: $history, lastMessages: $lastMessages, lastMessageTimes: $lastMessageTimes)';
 }
 
 
@@ -589,7 +589,7 @@ abstract mixin class $ChatDataCopyWith<$Res>  {
   factory $ChatDataCopyWith(ChatData value, $Res Function(ChatData) _then) = _$ChatDataCopyWithImpl;
 @useResult
 $Res call({
- ChatEntity? currentMission, List<GuideEntity> guides, List<ChatEntity> history
+ ChatEntity? currentMission, List<GuideEntity> guides, List<ChatEntity> history, Map<String, String> lastMessages, Map<String, DateTime> lastMessageTimes
 });
 
 
@@ -606,12 +606,14 @@ class _$ChatDataCopyWithImpl<$Res>
 
 /// Create a copy of ChatData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentMission = freezed,Object? guides = null,Object? history = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentMission = freezed,Object? guides = null,Object? history = null,Object? lastMessages = null,Object? lastMessageTimes = null,}) {
   return _then(_self.copyWith(
 currentMission: freezed == currentMission ? _self.currentMission : currentMission // ignore: cast_nullable_to_non_nullable
 as ChatEntity?,guides: null == guides ? _self.guides : guides // ignore: cast_nullable_to_non_nullable
 as List<GuideEntity>,history: null == history ? _self.history : history // ignore: cast_nullable_to_non_nullable
-as List<ChatEntity>,
+as List<ChatEntity>,lastMessages: null == lastMessages ? _self.lastMessages : lastMessages // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,lastMessageTimes: null == lastMessageTimes ? _self.lastMessageTimes : lastMessageTimes // ignore: cast_nullable_to_non_nullable
+as Map<String, DateTime>,
   ));
 }
 /// Create a copy of ChatData
@@ -708,10 +710,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history,  Map<String, String> lastMessages,  Map<String, DateTime> lastMessageTimes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatData() when $default != null:
-return $default(_that.currentMission,_that.guides,_that.history);case _:
+return $default(_that.currentMission,_that.guides,_that.history,_that.lastMessages,_that.lastMessageTimes);case _:
   return orElse();
 
 }
@@ -729,10 +731,10 @@ return $default(_that.currentMission,_that.guides,_that.history);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history,  Map<String, String> lastMessages,  Map<String, DateTime> lastMessageTimes)  $default,) {final _that = this;
 switch (_that) {
 case _ChatData():
-return $default(_that.currentMission,_that.guides,_that.history);case _:
+return $default(_that.currentMission,_that.guides,_that.history,_that.lastMessages,_that.lastMessageTimes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -749,10 +751,10 @@ return $default(_that.currentMission,_that.guides,_that.history);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ChatEntity? currentMission,  List<GuideEntity> guides,  List<ChatEntity> history,  Map<String, String> lastMessages,  Map<String, DateTime> lastMessageTimes)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatData() when $default != null:
-return $default(_that.currentMission,_that.guides,_that.history);case _:
+return $default(_that.currentMission,_that.guides,_that.history,_that.lastMessages,_that.lastMessageTimes);case _:
   return null;
 
 }
@@ -764,7 +766,7 @@ return $default(_that.currentMission,_that.guides,_that.history);case _:
 
 
 class _ChatData implements ChatData {
-  const _ChatData({this.currentMission, final  List<GuideEntity> guides = const [], final  List<ChatEntity> history = const []}): _guides = guides,_history = history;
+  const _ChatData({this.currentMission, final  List<GuideEntity> guides = const [], final  List<ChatEntity> history = const [], final  Map<String, String> lastMessages = const {}, final  Map<String, DateTime> lastMessageTimes = const {}}): _guides = guides,_history = history,_lastMessages = lastMessages,_lastMessageTimes = lastMessageTimes;
   
 
 @override final  ChatEntity? currentMission;
@@ -782,6 +784,20 @@ class _ChatData implements ChatData {
   return EqualUnmodifiableListView(_history);
 }
 
+ final  Map<String, String> _lastMessages;
+@override@JsonKey() Map<String, String> get lastMessages {
+  if (_lastMessages is EqualUnmodifiableMapView) return _lastMessages;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_lastMessages);
+}
+
+ final  Map<String, DateTime> _lastMessageTimes;
+@override@JsonKey() Map<String, DateTime> get lastMessageTimes {
+  if (_lastMessageTimes is EqualUnmodifiableMapView) return _lastMessageTimes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_lastMessageTimes);
+}
+
 
 /// Create a copy of ChatData
 /// with the given fields replaced by the non-null parameter values.
@@ -793,16 +809,16 @@ _$ChatDataCopyWith<_ChatData> get copyWith => __$ChatDataCopyWithImpl<_ChatData>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatData&&(identical(other.currentMission, currentMission) || other.currentMission == currentMission)&&const DeepCollectionEquality().equals(other._guides, _guides)&&const DeepCollectionEquality().equals(other._history, _history));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatData&&(identical(other.currentMission, currentMission) || other.currentMission == currentMission)&&const DeepCollectionEquality().equals(other._guides, _guides)&&const DeepCollectionEquality().equals(other._history, _history)&&const DeepCollectionEquality().equals(other._lastMessages, _lastMessages)&&const DeepCollectionEquality().equals(other._lastMessageTimes, _lastMessageTimes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentMission,const DeepCollectionEquality().hash(_guides),const DeepCollectionEquality().hash(_history));
+int get hashCode => Object.hash(runtimeType,currentMission,const DeepCollectionEquality().hash(_guides),const DeepCollectionEquality().hash(_history),const DeepCollectionEquality().hash(_lastMessages),const DeepCollectionEquality().hash(_lastMessageTimes));
 
 @override
 String toString() {
-  return 'ChatData(currentMission: $currentMission, guides: $guides, history: $history)';
+  return 'ChatData(currentMission: $currentMission, guides: $guides, history: $history, lastMessages: $lastMessages, lastMessageTimes: $lastMessageTimes)';
 }
 
 
@@ -813,7 +829,7 @@ abstract mixin class _$ChatDataCopyWith<$Res> implements $ChatDataCopyWith<$Res>
   factory _$ChatDataCopyWith(_ChatData value, $Res Function(_ChatData) _then) = __$ChatDataCopyWithImpl;
 @override @useResult
 $Res call({
- ChatEntity? currentMission, List<GuideEntity> guides, List<ChatEntity> history
+ ChatEntity? currentMission, List<GuideEntity> guides, List<ChatEntity> history, Map<String, String> lastMessages, Map<String, DateTime> lastMessageTimes
 });
 
 
@@ -830,12 +846,14 @@ class __$ChatDataCopyWithImpl<$Res>
 
 /// Create a copy of ChatData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentMission = freezed,Object? guides = null,Object? history = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentMission = freezed,Object? guides = null,Object? history = null,Object? lastMessages = null,Object? lastMessageTimes = null,}) {
   return _then(_ChatData(
 currentMission: freezed == currentMission ? _self.currentMission : currentMission // ignore: cast_nullable_to_non_nullable
 as ChatEntity?,guides: null == guides ? _self._guides : guides // ignore: cast_nullable_to_non_nullable
 as List<GuideEntity>,history: null == history ? _self._history : history // ignore: cast_nullable_to_non_nullable
-as List<ChatEntity>,
+as List<ChatEntity>,lastMessages: null == lastMessages ? _self._lastMessages : lastMessages // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,lastMessageTimes: null == lastMessageTimes ? _self._lastMessageTimes : lastMessageTimes // ignore: cast_nullable_to_non_nullable
+as Map<String, DateTime>,
   ));
 }
 

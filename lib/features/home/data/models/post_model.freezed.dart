@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$PostModel {
 
  String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'missao_id') String? get missaoId; List<String> get imagens; String get legenda;@JsonKey(name: 'n_curtidas') int get likesCount;@JsonKey(name: 'n_comentarios') int get commentsCount;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'privado') bool get privado;// Joined data
-@JsonKey(includeToJson: false) String? get userName;@JsonKey(includeToJson: false) String? get userAvatar;@JsonKey(includeToJson: false) String? get missionName;@JsonKey(includeToJson: false) bool get isLiked;
+ String? get userName; String? get userAvatar; String? get missionName; bool get isLiked;
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +49,7 @@ abstract mixin class $PostModelCopyWith<$Res>  {
   factory $PostModelCopyWith(PostModel value, $Res Function(PostModel) _then) = _$PostModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'missao_id') String? missaoId, List<String> imagens, String legenda,@JsonKey(name: 'n_curtidas') int likesCount,@JsonKey(name: 'n_comentarios') int commentsCount,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'privado') bool privado,@JsonKey(includeToJson: false) String? userName,@JsonKey(includeToJson: false) String? userAvatar,@JsonKey(includeToJson: false) String? missionName,@JsonKey(includeToJson: false) bool isLiked
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'missao_id') String? missaoId, List<String> imagens, String legenda,@JsonKey(name: 'n_curtidas') int likesCount,@JsonKey(name: 'n_comentarios') int commentsCount,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'privado') bool privado, String? userName, String? userAvatar, String? missionName, bool isLiked
 });
 
 
@@ -166,7 +166,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  String? missionName, @JsonKey(includeToJson: false)  bool isLiked)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado,  String? userName,  String? userAvatar,  String? missionName,  bool isLiked)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PostModel() when $default != null:
 return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda,_that.likesCount,_that.commentsCount,_that.createdAt,_that.privado,_that.userName,_that.userAvatar,_that.missionName,_that.isLiked);case _:
@@ -187,7 +187,7 @@ return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  String? missionName, @JsonKey(includeToJson: false)  bool isLiked)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado,  String? userName,  String? userAvatar,  String? missionName,  bool isLiked)  $default,) {final _that = this;
 switch (_that) {
 case _PostModel():
 return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda,_that.likesCount,_that.commentsCount,_that.createdAt,_that.privado,_that.userName,_that.userAvatar,_that.missionName,_that.isLiked);case _:
@@ -207,7 +207,7 @@ return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  String? missionName, @JsonKey(includeToJson: false)  bool isLiked)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'missao_id')  String? missaoId,  List<String> imagens,  String legenda, @JsonKey(name: 'n_curtidas')  int likesCount, @JsonKey(name: 'n_comentarios')  int commentsCount, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'privado')  bool privado,  String? userName,  String? userAvatar,  String? missionName,  bool isLiked)?  $default,) {final _that = this;
 switch (_that) {
 case _PostModel() when $default != null:
 return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda,_that.likesCount,_that.commentsCount,_that.createdAt,_that.privado,_that.userName,_that.userAvatar,_that.missionName,_that.isLiked);case _:
@@ -222,7 +222,7 @@ return $default(_that.id,_that.userId,_that.missaoId,_that.imagens,_that.legenda
 @JsonSerializable()
 
 class _PostModel extends PostModel {
-  const _PostModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'missao_id') this.missaoId, required final  List<String> imagens, required this.legenda, @JsonKey(name: 'n_curtidas') this.likesCount = 0, @JsonKey(name: 'n_comentarios') this.commentsCount = 0, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'privado') this.privado = false, @JsonKey(includeToJson: false) this.userName, @JsonKey(includeToJson: false) this.userAvatar, @JsonKey(includeToJson: false) this.missionName, @JsonKey(includeToJson: false) this.isLiked = false}): _imagens = imagens,super._();
+  const _PostModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'missao_id') this.missaoId, required final  List<String> imagens, required this.legenda, @JsonKey(name: 'n_curtidas') this.likesCount = 0, @JsonKey(name: 'n_comentarios') this.commentsCount = 0, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'privado') this.privado = false, this.userName, this.userAvatar, this.missionName, this.isLiked = false}): _imagens = imagens,super._();
   factory _PostModel.fromJson(Map<String, dynamic> json) => _$PostModelFromJson(json);
 
 @override final  String id;
@@ -241,10 +241,10 @@ class _PostModel extends PostModel {
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'privado') final  bool privado;
 // Joined data
-@override@JsonKey(includeToJson: false) final  String? userName;
-@override@JsonKey(includeToJson: false) final  String? userAvatar;
-@override@JsonKey(includeToJson: false) final  String? missionName;
-@override@JsonKey(includeToJson: false) final  bool isLiked;
+@override final  String? userName;
+@override final  String? userAvatar;
+@override final  String? missionName;
+@override@JsonKey() final  bool isLiked;
 
 /// Create a copy of PostModel
 /// with the given fields replaced by the non-null parameter values.
@@ -279,7 +279,7 @@ abstract mixin class _$PostModelCopyWith<$Res> implements $PostModelCopyWith<$Re
   factory _$PostModelCopyWith(_PostModel value, $Res Function(_PostModel) _then) = __$PostModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'missao_id') String? missaoId, List<String> imagens, String legenda,@JsonKey(name: 'n_curtidas') int likesCount,@JsonKey(name: 'n_comentarios') int commentsCount,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'privado') bool privado,@JsonKey(includeToJson: false) String? userName,@JsonKey(includeToJson: false) String? userAvatar,@JsonKey(includeToJson: false) String? missionName,@JsonKey(includeToJson: false) bool isLiked
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'missao_id') String? missaoId, List<String> imagens, String legenda,@JsonKey(name: 'n_curtidas') int likesCount,@JsonKey(name: 'n_comentarios') int commentsCount,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'privado') bool privado, String? userName, String? userAvatar, String? missionName, bool isLiked
 });
 
 

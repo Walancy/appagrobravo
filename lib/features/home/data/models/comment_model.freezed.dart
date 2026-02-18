@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$CommentModel {
 
  String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'post_id') String get postId;@JsonKey(name: 'comentario') String get text;@JsonKey(name: 'id_comentario') String? get parentId;@JsonKey(name: 'created_at') DateTime get createdAt;// Joined data
-@JsonKey(includeToJson: false) String? get userName;@JsonKey(includeToJson: false) String? get userAvatar;@JsonKey(includeToJson: false) int get likesCount;@JsonKey(includeToJson: false) bool get isLiked;
+// Joined data
+ String? get userName; String? get userAvatar; int get likesCount; bool get isLiked;
 /// Create a copy of CommentModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +50,7 @@ abstract mixin class $CommentModelCopyWith<$Res>  {
   factory $CommentModelCopyWith(CommentModel value, $Res Function(CommentModel) _then) = _$CommentModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'comentario') String text,@JsonKey(name: 'id_comentario') String? parentId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(includeToJson: false) String? userName,@JsonKey(includeToJson: false) String? userAvatar,@JsonKey(includeToJson: false) int likesCount,@JsonKey(includeToJson: false) bool isLiked
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'comentario') String text,@JsonKey(name: 'id_comentario') String? parentId,@JsonKey(name: 'created_at') DateTime createdAt, String? userName, String? userAvatar, int likesCount, bool isLiked
 });
 
 
@@ -163,7 +164,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  int likesCount, @JsonKey(includeToJson: false)  bool isLiked)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt,  String? userName,  String? userAvatar,  int likesCount,  bool isLiked)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CommentModel() when $default != null:
 return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_that.createdAt,_that.userName,_that.userAvatar,_that.likesCount,_that.isLiked);case _:
@@ -184,7 +185,7 @@ return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  int likesCount, @JsonKey(includeToJson: false)  bool isLiked)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt,  String? userName,  String? userAvatar,  int likesCount,  bool isLiked)  $default,) {final _that = this;
 switch (_that) {
 case _CommentModel():
 return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_that.createdAt,_that.userName,_that.userAvatar,_that.likesCount,_that.isLiked);case _:
@@ -204,7 +205,7 @@ return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(includeToJson: false)  String? userName, @JsonKey(includeToJson: false)  String? userAvatar, @JsonKey(includeToJson: false)  int likesCount, @JsonKey(includeToJson: false)  bool isLiked)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'comentario')  String text, @JsonKey(name: 'id_comentario')  String? parentId, @JsonKey(name: 'created_at')  DateTime createdAt,  String? userName,  String? userAvatar,  int likesCount,  bool isLiked)?  $default,) {final _that = this;
 switch (_that) {
 case _CommentModel() when $default != null:
 return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_that.createdAt,_that.userName,_that.userAvatar,_that.likesCount,_that.isLiked);case _:
@@ -219,7 +220,7 @@ return $default(_that.id,_that.userId,_that.postId,_that.text,_that.parentId,_th
 @JsonSerializable()
 
 class _CommentModel extends CommentModel {
-  const _CommentModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'comentario') required this.text, @JsonKey(name: 'id_comentario') this.parentId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(includeToJson: false) this.userName, @JsonKey(includeToJson: false) this.userAvatar, @JsonKey(includeToJson: false) this.likesCount = 0, @JsonKey(includeToJson: false) this.isLiked = false}): super._();
+  const _CommentModel({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'comentario') required this.text, @JsonKey(name: 'id_comentario') this.parentId, @JsonKey(name: 'created_at') required this.createdAt, this.userName, this.userAvatar, this.likesCount = 0, this.isLiked = false}): super._();
   factory _CommentModel.fromJson(Map<String, dynamic> json) => _$CommentModelFromJson(json);
 
 @override final  String id;
@@ -229,10 +230,11 @@ class _CommentModel extends CommentModel {
 @override@JsonKey(name: 'id_comentario') final  String? parentId;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 // Joined data
-@override@JsonKey(includeToJson: false) final  String? userName;
-@override@JsonKey(includeToJson: false) final  String? userAvatar;
-@override@JsonKey(includeToJson: false) final  int likesCount;
-@override@JsonKey(includeToJson: false) final  bool isLiked;
+// Joined data
+@override final  String? userName;
+@override final  String? userAvatar;
+@override@JsonKey() final  int likesCount;
+@override@JsonKey() final  bool isLiked;
 
 /// Create a copy of CommentModel
 /// with the given fields replaced by the non-null parameter values.
@@ -267,7 +269,7 @@ abstract mixin class _$CommentModelCopyWith<$Res> implements $CommentModelCopyWi
   factory _$CommentModelCopyWith(_CommentModel value, $Res Function(_CommentModel) _then) = __$CommentModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'comentario') String text,@JsonKey(name: 'id_comentario') String? parentId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(includeToJson: false) String? userName,@JsonKey(includeToJson: false) String? userAvatar,@JsonKey(includeToJson: false) int likesCount,@JsonKey(includeToJson: false) bool isLiked
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'comentario') String text,@JsonKey(name: 'id_comentario') String? parentId,@JsonKey(name: 'created_at') DateTime createdAt, String? userName, String? userAvatar, int likesCount, bool isLiked
 });
 
 

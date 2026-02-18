@@ -53,6 +53,8 @@ class ChatPage extends StatelessWidget {
                                   _HistoryPage(
                                     historyChats: data.history,
                                     guideChats: data.guides,
+                                    lastMessages: data.lastMessages,
+                                    lastMessageTimes: data.lastMessageTimes,
                                   ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
@@ -68,6 +70,9 @@ class ChatPage extends StatelessWidget {
                       context: context,
                       chat: data.currentMission!,
                       isCurrent: true,
+                      lastMessage: data.lastMessages[data.currentMission!.id],
+                      lastMessageTime:
+                          data.lastMessageTimes[data.currentMission!.id],
                     ),
                   );
                 }
@@ -88,8 +93,15 @@ class ChatPage extends StatelessWidget {
 class _HistoryPage extends StatelessWidget {
   final List<ChatEntity> historyChats;
   final List<GuideEntity> guideChats;
+  final Map<String, String> lastMessages;
+  final Map<String, DateTime> lastMessageTimes;
 
-  const _HistoryPage({required this.historyChats, required this.guideChats});
+  const _HistoryPage({
+    required this.historyChats,
+    required this.guideChats,
+    required this.lastMessages,
+    required this.lastMessageTimes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +133,8 @@ class _HistoryPage extends StatelessWidget {
                       context: context,
                       guide: g,
                       isCurrent: true,
+                      lastMessage: lastMessages[g.id],
+                      lastMessageTime: lastMessageTimes[g.id],
                     ),
                   ),
                 ],
@@ -140,6 +154,8 @@ class _HistoryPage extends StatelessWidget {
                       context: context,
                       chat: m,
                       isCurrent: false,
+                      lastMessage: lastMessages[m.id],
+                      lastMessageTime: lastMessageTimes[m.id],
                     ),
                   ),
                 ],
@@ -165,21 +181,37 @@ class _WhatsAppListItem extends StatelessWidget {
   final GuideEntity? guide;
   final bool isCurrent;
 
+  final String? lastMessage;
+  final DateTime? lastMessageTime;
+
   const _WhatsAppListItem({
     required this.context,
     this.chat,
     this.guide,
     required this.isCurrent,
+    this.lastMessage,
+    this.lastMessageTime,
   });
+
+  String _formatTime(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0 && now.day == date.day) {
+      return DateFormat('HH:mm').format(date);
+    } else if (difference.inDays < 2 && now.day - date.day == 1) {
+      return 'Ontem';
+    } else {
+      return DateFormat('dd/MM/yyyy').format(date);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final title = chat?.title ?? guide?.name ?? '';
-    final subtitle = chat?.subtitle ?? guide?.role ?? '';
+    final subtitle = lastMessage ?? chat?.subtitle ?? guide?.role ?? '';
     final imageUrl = chat?.imageUrl ?? guide?.avatarUrl;
-    final time = isCurrent
-        ? DateFormat('HH:mm').format(DateTime.now())
-        : '--:--';
+    final time = lastMessageTime != null ? _formatTime(lastMessageTime!) : '';
     final unreadCount = chat?.unreadCount ?? 0;
 
     return ListTile(

@@ -171,7 +171,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-  Future<void> updateFoodPreferences(String preferences) async {
+  Future<void> updateFoodPreferences(List<String> preferences) async {
     final result = await _profileRepository.updateFoodPreferences(preferences);
     result.fold(
       (error) => emit(ProfileState.error(_mapFailure(error))),
@@ -179,7 +179,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-  Future<void> updateMedicalRestrictions(String restrictions) async {
+  Future<void> updateMedicalRestrictions(List<String> restrictions) async {
     final result = await _profileRepository.updateMedicalRestrictions(
       restrictions,
     );
@@ -195,5 +195,21 @@ class ProfileCubit extends Cubit<ProfileState> {
       (error) => emit(ProfileState.error(_mapFailure(error))),
       (_) => loadProfile(),
     );
+  }
+
+  Future<void> updateNotificationPreferences(Map<String, bool> prefs) async {
+    final result = await _profileRepository.updateNotificationPreferences(
+      prefs,
+    );
+    result.fold(
+      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (_) =>
+          null, // Don't reload whole profile, just local save. Or reload if needed.
+    );
+  }
+
+  Future<Map<String, bool>> getNotificationPreferences() async {
+    final result = await _profileRepository.getNotificationPreferences();
+    return result.fold((_) => {}, (prefs) => prefs);
   }
 }

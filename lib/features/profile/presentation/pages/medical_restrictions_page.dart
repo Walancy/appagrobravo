@@ -18,6 +18,30 @@ class MedicalRestrictionsPage extends StatefulWidget {
 
 class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
   final _controller = TextEditingController();
+  List<String> _tags = [];
+  bool _isInitialized = false;
+
+  void _addTag(String text) {
+    if (text.isEmpty) return;
+    if (!_tags.contains(text)) {
+      setState(() {
+        _tags.add(text);
+        _controller.clear();
+      });
+      _saveTags();
+    }
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _tags.remove(tag);
+    });
+    _saveTags();
+  }
+
+  void _saveTags() {
+    context.read<ProfileCubit>().updateMedicalRestrictions(_tags);
+  }
 
   @override
   void dispose() {
@@ -39,9 +63,13 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
           listener: (context, state) {
             state.maybeWhen(
               loaded: (profile, _, __, ___) {
-                if (_controller.text.isEmpty &&
-                    profile.medicalRestrictions != null) {
-                  _controller.text = profile.medicalRestrictions!.join(', ');
+                if (!_isInitialized) {
+                  setState(() {
+                    _tags = List<String>.from(
+                      profile.medicalRestrictions ?? [],
+                    );
+                    _isInitialized = true;
+                  });
                 }
               },
               orElse: () {},
@@ -71,95 +99,76 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'Informe alergias, condições crônicas ou medicamentos de uso contínuo para sua segurança durante a missão.',
+                        'Adicione tags para indicar alergias ou condições médicas importantes.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       TextField(
                         controller: _controller,
-                        maxLines: 10,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                         decoration: InputDecoration(
-                          hintText:
-                              'Ex: Alergia a amendoim, uso contínuo de insulina, intolerância a lactose...',
-                          hintStyle: TextStyle(
-                            color: Theme.of(context).hintColor,
+                          hintText: 'Adicione uma restrição...',
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.add_circle,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: () => _addTag(_controller.text.trim()),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               AppSpacing.radiusLg,
                             ),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusLg,
-                            ),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusLg,
-                            ),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(context).colorScheme.surface
-                              : const Color(0xFFFAFAFA),
-                        ),
-                      ),
-                      const Spacer(),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            context
-                                .read<ProfileCubit>()
-                                .updateMedicalRestrictions(_controller.text);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Informações salvas com segurança!',
-                                ),
-                                backgroundColor: AppColors.primary,
-                              ),
-                            );
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusLg,
-                              ),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            'Salvar Informações',
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
                           ),
                         ),
+                        onSubmitted: (value) => _addTag(value.trim()),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _tags
+                            .map(
+                              (tag) => Chip(
+                                label: Text(
+                                  tag,
+                                  style: AppTextStyles.bodySmall,
+                                ),
+                                deleteIcon: const Icon(Icons.close, size: 16),
+                                onDeleted: () => _removeTag(tag),
+                                backgroundColor: AppColors.error.withOpacity(
+                                  0.1,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(
+                                    color: AppColors.error.withOpacity(0.3),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                        child: Center(
+                          child: Text(
+                            'Suas informações são salvas automaticamente.',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );

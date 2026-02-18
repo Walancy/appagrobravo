@@ -16,7 +16,7 @@ class GenericEventCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E1E1E)
-            : Theme.of(context).colorScheme.surface,
+            : const Color(0xFFF2F4F7),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
@@ -39,12 +39,32 @@ class GenericEventCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.name,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        if (item.type == ItineraryType.hotel) ...[
+                          if (item.name.toLowerCase().contains('check-in') ||
+                              (item.description?.toLowerCase().contains(
+                                    'check-in',
+                                  ) ??
+                                  false))
+                            _buildHotelTag('CHECK-IN', Colors.blue),
+                          if (item.name.toLowerCase().contains('check-out') ||
+                              (item.description?.toLowerCase().contains(
+                                    'check-out',
+                                  ) ??
+                                  false))
+                            _buildHotelTag('CHECK-OUT', Colors.orange),
+                        ],
+                      ],
                     ),
                     if (item.location != null) ...[
                       const SizedBox(height: 2),
@@ -120,6 +140,26 @@ class GenericEventCard extends StatelessWidget {
     );
   }
 
+  Widget _buildHotelTag(String label, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   IconData _getIconForType(ItineraryType type) {
     switch (type) {
       case ItineraryType.food:
@@ -168,7 +208,7 @@ class FlightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E1E1E)
-            : Theme.of(context).colorScheme.surface,
+            : const Color(0xFFF2F4F7),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
@@ -718,7 +758,7 @@ class TransferCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E1E1E)
-            : Theme.of(context).colorScheme.surface,
+            : const Color(0xFFF2F4F7),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),

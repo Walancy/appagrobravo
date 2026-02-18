@@ -21,11 +21,17 @@ abstract class ProfileRepository {
   Future<Either<Exception, void>> acceptConnection(String userId);
   Future<Either<Exception, void>> rejectConnection(String userId);
   Future<Either<Exception, void>> removeConnection(String userId);
-  Future<Either<Exception, void>> updateFoodPreferences(String preferences);
+  Future<Either<Exception, void>> updateFoodPreferences(
+    List<String> preferences,
+  );
   Future<Either<Exception, void>> updateMedicalRestrictions(
-    String restrictions,
+    List<String> restrictions,
   );
   Future<Either<Exception, void>> updateAccountData({
     required Map<String, dynamic> data,
   });
+  Future<Either<Exception, void>> updateNotificationPreferences(
+    Map<String, bool> preferences,
+  );
+  Future<Either<Exception, Map<String, bool>>> getNotificationPreferences();
 }

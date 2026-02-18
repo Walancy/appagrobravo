@@ -33,6 +33,8 @@ abstract class ChatData with _$ChatData {
     ChatEntity? currentMission,
     @Default([]) List<GuideEntity> guides,
     @Default([]) List<ChatEntity> history,
+    @Default({}) Map<String, String> lastMessages,
+    @Default({}) Map<String, DateTime> lastMessageTimes,
   }) = _ChatData;
 }
 

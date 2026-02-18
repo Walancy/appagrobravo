@@ -804,18 +804,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Exception, void>> updateFoodPreferences(
-    String preferences,
+    List<String> preferences,
   ) async {
     try {
       final userId = _supabaseClient.auth.currentUser!.id;
-      final list = preferences
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
       await _supabaseClient
           .from('users')
-          .update({'restricoes_alimentares': list})
+          .update({'restricoes_alimentares': preferences})
           .eq('id', userId);
       return const Right(null);
     } catch (e) {
@@ -825,18 +820,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Exception, void>> updateMedicalRestrictions(
-    String restrictions,
+    List<String> restrictions,
   ) async {
     try {
       final userId = _supabaseClient.auth.currentUser!.id;
-      final list = restrictions
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
       await _supabaseClient
           .from('users')
-          .update({'restricoes_medicas': list})
+          .update({'restricoes_medicas': restrictions})
           .eq('id', userId);
       return const Right(null);
     } catch (e) {
@@ -880,6 +870,51 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Right(null);
     } catch (e) {
       return Left(Exception('Erro ao atualizar dados da conta: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> updateNotificationPreferences(
+    Map<String, bool> preferences,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = _supabaseClient.auth.currentUser!.id;
+      await prefs.setString(
+        'notification_prefs_$userId',
+        jsonEncode(preferences),
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(
+        Exception('Erro ao salvar preferências de notificação localmente: $e'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, Map<String, bool>>>
+  getNotificationPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = _supabaseClient.auth.currentUser!.id;
+      final jsonString = prefs.getString('notification_prefs_$userId');
+      if (jsonString != null) {
+        final Map<String, dynamic> decoed = jsonDecode(jsonString);
+        return Right(decoed.cast<String, bool>());
+      }
+      // Return defaults if not set
+      return const Right({
+        'pushNotifications': true,
+        'emailNotifications': true,
+        'documentAlerts': true,
+        'missionUpdates': true,
+        'connections': true,
+      });
+    } catch (e) {
+      return Left(
+        Exception('Erro ao carregar preferências de notificação: $e'),
+      );
     }
   }
 }
