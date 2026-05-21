@@ -80,49 +80,108 @@ class AuthRepositoryImpl implements AuthRepository {
     required String userType,
   }) async {
     try {
-      // Enviar metadados para que (se houver trigger) o banco saiba o que fazer
+      log('--- INÍCIO DO CADASTRO ---');
+      log('1. Tentando criar usuário no Supabase Auth. Email: $email, Name: $name');
+      // 1. Criar usuário no auth.users do Supabase
       final response = await _supabaseClient.auth.signUp(
         email: email,
         password: password,
         data: {
           'nome': name,
-          'tipouser': [userType], // Envia como array
+          'tipouser': [userType],
         },
       );
 
-      if (response.user == null) {
-        return Left(Exception('Cadastro falhou.'));
+      log('2. Resposta do Supabase Auth recebida. User nulo? ${response.user == null}');
+      if (response.user != null) {
+        log('   Identities vazias? ${response.user!.identities?.isEmpty ?? true}');
       }
 
-      // Opcional: Inserir manualmente se não houver trigger
-      // Por segurança, vamos verificar se o perfil foi criado, se não, criamos.
+      if (response.user == null || response.user!.identities == null || response.user!.identities!.isEmpty) {
+        log('ERRO: E-mail bloqueado por duplicidade (user_repeated_signup) ou erro na API.');
+        return Left(Exception('Este e-mail já está em uso ou vinculado a uma conta desativada.'));
+      }
+
+      final authUser = response.user!;
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      // 2. Criar linha na tabela public.users preenchendo o máximo de campos
+      //    Extraímos dados do auth user (metadata, telefone, datas) e
+      //    preenchemos os demais com valores padrão seguros.
+      final publicUserData = <String, dynamic>{
+        'id': authUser.id,
+        'nome': name,
+        'email': email,
+        'tipouser': [userType],
+        // Dados que podemos derivar do auth user
+        'telefone': authUser.phone, // null se não veio pelo signup
+        'foto': authUser.userMetadata?['avatar_url'], // null para email signup
+        // Campos de texto inicializados como null (sem dado do formulário)
+        'cargo': null,
+        'empresa': null,
+        'observacoes': null,
+        'capa_perfil': null,
+        'cpf': null,
+        'ssn': null,
+        'cep': null,
+        'estado': null,
+        'cidade': null,
+        'rua': null,
+        'numero': null,
+        'bairro': null,
+        'complemento': null,
+        'nacionalidade': null,
+        'n_passaporte': null,
+        'datanascimento': null,
+        // Arrays inicializados como vazios
+        'restricoes_alimentares': <String>[],
+        'restricoes_medicas': <String>[],
+        // Timestamp de criação
+        'created_at': authUser.createdAt.isNotEmpty
+            ? authUser.createdAt
+            : now,
+      };
+
       try {
-        await _supabaseClient.from('users').upsert({
-          'id': response.user!.id,
-          'nome': name,
-          'email': email,
-          'tipouser': [userType],
-        });
+        log('3. Tentando upsert na tabela public.users...');
+        await _supabaseClient.from('users').upsert(publicUserData);
+        log('   Upsert concluído com sucesso!');
       } catch (e) {
-        log('Erro ao criar perfil público (pode já existir via trigger): $e');
+        // Log detalhado mas NÃO silencia o erro — se falhar, o cadastro continua
+        // pois o auth user já existe, mas logamos para debug
+        log('Aviso: Erro ao criar perfil público (tentativa upsert): $e');
+        // Tentar insert simples como fallback (caso upsert tenha problema de RLS)
+        try {
+          log('4. Tentando insert simples (fallback) na tabela public.users...');
+          await _supabaseClient.from('users').insert(publicUserData);
+          log('   Insert fallback concluído com sucesso!');
+        } catch (insertError) {
+          log('Aviso: Insert fallback também falhou: $insertError');
+          // Não retornamos erro aqui pois o auth user foi criado com sucesso
+          // O perfil público pode ser criado via trigger ou na próxima ação
+        }
       }
 
-      // Retorna a entidade (construída manualmente pois o fetch pode ter delay)
+      // 3. Retorna a entidade construída localmente (fetch da tabela pode ter delay)
       final userModel = UserModel(
-        id: response.user!.id,
+        id: authUser.id,
         email: email,
         nome: name,
         roles: [userType],
-        foto: null,
+        foto: authUser.userMetadata?['avatar_url'],
       );
 
-      // Cache this basic model as well so subsequent immediate offline starts have something
+      // Cache para uso imediato offline
+      log('5. Salvando usuário no cache local...');
       await _saveUserToPreferences(userModel);
 
+      log('--- CADASTRO FINALIZADO COM SUCESSO ---');
       return Right(userModel.toEntity());
     } on AuthException catch (e) {
+      log('Auth Error no cadastro: ${e.message}');
       return Left(Exception(e.message));
     } catch (e) {
+      log('Erro inesperado no cadastro: $e');
       return Left(Exception('Erro inesperado ao cadastrar.'));
     }
   }
@@ -172,6 +231,25 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(Exception(e.message));
     } catch (e) {
       return Left(Exception('Erro ao solicitar redefinição de senha.'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> verifyOtp({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      await _supabaseClient.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.recovery,
+      );
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(Exception(e.message));
+    } catch (e) {
+      return Left(Exception('Código inválido ou expirado.'));
     }
   }
 

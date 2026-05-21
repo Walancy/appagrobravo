@@ -20,6 +20,10 @@ abstract class AuthRepository {
   Future<Option<UserEntity>> getCurrentUser();
 
   Future<Either<Exception, void>> resetPassword(String email);
+  Future<Either<Exception, void>> verifyOtp({
+    required String email,
+    required String token,
+  });
   Future<Either<Exception, void>> updatePassword(String newPassword);
   Future<Either<Exception, void>> signInWithGoogle();
   Future<Either<Exception, void>> signInWithApple();

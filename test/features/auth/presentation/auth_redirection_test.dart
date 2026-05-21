@@ -2,14 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:agrobravo/core/router/app_router.dart';
-import 'package:agrobravo/features/auth/presentation/pages/login_page.dart';
-import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -49,7 +46,7 @@ void main() {
   );
 
   testWidgets(
-    'Deve redirecionar para Nova Senha quando o AuthCubit emitir passwordRecovery',
+    'Deve redirecionar para Nova Senha quando o AuthCubit emitir otpVerified',
     (WidgetTester tester) async {
       final stateController = StreamController<AuthState>.broadcast();
       when(() => mockAuthCubit.state).thenReturn(const AuthState.initial());
@@ -67,8 +64,8 @@ void main() {
       // Give it time to render initial state
       await tester.pump();
 
-      // Simula o evento de recuperação
-      stateController.add(const AuthState.passwordRecovery());
+      // Simula o evento de OTP verificado com sucesso
+      stateController.add(const AuthState.otpVerified());
 
       // Wait for BlocListener to catch it and animation to finish
       await tester.pumpAndSettle(const Duration(seconds: 3));

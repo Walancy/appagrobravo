@@ -8,7 +8,7 @@ import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
-import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
@@ -116,7 +116,7 @@ class SettingsPage extends StatelessWidget {
                       title: 'Sair da conta',
                       isDestructive: true,
                       onTap: () async {
-                        await getIt<AuthRepository>().signOut();
+                        await context.read<AuthCubit>().logout();
                         if (context.mounted) context.go('/');
                       },
                     ),

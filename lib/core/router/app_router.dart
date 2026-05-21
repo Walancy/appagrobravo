@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/features/auth/presentation/pages/login_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/home_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/create_post_page.dart';
@@ -22,8 +23,31 @@ import 'package:agrobravo/features/profile/presentation/pages/about_us_page.dart
 import 'package:agrobravo/features/profile/presentation/pages/profile_tab.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 
+/// Rotas que NÃO precisam de autenticação (login, criar conta, esqueceu senha).
+const _publicPaths = <String>{'/', '/reset-password'};
+
 final appRouter = GoRouter(
   initialLocation: '/',
+  redirect: (context, state) {
+    final session = Supabase.instance.client.auth.currentSession;
+    final isAuthenticated = session != null;
+    final currentPath = state.matchedLocation;
+
+    final isPublicRoute = _publicPaths.contains(currentPath);
+
+    // Se NÃO está autenticado e está tentando acessar rota protegida → login
+    if (!isAuthenticated && !isPublicRoute) {
+      return '/';
+    }
+
+    // Se JÁ está autenticado e está na tela de login → redireciona para home
+    if (isAuthenticated && currentPath == '/') {
+      return '/home';
+    }
+
+    // Nenhum redirecionamento necessário
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/',

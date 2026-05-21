@@ -4,17 +4,19 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer';
 
 @LazySingleton()
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
 
-  AuthCubit(this._authRepository) : super(const AuthState.initial()) {
-    _authRepository.onAuthStateChange.listen((event) {
-      if (event == AuthChangeEvent.passwordRecovery) {
-        emit(const AuthState.passwordRecovery());
-      }
-    });
+  AuthCubit(this._authRepository) : super(const AuthState.initial());
+
+  void clearError() {
+    state.maybeWhen(
+      error: (_) => emit(const AuthState.initial()),
+      orElse: () {},
+    );
   }
 
   Future<void> checkAuthStatus() async {
@@ -65,27 +67,61 @@ class AuthCubit extends Cubit<AuthState> {
     String password,
     String passwordConfirm,
   ) async {
+    log('AuthCubit.register: Iniciando validação dos dados de entrada...');
+    if (name.trim().isEmpty) {
+      emit(const AuthState.error('Informe seu nome.'));
+      return;
+    }
+
+    if (email.trim().isEmpty) {
+      emit(const AuthState.error('Informe seu e-mail.'));
+      return;
+    }
+
+    if (password.length < 6) {
+      emit(const AuthState.error('A senha deve ter pelo menos 6 caracteres.'));
+      return;
+    }
+
     if (password != passwordConfirm) {
       emit(const AuthState.error('As senhas não conferem.'));
       return;
     }
 
     emit(const AuthState.loading());
+    log('AuthCubit.register: Validação OK. Chamando _authRepository.signUpWithEmailAndPassword...');
+    
     // Default to USER_APP for self-registration via app
     final result = await _authRepository.signUpWithEmailAndPassword(
-      email: email,
+      email: email.trim(),
       password: password,
-      name: name,
+      name: name.trim(),
       userType: 'USER_APP',
     );
 
     result.fold(
-      (error) =>
-          emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (error) {
+          log('AuthCubit.register: Falha no repositório -> $error');
+          emit(AuthState.error(error.toString().replaceAll('Exception: ', '')));
+      },
       (user) {
-        // Could emit a specific state like "VerificationNeeded" if email confirm is on
-        // For now, assuming direct login or success message
-        emit(AuthState.authenticated(user));
+        log('AuthCubit.register: Sucesso no repositório! Verificando sessão atual...');
+        // Verificar se o Supabase criou uma sessão ativa (sem confirmação de email)
+        // ou se apenas criou o usuário (com confirmação de email pendente)
+        final currentSession = Supabase.instance.client.auth.currentSession;
+
+        if (currentSession != null) {
+          log('AuthCubit.register: Sessão ativa encontrada. Logando direto.');
+          // Sessão ativa → login automático (Supabase sem confirmação de email)
+          emit(AuthState.authenticated(user));
+        } else {
+          log('AuthCubit.register: Sem sessão ativa. Solicitando confirmação de email.');
+          // Sem sessão → precisa confirmar email antes de poder logar
+          emit(const AuthState.registrationSuccess(
+            message: 'Conta criada com sucesso! Verifique seu e-mail para confirmar o cadastro.',
+            needsEmailConfirmation: true,
+          ));
+        }
       },
     );
   }
@@ -94,8 +130,20 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthState.loading());
     final result = await _authRepository.resetPassword(email);
     result.fold(
-      (error) => emit(AuthState.error(error.toString())),
-      (_) => emit(const AuthState.passwordResetEmailSent()),
+      (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (_) => emit(AuthState.otpSent(email)),
+    );
+  }
+
+  Future<void> verifyOtp(String email, String token) async {
+    emit(const AuthState.loading());
+    final result = await _authRepository.verifyOtp(
+      email: email,
+      token: token,
+    );
+    result.fold(
+      (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (_) => emit(const AuthState.otpVerified()),
     );
   }
 
@@ -113,7 +161,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthState.loading());
     final result = await _authRepository.updatePassword(password);
     result.fold(
-      (error) => emit(AuthState.error(error.toString())),
+      (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) => emit(const AuthState.passwordUpdated()),
     );
   }

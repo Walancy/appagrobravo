@@ -10,6 +10,8 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
+  final bool hasError;
 
   const AppTextField({
     super.key,
@@ -19,6 +21,8 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.controller,
     this.validator,
+    this.onChanged,
+    this.hasError = false,
   });
 
   @override
@@ -44,6 +48,7 @@ class AppTextField extends StatelessWidget {
             controller: controller,
             obscureText: obscureText,
             validator: validator,
+            onChanged: onChanged,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.surface,
             ), // Fonte interna ajustada
@@ -57,14 +62,23 @@ class AppTextField extends StatelessWidget {
                 horizontal: AppSpacing.md, // Reduzido
                 vertical: 14, // Altura reduzida
               ),
-              border: InputBorder.none, // Remove bordas padrão
-              enabledBorder: InputBorder.none,
+              border: hasError 
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      borderSide: BorderSide(color: Colors.redAccent, width: 1.5),
+                    )
+                  : InputBorder.none,
+              enabledBorder: hasError 
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      borderSide: BorderSide(color: Colors.redAccent, width: 1.5),
+                    )
+                  : InputBorder.none,
               focusedBorder: OutlineInputBorder(
-                // Borda foco sutil
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 borderSide: BorderSide(
-                  color: AppColors.surface.withOpacity(0.5),
-                  width: 1,
+                  color: hasError ? Colors.redAccent : AppColors.surface.withOpacity(0.5),
+                  width: hasError ? 1.5 : 1,
                 ),
               ),
               suffixIcon: suffixIcon,

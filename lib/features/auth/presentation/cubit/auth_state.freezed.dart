@@ -55,17 +55,18 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Authenticated value)?  authenticated,TResult Function( _Unauthenticated value)?  unauthenticated,TResult Function( _Error value)?  error,TResult Function( _PasswordResetEmailSent value)?  passwordResetEmailSent,TResult Function( _PasswordRecovery value)?  passwordRecovery,TResult Function( _PasswordUpdated value)?  passwordUpdated,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Authenticated value)?  authenticated,TResult Function( _Unauthenticated value)?  unauthenticated,TResult Function( _RegistrationSuccess value)?  registrationSuccess,TResult Function( _Error value)?  error,TResult Function( _OtpSent value)?  otpSent,TResult Function( _OtpVerified value)?  otpVerified,TResult Function( _PasswordUpdated value)?  passwordUpdated,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _Authenticated() when authenticated != null:
 return authenticated(_that);case _Unauthenticated() when unauthenticated != null:
-return unauthenticated(_that);case _Error() when error != null:
-return error(_that);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
-return passwordResetEmailSent(_that);case _PasswordRecovery() when passwordRecovery != null:
-return passwordRecovery(_that);case _PasswordUpdated() when passwordUpdated != null:
+return unauthenticated(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that);case _Error() when error != null:
+return error(_that);case _OtpSent() when otpSent != null:
+return otpSent(_that);case _OtpVerified() when otpVerified != null:
+return otpVerified(_that);case _PasswordUpdated() when passwordUpdated != null:
 return passwordUpdated(_that);case _:
   return orElse();
 
@@ -84,17 +85,18 @@ return passwordUpdated(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Authenticated value)  authenticated,required TResult Function( _Unauthenticated value)  unauthenticated,required TResult Function( _Error value)  error,required TResult Function( _PasswordResetEmailSent value)  passwordResetEmailSent,required TResult Function( _PasswordRecovery value)  passwordRecovery,required TResult Function( _PasswordUpdated value)  passwordUpdated,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Authenticated value)  authenticated,required TResult Function( _Unauthenticated value)  unauthenticated,required TResult Function( _RegistrationSuccess value)  registrationSuccess,required TResult Function( _Error value)  error,required TResult Function( _OtpSent value)  otpSent,required TResult Function( _OtpVerified value)  otpVerified,required TResult Function( _PasswordUpdated value)  passwordUpdated,}){
 final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that);case _Loading():
 return loading(_that);case _Authenticated():
 return authenticated(_that);case _Unauthenticated():
-return unauthenticated(_that);case _Error():
-return error(_that);case _PasswordResetEmailSent():
-return passwordResetEmailSent(_that);case _PasswordRecovery():
-return passwordRecovery(_that);case _PasswordUpdated():
+return unauthenticated(_that);case _RegistrationSuccess():
+return registrationSuccess(_that);case _Error():
+return error(_that);case _OtpSent():
+return otpSent(_that);case _OtpVerified():
+return otpVerified(_that);case _PasswordUpdated():
 return passwordUpdated(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -112,17 +114,18 @@ return passwordUpdated(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Authenticated value)?  authenticated,TResult? Function( _Unauthenticated value)?  unauthenticated,TResult? Function( _Error value)?  error,TResult? Function( _PasswordResetEmailSent value)?  passwordResetEmailSent,TResult? Function( _PasswordRecovery value)?  passwordRecovery,TResult? Function( _PasswordUpdated value)?  passwordUpdated,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Authenticated value)?  authenticated,TResult? Function( _Unauthenticated value)?  unauthenticated,TResult? Function( _RegistrationSuccess value)?  registrationSuccess,TResult? Function( _Error value)?  error,TResult? Function( _OtpSent value)?  otpSent,TResult? Function( _OtpVerified value)?  otpVerified,TResult? Function( _PasswordUpdated value)?  passwordUpdated,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _Authenticated() when authenticated != null:
 return authenticated(_that);case _Unauthenticated() when unauthenticated != null:
-return unauthenticated(_that);case _Error() when error != null:
-return error(_that);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
-return passwordResetEmailSent(_that);case _PasswordRecovery() when passwordRecovery != null:
-return passwordRecovery(_that);case _PasswordUpdated() when passwordUpdated != null:
+return unauthenticated(_that);case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that);case _Error() when error != null:
+return error(_that);case _OtpSent() when otpSent != null:
+return otpSent(_that);case _OtpVerified() when otpVerified != null:
+return otpVerified(_that);case _PasswordUpdated() when passwordUpdated != null:
 return passwordUpdated(_that);case _:
   return null;
 
@@ -140,16 +143,17 @@ return passwordUpdated(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( UserEntity user)?  authenticated,TResult Function()?  unauthenticated,TResult Function( String message)?  error,TResult Function()?  passwordResetEmailSent,TResult Function()?  passwordRecovery,TResult Function()?  passwordUpdated,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( UserEntity user)?  authenticated,TResult Function()?  unauthenticated,TResult Function( String message,  bool needsEmailConfirmation)?  registrationSuccess,TResult Function( String message)?  error,TResult Function( String email)?  otpSent,TResult Function()?  otpVerified,TResult Function()?  passwordUpdated,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Authenticated() when authenticated != null:
 return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
-return unauthenticated();case _Error() when error != null:
-return error(_that.message);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
-return passwordResetEmailSent();case _PasswordRecovery() when passwordRecovery != null:
-return passwordRecovery();case _PasswordUpdated() when passwordUpdated != null:
+return unauthenticated();case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that.message,_that.needsEmailConfirmation);case _Error() when error != null:
+return error(_that.message);case _OtpSent() when otpSent != null:
+return otpSent(_that.email);case _OtpVerified() when otpVerified != null:
+return otpVerified();case _PasswordUpdated() when passwordUpdated != null:
 return passwordUpdated();case _:
   return orElse();
 
@@ -168,16 +172,17 @@ return passwordUpdated();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( UserEntity user)  authenticated,required TResult Function()  unauthenticated,required TResult Function( String message)  error,required TResult Function()  passwordResetEmailSent,required TResult Function()  passwordRecovery,required TResult Function()  passwordUpdated,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( UserEntity user)  authenticated,required TResult Function()  unauthenticated,required TResult Function( String message,  bool needsEmailConfirmation)  registrationSuccess,required TResult Function( String message)  error,required TResult Function( String email)  otpSent,required TResult Function()  otpVerified,required TResult Function()  passwordUpdated,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Authenticated():
 return authenticated(_that.user);case _Unauthenticated():
-return unauthenticated();case _Error():
-return error(_that.message);case _PasswordResetEmailSent():
-return passwordResetEmailSent();case _PasswordRecovery():
-return passwordRecovery();case _PasswordUpdated():
+return unauthenticated();case _RegistrationSuccess():
+return registrationSuccess(_that.message,_that.needsEmailConfirmation);case _Error():
+return error(_that.message);case _OtpSent():
+return otpSent(_that.email);case _OtpVerified():
+return otpVerified();case _PasswordUpdated():
 return passwordUpdated();case _:
   throw StateError('Unexpected subclass');
 
@@ -195,16 +200,17 @@ return passwordUpdated();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( UserEntity user)?  authenticated,TResult? Function()?  unauthenticated,TResult? Function( String message)?  error,TResult? Function()?  passwordResetEmailSent,TResult? Function()?  passwordRecovery,TResult? Function()?  passwordUpdated,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( UserEntity user)?  authenticated,TResult? Function()?  unauthenticated,TResult? Function( String message,  bool needsEmailConfirmation)?  registrationSuccess,TResult? Function( String message)?  error,TResult? Function( String email)?  otpSent,TResult? Function()?  otpVerified,TResult? Function()?  passwordUpdated,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Authenticated() when authenticated != null:
 return authenticated(_that.user);case _Unauthenticated() when unauthenticated != null:
-return unauthenticated();case _Error() when error != null:
-return error(_that.message);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
-return passwordResetEmailSent();case _PasswordRecovery() when passwordRecovery != null:
-return passwordRecovery();case _PasswordUpdated() when passwordUpdated != null:
+return unauthenticated();case _RegistrationSuccess() when registrationSuccess != null:
+return registrationSuccess(_that.message,_that.needsEmailConfirmation);case _Error() when error != null:
+return error(_that.message);case _OtpSent() when otpSent != null:
+return otpSent(_that.email);case _OtpVerified() when otpVerified != null:
+return otpVerified();case _PasswordUpdated() when passwordUpdated != null:
 return passwordUpdated();case _:
   return null;
 
@@ -387,6 +393,74 @@ String toString() {
 /// @nodoc
 
 
+class _RegistrationSuccess implements AuthState {
+  const _RegistrationSuccess({required this.message, required this.needsEmailConfirmation});
+  
+
+ final  String message;
+ final  bool needsEmailConfirmation;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegistrationSuccessCopyWith<_RegistrationSuccess> get copyWith => __$RegistrationSuccessCopyWithImpl<_RegistrationSuccess>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationSuccess&&(identical(other.message, message) || other.message == message)&&(identical(other.needsEmailConfirmation, needsEmailConfirmation) || other.needsEmailConfirmation == needsEmailConfirmation));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message,needsEmailConfirmation);
+
+@override
+String toString() {
+  return 'AuthState.registrationSuccess(message: $message, needsEmailConfirmation: $needsEmailConfirmation)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegistrationSuccessCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$RegistrationSuccessCopyWith(_RegistrationSuccess value, $Res Function(_RegistrationSuccess) _then) = __$RegistrationSuccessCopyWithImpl;
+@useResult
+$Res call({
+ String message, bool needsEmailConfirmation
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegistrationSuccessCopyWithImpl<$Res>
+    implements _$RegistrationSuccessCopyWith<$Res> {
+  __$RegistrationSuccessCopyWithImpl(this._self, this._then);
+
+  final _RegistrationSuccess _self;
+  final $Res Function(_RegistrationSuccess) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? needsEmailConfirmation = null,}) {
+  return _then(_RegistrationSuccess(
+message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,needsEmailConfirmation: null == needsEmailConfirmation ? _self.needsEmailConfirmation : needsEmailConfirmation // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
 class _Error implements AuthState {
   const _Error(this.message);
   
@@ -453,40 +527,74 @@ as String,
 /// @nodoc
 
 
-class _PasswordResetEmailSent implements AuthState {
-  const _PasswordResetEmailSent();
+class _OtpSent implements AuthState {
+  const _OtpSent(this.email);
   
 
+ final  String email;
 
-
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$OtpSentCopyWith<_OtpSent> get copyWith => __$OtpSentCopyWithImpl<_OtpSent>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PasswordResetEmailSent);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OtpSent&&(identical(other.email, email) || other.email == email));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,email);
 
 @override
 String toString() {
-  return 'AuthState.passwordResetEmailSent()';
+  return 'AuthState.otpSent(email: $email)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class _$OtpSentCopyWith<$Res> implements $AuthStateCopyWith<$Res> {
+  factory _$OtpSentCopyWith(_OtpSent value, $Res Function(_OtpSent) _then) = __$OtpSentCopyWithImpl;
+@useResult
+$Res call({
+ String email
+});
 
 
+
+
+}
+/// @nodoc
+class __$OtpSentCopyWithImpl<$Res>
+    implements _$OtpSentCopyWith<$Res> {
+  __$OtpSentCopyWithImpl(this._self, this._then);
+
+  final _OtpSent _self;
+  final $Res Function(_OtpSent) _then;
+
+/// Create a copy of AuthState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? email = null,}) {
+  return _then(_OtpSent(
+null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 
 
-class _PasswordRecovery implements AuthState {
-  const _PasswordRecovery();
+class _OtpVerified implements AuthState {
+  const _OtpVerified();
   
 
 
@@ -496,7 +604,7 @@ class _PasswordRecovery implements AuthState {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PasswordRecovery);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OtpVerified);
 }
 
 
@@ -505,7 +613,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'AuthState.passwordRecovery()';
+  return 'AuthState.otpVerified()';
 }
 
 

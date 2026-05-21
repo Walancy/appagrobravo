@@ -31,6 +31,9 @@ class _LoginPageState extends State<LoginPage>
 
   late AuthMode _authMode;
 
+  // Guarda o email para usar na verificação e reenvio do OTP
+  String _recoveryEmail = '';
+
   @override
   void initState() {
     super.initState();
@@ -96,6 +99,9 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void _switchMode(AuthMode mode) {
+    if (_authMode != mode) {
+      context.read<AuthCubit>().clearError();
+    }
     setState(() {
       _authMode = mode;
     });
@@ -109,19 +115,24 @@ class _LoginPageState extends State<LoginPage>
         return 'Criar conta';
       case AuthMode.forgotPassword:
         return 'Recuperação';
+      case AuthMode.otpVerification:
+        return 'Verificação';
       case AuthMode.resetPassword:
         return 'Nova senha';
       case AuthMode.success:
         return 'Sucesso!';
-      case AuthMode.emailVerification:
-        return 'Verifique seu email';
+      case AuthMode.registrationSuccess:
+        return 'Sua conta foi criada!';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final title = _getTitle();
-    final bool isSuccess = _authMode == AuthMode.success;
+    final bool isSuccess = _authMode == AuthMode.success || _authMode == AuthMode.registrationSuccess;
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Esconde logo na tela de register (muitos campos) ou telas pequenas
+    final bool showLogo = screenHeight > 600 && _authMode == AuthMode.login;
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
@@ -142,13 +153,21 @@ class _LoginPageState extends State<LoginPage>
             }
             context.go('/home');
           },
+          registrationSuccess: (message, needsEmailConfirmation) {
+            if (needsEmailConfirmation) {
+              _switchMode(AuthMode.registrationSuccess);
+            } else {
+              context.go('/home');
+            }
+          },
           error: (message) {
-            // Feedback agora é exibido apenas via texto vermelho noLoginForm
+            // Feedback agora é exibido apenas via texto vermelho no LoginForm
           },
-          passwordResetEmailSent: () {
-            _switchMode(AuthMode.emailVerification);
+          otpSent: (email) {
+            _recoveryEmail = email;
+            _switchMode(AuthMode.otpVerification);
           },
-          passwordRecovery: () {
+          otpVerified: () {
             _switchMode(AuthMode.resetPassword);
           },
           passwordUpdated: () {
@@ -171,22 +190,23 @@ class _LoginPageState extends State<LoginPage>
               child: Container(color: Colors.black.withOpacity(0.3)),
             ),
 
-            // Logo Animada
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Align(
-                  alignment: _logoAlignmentAnimation.value,
-                  child: Opacity(
-                    opacity: _logoFadeAnimation.value,
-                    child: SvgPicture.asset(
-                      Assets.images.logoBranca,
-                      width: 110,
+            // Logo Animada — só mostra se tem espaço suficiente
+            if (showLogo)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Align(
+                    alignment: _logoAlignmentAnimation.value,
+                    child: Opacity(
+                      opacity: _logoFadeAnimation.value,
+                      child: SvgPicture.asset(
+                        Assets.images.logoBranca,
+                        width: 110,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
 
             // Conteúdo Principal
             AnimatedBuilder(
@@ -201,178 +221,213 @@ class _LoginPageState extends State<LoginPage>
 
                 return Align(
                   alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: AppSpacing.md,
-                      right: AppSpacing.md,
-                      bottom: 40,
-                    ),
-                    child: Opacity(
-                      opacity: _formFadeAnimation.value,
-                      child: SlideTransition(
-                        position: _formSlideAnimation,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 20),
-
-                              // Título dinâmico
-                              isSuccess
-                                  ? Text(
-                                      'Senha alterada com sucesso!',
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.h2.copyWith(
-                                        color: AppColors.surface.withOpacity(
-                                          0.9,
-                                        ),
-                                        fontWeight: FontWeight.w200,
-                                        fontSize: 22,
-                                      ),
-                                    )
-                                  : Text(
-                                      title,
-                                      style: AppTextStyles.h2.copyWith(
-                                        color: AppColors.surface.withOpacity(
-                                          0.9,
-                                        ),
-                                        fontWeight: FontWeight.w200,
-                                        fontSize: 24,
-                                      ),
-                                    ),
-
-                              const SizedBox(height: AppSpacing.sm),
-
-                              // Card do Formulário
-                              BlocBuilder<AuthCubit, AuthState>(
-                                builder: (context, state) {
-                                  final isLoading = state.maybeWhen(
-                                    loading: () => true,
-                                    orElse: () => false,
-                                  );
-
-                                  final errorMessage = state.maybeWhen(
-                                    error: (message) => message,
-                                    orElse: () => null,
-                                  );
-
-                                  return Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Opacity(
-                                        opacity: isLoading ? 0.5 : 1.0,
-                                        child: AbsorbPointer(
-                                          absorbing: isLoading,
-                                          child: LoginForm(
-                                            authMode: _authMode,
-                                            errorMessage: errorMessage,
-                                            onForgotPasswordNavigation: () =>
-                                                _switchMode(
-                                                  AuthMode.forgotPassword,
+                  child: Opacity(
+                    opacity: _formFadeAnimation.value,
+                    child: SlideTransition(
+                      position: _formSlideAnimation,
+                      child: SafeArea(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              padding: EdgeInsets.only(
+                                left: AppSpacing.md,
+                                right: AppSpacing.md,
+                                bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                                    ? AppSpacing.sm
+                                    : 40,
+                                top: AppSpacing.md,
+                              ),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: 0,
+                                  maxWidth: 500, // Máximo para tablets
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Título dinâmico — nunca corta, ajusta tamanho
+                                    isSuccess
+                                        ? FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              title,
+                                              textAlign: TextAlign.center,
+                                              style: AppTextStyles.h2.copyWith(
+                                                color: AppColors.surface.withOpacity(
+                                                  0.9,
                                                 ),
-                                            onLoginNavigation: () =>
-                                                _switchMode(AuthMode.login),
-                                            onRegisterNavigation: () =>
-                                                _switchMode(AuthMode.register),
-                                            onLoginAction:
-                                                (email, password, rememberMe) {
-                                                  context
-                                                      .read<AuthCubit>()
-                                                      .login(
-                                                        email,
-                                                        password,
-                                                        rememberMe: rememberMe,
-                                                      );
-                                                },
-                                            onRegisterAction:
-                                                (
-                                                  name,
-                                                  email,
-                                                  password,
-                                                  confirm,
-                                                ) {
-                                                  context
-                                                      .read<AuthCubit>()
-                                                      .register(
+                                                fontWeight: FontWeight.w200,
+                                                fontSize: 22,
+                                              ),
+                                            ),
+                                          )
+                                        : FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              title,
+                                              style: AppTextStyles.h2.copyWith(
+                                                color: AppColors.surface.withOpacity(
+                                                  0.9,
+                                                ),
+                                                fontWeight: FontWeight.w200,
+                                                fontSize: 24,
+                                              ),
+                                            ),
+                                          ),
+
+                                    const SizedBox(height: AppSpacing.sm),
+
+                                    // Card do Formulário
+                                    BlocBuilder<AuthCubit, AuthState>(
+                                      builder: (context, state) {
+                                        final isLoading = state.maybeWhen(
+                                          loading: () => true,
+                                          orElse: () => false,
+                                        );
+
+                                        final errorMessage = state.maybeWhen(
+                                          error: (message) => message,
+                                          orElse: () => null,
+                                        );
+
+                                        return Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Opacity(
+                                              opacity: isLoading ? 0.5 : 1.0,
+                                              child: AbsorbPointer(
+                                                absorbing: isLoading,
+                                                child: LoginForm(
+                                                  authMode: _authMode,
+                                                  errorMessage: errorMessage,
+                                                  registeredEmail: _recoveryEmail,
+                                                  onForgotPasswordNavigation: () =>
+                                                      _switchMode(
+                                                        AuthMode.forgotPassword,
+                                                      ),
+                                                  onLoginNavigation: () =>
+                                                      _switchMode(AuthMode.login),
+                                                  onRegisterNavigation: () =>
+                                                      _switchMode(AuthMode.register),
+                                                  onLoginAction:
+                                                      (email, password, rememberMe) {
+                                                        context
+                                                            .read<AuthCubit>()
+                                                            .login(
+                                                              email,
+                                                              password,
+                                                              rememberMe: rememberMe,
+                                                            );
+                                                      },
+                                                  onRegisterAction:
+                                                      (
                                                         name,
                                                         email,
                                                         password,
                                                         confirm,
-                                                      );
-                                                },
-                                            onRecoverPasswordAction: (email) {
-                                              context
-                                                  .read<AuthCubit>()
-                                                  .recoverPassword(email);
-                                            },
-                                            onResetPasswordAction:
-                                                (password, confirm) {
-                                                  context
-                                                      .read<AuthCubit>()
-                                                      .updatePassword(
-                                                        password,
-                                                        confirm,
-                                                      );
-                                                },
+                                                      ) {
+                                                        _recoveryEmail = email;
+                                                        _recoveryEmail = email;
+                                                        context
+                                                            .read<AuthCubit>()
+                                                            .register(
+                                                              name,
+                                                              email,
+                                                              password,
+                                                              confirm,
+                                                            );
+                                                      },
+                                                  onRecoverPasswordAction: (email) {
+                                                    context
+                                                        .read<AuthCubit>()
+                                                        .recoverPassword(email);
+                                                  },
+                                                  onResetPasswordAction:
+                                                      (password, confirm) {
+                                                        context
+                                                            .read<AuthCubit>()
+                                                            .updatePassword(
+                                                              password,
+                                                              confirm,
+                                                            );
+                                                      },
+                                                  onVerifyOtpAction: (otp) {
+                                                    context
+                                                        .read<AuthCubit>()
+                                                        .verifyOtp(
+                                                          _recoveryEmail,
+                                                          otp,
+                                                        );
+                                                  },
+                                                  onResendOtpAction: () {
+                                                    context
+                                                        .read<AuthCubit>()
+                                                        .recoverPassword(
+                                                          _recoveryEmail,
+                                                        );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            if (isLoading)
+                                              const CircularProgressIndicator(
+                                                color: AppColors.primary,
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+
+                                    const SizedBox(height: AppSpacing.md),
+
+                                    if (showSocials) ...[
+                                      Text(
+                                        'Ou continue com:',
+                                        style: AppTextStyles.bodyMedium.copyWith(
+                                          color: AppColors.surface.withOpacity(0.8),
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppSpacing.sm),
+                                      Row(
+                                        children: [
+                                          SocialButton(
+                                            label: 'Google',
+                                            icon: SvgPicture.asset(
+                                              'assets/images/google_logo.svg',
+                                              width: 20,
+                                              height: 20,
+                                            ),
+                                            onPressed: () => context
+                                                .read<AuthCubit>()
+                                                .loginWithGoogle(),
                                           ),
-                                        ),
+                                          const SizedBox(width: AppSpacing.md),
+                                          SocialButton(
+                                            label: 'Apple ID',
+                                            icon: SvgPicture.asset(
+                                              'assets/images/apple_logo.svg',
+                                              width: 20,
+                                              height: 24,
+                                            ),
+                                            onPressed: () => context
+                                                .read<AuthCubit>()
+                                                .loginWithApple(),
+                                          ),
+                                        ],
                                       ),
-                                      if (isLoading)
-                                        const CircularProgressIndicator(
-                                          color: AppColors.primary,
-                                        ),
                                     ],
-                                  );
-                                },
-                              ),
 
-                              const SizedBox(height: AppSpacing.md),
+                                    const SizedBox(height: AppSpacing.lg),
 
-                              if (showSocials) ...[
-                                Text(
-                                  'Ou continue com:',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.surface.withOpacity(0.8),
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                Row(
-                                  children: [
-                                    SocialButton(
-                                      label: 'Google',
-                                      icon: SvgPicture.asset(
-                                        'assets/images/google_logo.svg',
-                                        width: 20,
-                                        height: 20,
-                                      ),
-                                      onPressed: () => context
-                                          .read<AuthCubit>()
-                                          .loginWithGoogle(),
-                                    ),
-                                    const SizedBox(width: AppSpacing.md),
-                                    SocialButton(
-                                      label: 'Apple ID',
-                                      icon: SvgPicture.asset(
-                                        'assets/images/apple_logo.svg',
-                                        width: 20,
-                                        height: 24,
-                                      ),
-                                      onPressed: () => context
-                                          .read<AuthCubit>()
-                                          .loginWithApple(),
-                                    ),
+                                    // Footer Link Dinâmico
+                                    _buildFooterLink(),
+
+                                    const SizedBox(height: AppSpacing.sm),
                                   ],
                                 ),
-                              ],
-
-                              const SizedBox(height: AppSpacing.lg),
-
-                              // Footer Link Dinâmico
-                              _buildFooterLink(),
-
-                              const SizedBox(height: AppSpacing.lg),
-                            ],
-                          ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -405,17 +460,22 @@ class _LoginPageState extends State<LoginPage>
           'Voltar para login',
           () => _switchMode(AuthMode.login),
         );
+      case AuthMode.otpVerification:
+        return _buildSingleLink(
+          'Voltar para login',
+          () => _switchMode(AuthMode.login),
+        );
       case AuthMode.resetPassword:
         return _buildSingleLink('Cancelar', () => _switchMode(AuthMode.login));
       case AuthMode.success:
-      case AuthMode.emailVerification:
+      case AuthMode.registrationSuccess:
         return const SizedBox.shrink();
     }
   }
 
   Widget _buildTextLink(String text, String linkText, VoidCallback onTap) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
       children: [
         Text(
           text,

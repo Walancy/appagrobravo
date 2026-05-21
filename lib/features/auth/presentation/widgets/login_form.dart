@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:agrobravo/core/components/app_text_field.dart';
 import 'package:agrobravo/core/components/primary_button.dart';
@@ -7,6 +8,8 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 
 class LoginForm extends StatefulWidget {
   final AuthMode authMode;
@@ -28,7 +31,10 @@ class LoginForm extends StatefulWidget {
   final void Function(String email)? onRecoverPasswordAction;
   final void Function(String password, String confirmPassword)?
   onResetPasswordAction;
+  final void Function(String otp)? onVerifyOtpAction;
+  final VoidCallback? onResendOtpAction;
   final String? errorMessage; // Nova prop para erros
+  final String? registeredEmail;
 
   const LoginForm({
     super.key,
@@ -40,7 +46,10 @@ class LoginForm extends StatefulWidget {
     this.onRegisterAction,
     this.onRecoverPasswordAction,
     this.onResetPasswordAction,
+    this.onVerifyOtpAction,
+    this.onResendOtpAction,
     this.errorMessage,
+    this.registeredEmail,
   });
 
   @override
@@ -48,11 +57,41 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
+  String? _localErrorMessage;
+
+  @override
+  void didUpdateWidget(LoginForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.authMode != oldWidget.authMode) {
+      setState(() {
+        _localErrorMessage = null;
+      });
+    } else if (widget.errorMessage != oldWidget.errorMessage) {
+      setState(() {
+        _localErrorMessage = widget.errorMessage;
+      });
+    }
+  }
+
+  void _clearError(String _) {
+    if (_localErrorMessage != null) {
+      setState(() {
+        _localErrorMessage = null;
+      });
+      context.read<AuthCubit>().clearError();
+    }
+  }
   // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  // OTP Controllers (6 dígitos)
+  final List<TextEditingController> _otpControllers =
+      List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _otpFocusNodes =
+      List.generate(6, (_) => FocusNode());
 
   // State
   bool _rememberMe = false;
@@ -63,6 +102,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   void initState() {
     super.initState();
+    _localErrorMessage = widget.errorMessage;
     _loadRememberedCredentials();
   }
 
@@ -89,7 +129,35 @@ class _LoginFormState extends State<LoginForm> {
     _passwordController.dispose();
     _nameController.dispose();
     _confirmPasswordController.dispose();
+    for (final controller in _otpControllers) {
+      controller.dispose();
+    }
+    for (final node in _otpFocusNodes) {
+      node.dispose();
+    }
     super.dispose();
+  }
+
+  String _getOtpCode() {
+    return _otpControllers.map((c) => c.text).join();
+  }
+
+  String _translateError(String? error) {
+    if (error == null) return '';
+    final lower = error.toLowerCase();
+    if (lower.contains('invalid login credentials')) {
+      return 'E-mail ou senha incorretos.';
+    }
+    if (lower.contains('user already registered')) {
+      return 'Este e-mail já está cadastrado.';
+    }
+    if (lower.contains('password should be at least')) {
+      return 'A senha deve ter pelo menos 6 caracteres.';
+    }
+    if (lower.contains('email rate limit exceeded')) {
+      return 'Muitas tentativas. Tente novamente mais tarde.';
+    }
+    return error; // fallback
   }
 
   @override
@@ -113,10 +181,10 @@ class _LoginFormState extends State<LoginForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ..._buildContent(),
-              if (widget.errorMessage != null) ...[
+              if (_localErrorMessage != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  widget.errorMessage!,
+                  _translateError(_localErrorMessage),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.redAccent,
                     fontWeight: FontWeight.w500,
@@ -139,12 +207,14 @@ class _LoginFormState extends State<LoginForm> {
         return _buildRegisterContent();
       case AuthMode.forgotPassword:
         return _buildForgotPasswordContent();
+      case AuthMode.otpVerification:
+        return _buildOtpVerificationContent();
       case AuthMode.resetPassword:
         return _buildResetPasswordContent();
       case AuthMode.success:
         return _buildSuccessContent();
-      case AuthMode.emailVerification:
-        return _buildEmailVerificationContent();
+      case AuthMode.registrationSuccess:
+        return _buildRegistrationSuccessContent();
     }
   }
 
@@ -153,12 +223,16 @@ class _LoginFormState extends State<LoginForm> {
   List<Widget> _buildLoginContent() {
     return [
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Senha:',
         hint: '**********',
         obscureText: _obscurePassword,
@@ -167,28 +241,37 @@ class _LoginFormState extends State<LoginForm> {
       ),
       const SizedBox(height: AppSpacing.sm),
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCheckbox(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildCheckbox(
             value: _rememberMe,
             onChanged: (v) => setState(() => _rememberMe = v ?? false),
           ),
           const SizedBox(width: AppSpacing.xs),
-          Text(
-            'Lembrar conta',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.surface,
-              fontSize: 13,
+          Flexible(
+            child: Text(
+              'Lembrar conta',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.surface,
+                fontSize: 13,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
+          ],
+          ),
           TextButton(
             onPressed: widget.onForgotPasswordNavigation,
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minimumSize: Size.zero,
             ),
             child: Text(
-              'Esqueci minha senha',
+              'Esqueceu senha',
               style: AppTextStyles.bodyMedium.copyWith(
                 color: const Color(0xFF00E676),
                 fontWeight: FontWeight.w600,
@@ -215,18 +298,24 @@ class _LoginFormState extends State<LoginForm> {
   List<Widget> _buildRegisterContent() {
     return [
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Nome e sobrenome:',
         hint: 'Seu nome e sobrenome',
         controller: _nameController,
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Senha:',
         hint: '**********',
         obscureText: _obscurePassword,
@@ -235,6 +324,8 @@ class _LoginFormState extends State<LoginForm> {
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Confirmar senha:',
         hint: '**********',
         obscureText: _obscureConfirmPassword,
@@ -306,6 +397,8 @@ class _LoginFormState extends State<LoginForm> {
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
@@ -320,6 +413,94 @@ class _LoginFormState extends State<LoginForm> {
     ];
   }
 
+  List<Widget> _buildOtpVerificationContent() {
+    return [
+      Text(
+        'Enviamos um código de verificação para o seu email. Insira o código abaixo:',
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.surface,
+          fontSize: 14,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: AppSpacing.md),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(6, (index) => _buildOtpDigitField(index)),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      PrimaryButton(
+        label: 'Verificar',
+        onPressed: () {
+          final code = _getOtpCode();
+          if (code.length == 6) {
+            widget.onVerifyOtpAction?.call(code);
+          }
+        },
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      Center(
+        child: TextButton(
+          onPressed: widget.onResendOtpAction,
+          child: Text(
+            'Reenviar código',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: const Color(0xFF00E676),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildOtpDigitField(int index) {
+    return SizedBox(
+      width: 45,
+      height: 55,
+      child: TextField(
+        controller: _otpControllers[index],
+        focusNode: _otpFocusNodes[index],
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        style: AppTextStyles.h2.copyWith(
+          color: AppColors.surface,
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+        ),
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          counterText: '',
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          filled: true,
+          fillColor: AppColors.surface.withOpacity(0.1),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: BorderSide(
+              color: AppColors.surface.withOpacity(0.3),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: const BorderSide(
+              color: Color(0xFF00E676),
+              width: 2,
+            ),
+          ),
+        ),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < 5) {
+            _otpFocusNodes[index + 1].requestFocus();
+          } else if (value.isEmpty && index > 0) {
+            _otpFocusNodes[index - 1].requestFocus();
+          }
+        },
+      ),
+    );
+  }
+
   List<Widget> _buildResetPasswordContent() {
     return [
       Text(
@@ -331,6 +512,8 @@ class _LoginFormState extends State<LoginForm> {
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Nova senha:',
         hint: '**********',
         obscureText: _obscurePassword,
@@ -339,6 +522,8 @@ class _LoginFormState extends State<LoginForm> {
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
+        onChanged: _clearError,
+        hasError: _localErrorMessage != null,
         label: 'Confirmar senha:',
         hint: '**********',
         obscureText: _obscureConfirmPassword,
@@ -362,25 +547,6 @@ class _LoginFormState extends State<LoginForm> {
     return [
       Text(
         'Sua senha foi alterada com sucesso, faça login novamente para continuar',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.surface,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: AppSpacing.md),
-      PrimaryButton(
-        label: 'Voltar para login',
-        onPressed: widget.onLoginNavigation,
-      ),
-    ];
-  }
-
-  List<Widget> _buildEmailVerificationContent() {
-    return [
-      Text(
-        'Enviamos um link de confirmação para o seu email. Por favor, verifique sua caixa de entrada.',
         style: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.surface,
           fontSize: 16,
@@ -437,5 +603,44 @@ class _LoginFormState extends State<LoginForm> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildRegistrationSuccessContent() {
+    return [
+      RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          children: [
+            const TextSpan(
+              text: 'Enviamos um e-mail de confirmação para ',
+              style: TextStyle(),
+            ),
+            TextSpan(
+              text: widget.registeredEmail ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const TextSpan(
+              text: '. Verifique sua caixa de entrada e também a pasta de spam antes de fazer login.',
+              style: TextStyle(),
+            )
+          ],
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.surface,
+            fontSize: 14,
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      PrimaryButton(
+        label: 'Voltar ao login',
+        onPressed: () {
+          // Pre-fill the email in login
+          if (widget.registeredEmail != null) {
+            _emailController.text = widget.registeredEmail!;
+          }
+          widget.onLoginNavigation();
+        },
+      ),
+    ];
   }
 }
