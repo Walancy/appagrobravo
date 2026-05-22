@@ -31,6 +31,10 @@ import 'package:agrobravo/features/home/presentation/widgets/mission_alert_dialo
 import 'package:agrobravo/features/itinerary/presentation/widgets/emergency_modal.dart';
 import 'package:agrobravo/core/components/feed_shimmer.dart';
 import 'package:agrobravo/features/home/presentation/pages/community_tab.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/features/profile/presentation/widgets/profile_nag_modal.dart';
+import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -41,7 +45,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = -1;
+  static bool _hasShownIncompleteProfileModal = false;
   @override
   void initState() {
     super.initState();
@@ -96,17 +101,77 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => getIt<FeedCubit>()..loadFeed(),
-      child: BlocListener<FeedCubit, FeedState>(
-        listener: (context, state) {
-          state.maybeMap(
-            loaded: (s) {
-              if (s.missionToAlert != null) {
-                _showMissionAlert(context, s.missionToAlert!);
-              }
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<FeedCubit, FeedState>(
+            listener: (context, state) {
+              state.maybeMap(
+                loaded: (s) {
+                  if (s.missionToAlert != null) {
+                    _showMissionAlert(context, s.missionToAlert!);
+                  }
+                },
+                orElse: () {},
+              );
             },
-            orElse: () {},
-          );
-        },
+          ),
+          BlocListener<ProfileCubit, ProfileState>(
+            listener: (context, state) {
+              state.maybeMap(
+                loaded: (s) {
+                  if (!s.profile.isComplete && !_hasShownIncompleteProfileModal) {
+                    _hasShownIncompleteProfileModal = true;
+                    Future.delayed(const Duration(seconds: 2), () {
+                      if (context.mounted) {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const ProfileNagModal(),
+                        );
+                      }
+                    });
+                  }
+                },
+                orElse: () {},
+              );
+            },
+          ),
+          BlocListener<ItineraryCubit, ItineraryState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                loaded: (group, _, __, ___) {
+                  final now = DateTime.now();
+                  final endOfDay = DateTime(
+                    group.endDate.year,
+                    group.endDate.month,
+                    group.endDate.day,
+                    23,
+                    59,
+                    59,
+                  );
+                  final isActive =
+                      endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
+
+                  if (_selectedIndex == -1) {
+                    setState(() => _selectedIndex = isActive ? 0 : 2);
+                  } else if (!isActive &&
+                      (_selectedIndex == 0 || _selectedIndex == 1)) {
+                    setState(() => _selectedIndex = 2);
+                  }
+                },
+                error: (_) {
+                  if (_selectedIndex == -1 ||
+                      _selectedIndex == 0 ||
+                      _selectedIndex == 1) {
+                    setState(() => _selectedIndex = 2);
+                  }
+                },
+                orElse: () {},
+              );
+            },
+          ),
+        ],
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -125,7 +190,41 @@ class _HomePageState extends State<HomePage> {
           child: Scaffold(
             extendBodyBehindAppBar: true,
             appBar: _buildHeader(context),
-            body: _buildBody(),
+            body: BlocBuilder<ProfileCubit, ProfileState>(
+              builder: (context, profileState) {
+                final isComplete = profileState.maybeMap(
+                  loaded: (s) => s.profile.isComplete,
+                  orElse: () => true,
+                );
+
+                if (_selectedIndex == -1) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                }
+
+                Widget bodyContent = _buildBody();
+
+                if (!isComplete && (_selectedIndex == 0 || _selectedIndex == 2)) {
+                  return Stack(
+                    children: [
+                      bodyContent,
+                      Positioned(
+                        top: kToolbarHeight + MediaQuery.of(context).padding.top + 8,
+                        left: 16,
+                        right: 16,
+                        child: const ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          child: IncompleteProfileBanner(),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return bodyContent;
+              },
+            ),
             bottomNavigationBar: _buildBottomNav(),
           ),
         ),
@@ -162,35 +261,45 @@ class _HomePageState extends State<HomePage> {
         BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
             final hasUnread = state.hasUnread;
-            return IconButton(
-              onPressed: () => context.push('/notifications'),
-              icon: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    Icons.notifications_none_rounded,
-                    size: 28,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  if (hasUnread)
-                    Positioned(
-                      right: 2,
-                      top: 2,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
-                            width: 1.5,
+            return BlocBuilder<ProfileCubit, ProfileState>(
+              builder: (context, profileState) {
+                final isComplete = profileState.maybeMap(
+                  loaded: (s) => s.profile.isComplete,
+                  orElse: () => true,
+                );
+                final shouldShowBadge = hasUnread || !isComplete;
+
+                return IconButton(
+                  onPressed: () => context.push('/notifications'),
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Icon(
+                        Icons.notifications_none_rounded,
+                        size: 28,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      if (shouldShowBadge)
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
+                    ],
+                  ),
+                );
+              },
             );
           },
         ),
@@ -217,6 +326,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    if (_selectedIndex == -1) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
     if (_selectedIndex == 0) {
       return const ItineraryTab();
     }
@@ -388,70 +503,94 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNav() {
+    if (_selectedIndex == -1) return const SizedBox.shrink();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        0,
-        10,
-        0,
-        MediaQuery.of(context).padding.bottom + 8,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: isDark
-            ? Border(
-                top: BorderSide(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(
-                    alpha: 0.1,
-                  ),
-                  width: 1,
-                ),
-              )
-            : null,
-        boxShadow: !isDark
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 12,
-                  offset: const Offset(0, -3),
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(
+    return BlocBuilder<ItineraryCubit, ItineraryState>(
+      builder: (context, itineraryState) {
+        bool showTripTabs = itineraryState.maybeWhen(
+          loaded: (group, _, __, ___) {
+            final now = DateTime.now();
+            final endOfDay = DateTime(
+              group.endDate.year,
+              group.endDate.month,
+              group.endDate.day,
+              23,
+              59,
+              59,
+            );
+            return endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
+          },
+          orElse: () => false,
+        );
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(
             0,
-            Icons.explore_outlined,
-            Icons.explore_rounded,
-            'Itinerário',
+            10,
+            0,
+            MediaQuery.of(context).padding.bottom + 8,
           ),
-          _buildNavItem(
-            1,
-            Icons.chat_bubble_outline_rounded,
-            Icons.chat_bubble_rounded,
-            'Chat',
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: isDark
+                ? Border(
+                    top: BorderSide(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(
+                        alpha: 0.1,
+                      ),
+                      width: 1,
+                    ),
+                  )
+                : null,
+            boxShadow: !isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, -3),
+                    ),
+                  ]
+                : null,
           ),
-          _buildNavItem(
-            2,
-            Icons.group_outlined,
-            Icons.group,
-            'Comunidade',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              if (showTripTabs)
+                _buildNavItem(
+                  0,
+                  Icons.explore_outlined,
+                  Icons.explore_rounded,
+                  'Itinerário',
+                ),
+              if (showTripTabs)
+                _buildNavItem(
+                  1,
+                  Icons.chat_bubble_outline_rounded,
+                  Icons.chat_bubble_rounded,
+                  'Chat',
+                ),
+              _buildNavItem(
+                2,
+                Icons.group_outlined,
+                Icons.group,
+                'Comunidade',
+              ),
+              BlocBuilder<DocumentsCubit, DocumentsState>(
+                builder: (context, state) {
+                  return _buildNavItem(
+                    3,
+                    Icons.badge_outlined,
+                    Icons.badge,
+                    'Meus dados',
+                    hasBadge: state.hasPendingAction,
+                  );
+                },
+              ),
+            ],
           ),
-          BlocBuilder<DocumentsCubit, DocumentsState>(
-            builder: (context, state) {
-              return _buildNavItem(
-                3,
-                Icons.badge_outlined,
-                Icons.badge,
-                'Meus dados',
-                hasBadge: state.hasPendingAction,
-              );
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

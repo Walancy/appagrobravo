@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:agrobravo/core/components/settings_shimmer.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -112,7 +113,7 @@ class SettingsPage extends StatelessWidget {
                   ],
                 );
               },
-              orElse: () => const Center(child: CircularProgressIndicator()),
+              orElse: () => const SettingsShimmer(),
             );
           },
         ),

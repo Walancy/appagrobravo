@@ -8,6 +8,7 @@ import 'package:agrobravo/core/router/app_router.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -48,6 +49,7 @@ class AgroBravoApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
         BlocProvider(create: (context) => getIt<AuthCubit>()..checkAuthStatus()),
+        BlocProvider(create: (context) => getIt<ProfileCubit>()..loadProfile()),
         BlocProvider(create: (context) => getIt<DocumentsCubit>()),
         BlocProvider(create: (context) => getIt<NotificationsCubit>()),
         BlocProvider(create: (context) => getIt<ItineraryCubit>()),

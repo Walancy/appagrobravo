@@ -11,6 +11,7 @@ import 'package:agrobravo/features/chat/presentation/cubit/group_info_state.dart
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/chat/presentation/pages/group_media_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:agrobravo/core/components/group_info_shimmer.dart';
 
 class GroupInfoPage extends StatelessWidget {
   final ChatEntity chat;
@@ -41,7 +42,7 @@ class _GroupInfoView extends StatelessWidget {
             children: [
               state.when(
                 initial: () => const SizedBox.shrink(),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const GroupInfoShimmer(),
                 error: (msg) => Center(
                   child: Text(
                     'Erro: $msg',

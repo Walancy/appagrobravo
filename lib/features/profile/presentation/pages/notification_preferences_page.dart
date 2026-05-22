@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/core/components/notification_prefs_shimmer.dart';
 
 class NotificationPreferencesPage extends StatefulWidget {
   const NotificationPreferencesPage({super.key});
@@ -62,7 +63,7 @@ class _NotificationPreferencesPageState
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const AppHeader(mode: HeaderMode.back, title: 'Notificações'),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const NotificationPrefsShimmer()
           : ListView(
               children: [
                 _buildHeader('Geral'),

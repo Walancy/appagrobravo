@@ -1,4 +1,5 @@
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/chat_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +23,8 @@ class ChatPage extends StatelessWidget {
         builder: (context, state) {
           return Scaffold(
             body: state.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              initial: () => const ChatShimmer(),
+              loading: () => const ChatShimmer(),
               error: (message) => Center(child: Text('Erro: $message')),
               loaded: (data) {
                 return ListView(

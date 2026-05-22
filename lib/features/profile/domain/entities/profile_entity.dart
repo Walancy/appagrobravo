@@ -30,6 +30,8 @@ abstract class ProfileEntity with _$ProfileEntity {
     required DateTime? birthDate,
     required String? country,
     required String? badgeName,
+    required String? emergencyName,
+    required String? emergencyRelationship,
     required String? emergencyContact,
     required List<String>? foodPreferences,
     required List<String>? medicalRestrictions,
@@ -40,4 +42,10 @@ abstract class ProfileEntity with _$ProfileEntity {
   }) = _ProfileEntity;
 
   const ProfileEntity._();
+
+  bool get isComplete {
+    return (cpf != null && cpf!.isNotEmpty) &&
+        (phone != null && phone!.isNotEmpty) &&
+        (birthDate != null);
+  }
 }

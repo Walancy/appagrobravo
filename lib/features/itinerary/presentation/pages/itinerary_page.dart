@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import '../../../../core/components/itinerary_shimmer.dart';
 import '../../../../core/tokens/app_colors.dart';
 import '../../../../core/tokens/app_text_styles.dart';
 import '../../domain/entities/itinerary_group.dart';
@@ -36,7 +37,7 @@ class ItineraryPage extends StatelessWidget {
         body: BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
             return state.maybeWhen(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ItineraryShimmer(),
               error: (msg) => Center(child: Text('Erro: $msg')),
               loaded: (group, items, travelTimes, pendingDocs) {
                 final isEnded = group.endDate.isBefore(DateTime.now());

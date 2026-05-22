@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 import 'package:agrobravo/core/components/profile_shimmer.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,7 +85,7 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                 future: getIt<FeedRepository>().getUserMissions(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _MissionsShimmer();
                   }
 
                   final result = snapshot.data;
@@ -350,6 +351,33 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
               },
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _MissionsShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 3,
+      itemBuilder: (_, __) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Shimmer.fromColors(
+          baseColor: base,
+          highlightColor: highlight,
+          child: Container(
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
       ),
     );

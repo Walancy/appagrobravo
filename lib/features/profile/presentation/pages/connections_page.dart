@@ -8,6 +8,7 @@ import 'package:agrobravo/features/profile/domain/repositories/profile_repositor
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:agrobravo/core/components/connections_shimmer.dart';
 
 class ConnectionsPage extends StatefulWidget {
   final String userId;
@@ -101,7 +102,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppHeader(mode: HeaderMode.back, title: 'Conexões'),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const ConnectionsShimmer()
           : Column(
               children: [
                 const SizedBox(height: 12),

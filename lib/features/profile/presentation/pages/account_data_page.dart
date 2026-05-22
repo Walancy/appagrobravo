@@ -16,6 +16,7 @@ import 'package:agrobravo/core/utils/phone_countries.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/core/components/account_data_shimmer.dart';
 
 class AccountDataPage extends StatefulWidget {
   const AccountDataPage({super.key});
@@ -36,6 +37,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
   final _neighborhoodController = TextEditingController();
   final _complementController = TextEditingController();
   final _badgeNameController = TextEditingController();
+  final _emergencyNameController = TextEditingController();
+  final _emergencyRelationshipController = TextEditingController();
   final _emergencyContactController = TextEditingController();
   final _stateTextController = TextEditingController();
   final _companyController = TextEditingController();
@@ -63,7 +66,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
         _nameController, _phoneController, _cpfController, _ssnController,
         _zipCodeController, _cityController, _streetController, _numberController,
         _neighborhoodController, _complementController, _badgeNameController,
-        _emergencyContactController, _stateTextController, _companyController,
+        _emergencyNameController, _emergencyRelationshipController, _emergencyContactController, _stateTextController, _companyController,
       ];
 
   void _onInputChanged() {
@@ -96,6 +99,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
     _neighborhoodController.dispose();
     _complementController.dispose();
     _badgeNameController.dispose();
+    _emergencyNameController.dispose();
+    _emergencyRelationshipController.dispose();
     _emergencyContactController.dispose();
     _stateTextController.dispose();
     _companyController.dispose();
@@ -204,6 +209,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
     _phoneController.text = phoneNum;
     _emergencyCountry = emergCo;
     _emergencyContactController.text = emergNum;
+    _emergencyNameController.text = profile.emergencyName ?? '';
+    _emergencyRelationshipController.text = profile.emergencyRelationship ?? '';
 
     _initialized = true;
     _initialData = _getCurrentData();
@@ -555,7 +562,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
             return state.maybeWhen(
               loading: () => _initialized
                   ? _buildForm(context)
-                  : const Center(child: CircularProgressIndicator()),
+                  : const AccountDataShimmer(),
               error: (msg) => _initialized
                   ? _buildForm(context)
                   : Center(child: Text(msg)),
@@ -582,12 +589,39 @@ class _AccountDataPageState extends State<AccountDataPage> {
             initialCountry: _phoneCountry,
             onCountryChanged: (c) => setState(() => _phoneCountry = c),
           ),
-          PhoneField(
-            controller: _emergencyContactController,
-            label: 'Contato de Emergência',
-            initialCountry: _emergencyCountry,
-            onCountryChanged: (c) => setState(() => _emergencyCountry = c),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : AppColors.primary.withValues(alpha: 0.05),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.health_and_safety_outlined, color: AppColors.primary, size: 20),
+                    const SizedBox(width: AppSpacing.xs),
+                    _buildSectionTitle(context, 'Contato de Emergência'),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _buildTextField(context, _emergencyNameController, 'Nome do Contato'),
+                _buildTextField(context, _emergencyRelationshipController, 'Grau de Parentesco (Ex: Pai, Mãe, etc)'),
+                PhoneField(
+                  controller: _emergencyContactController,
+                  label: 'Telefone de Emergência',
+                  initialCountry: _emergencyCountry,
+                  onCountryChanged: (c) => setState(() => _emergencyCountry = c),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: AppSpacing.sm),
           _buildTextField(context, _companyController, 'Empresa'),
           Row(
             children: [
@@ -754,6 +788,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
       'complement': _complementController.text,
       'country': _selectedCountry.name,
       'badgeName': _badgeNameController.text,
+      'emergencyName': _emergencyNameController.text,
+      'emergencyRelationship': _emergencyRelationshipController.text,
       'emergencyContact':
           '${_emergencyCountry.dialCode} ${_emergencyContactController.text}',
       if (_birthDate != null) 'birthDate': _birthDate,

@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/documents_shimmer.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
@@ -28,8 +29,8 @@ class DocumentsPage extends StatelessWidget {
         body: BlocBuilder<DocumentsCubit, DocumentsState>(
           builder: (context, state) {
             return state.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              initial: () => const DocumentsShimmer(),
+              loading: () => const DocumentsShimmer(),
               error: (message) => Center(child: Text(message)),
               loaded: (documents, isAlertDismissed, profile, mission) {
                 return _buildBody(context, documents, profile, mission);

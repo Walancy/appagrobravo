@@ -12,6 +12,7 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/profile_shimmer.dart';
 
 class ProfileTab extends StatelessWidget {
   final String? userId;
@@ -19,13 +20,9 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => getIt<ProfileCubit>()..loadProfile()),
-      ],
-      child: Scaffold(
-        body: BlocBuilder<ProfileCubit, ProfileState>(
-          builder: (context, state) {
+    return Scaffold(
+      body: BlocBuilder<ProfileCubit, ProfileState>(
+        builder: (context, state) {
             return state.maybeWhen(
               loaded: (profile, _, isMe, __) {
                 return RefreshIndicator(
@@ -115,12 +112,11 @@ class ProfileTab extends StatelessWidget {
                   ),
                 );
               },
-              orElse: () => const Center(child: CircularProgressIndicator()),
+              orElse: () => const ProfileShimmer(),
             );
           },
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildUserCard(BuildContext context, dynamic profile) {

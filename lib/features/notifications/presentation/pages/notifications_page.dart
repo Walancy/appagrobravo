@@ -5,12 +5,16 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/empty_state_widget.dart';
+import 'package:agrobravo/core/components/notifications_shimmer.dart';
 import 'package:agrobravo/features/notifications/domain/entities/notification_entity.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
@@ -23,21 +27,28 @@ class NotificationsPage extends StatelessWidget {
         appBar: const AppHeader(mode: HeaderMode.back, title: 'Notificações'),
         body: BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
-            return state.when(
-              initial: () => const Center(child: CircularProgressIndicator()),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (message) => Center(child: Text(message)),
-              loaded: (notifications) {
-                if (notifications.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.only(top: 140),
-                    child: EmptyStateWidget(
-                      icon: Icons.notifications_off_outlined,
-                      title: 'Nenhuma notificação',
-                      description: 'Você não tem novas notificações no momento.',
-                    ),
-                  );
-                }
+            return BlocBuilder<ProfileCubit, ProfileState>(
+              builder: (context, profileState) {
+                final isComplete = profileState.maybeMap(
+                  loaded: (s) => s.profile.isComplete,
+                  orElse: () => true,
+                );
+
+                return state.when(
+                  initial: () => const NotificationsShimmer(),
+                  loading: () => const NotificationsShimmer(),
+                  error: (message) => Center(child: Text(message)),
+                  loaded: (notifications) {
+                    if (notifications.isEmpty && isComplete) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 140),
+                        child: EmptyStateWidget(
+                          icon: Icons.notifications_off_outlined,
+                          title: 'Nenhuma notificação',
+                          description: 'Você não tem novas notificações no momento.',
+                        ),
+                      );
+                    }
 
                 final last7Days = notifications
                     .where(
@@ -68,6 +79,10 @@ class NotificationsPage extends StatelessWidget {
                       context.read<NotificationsCubit>().loadNotifications(),
                   child: ListView(
                     children: [
+                      if (!isComplete) ...[
+                        const IncompleteProfileBanner(),
+                        const SizedBox(height: 8),
+                      ],
                       _buildFollowRequestsSummary(context, notifications),
                       _buildAllCaughtUpHeader(context, notifications),
 
@@ -95,6 +110,8 @@ class NotificationsPage extends StatelessWidget {
                       const SizedBox(height: 40),
                     ],
                   ),
+                );
+                  },
                 );
               },
             );

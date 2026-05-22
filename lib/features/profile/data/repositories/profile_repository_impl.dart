@@ -43,6 +43,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'birthDate': profile.birthDate?.toIso8601String(),
         'country': profile.country,
         'badgeName': profile.badgeName,
+        'emergencyName': profile.emergencyName,
+        'emergencyRelationship': profile.emergencyRelationship,
         'emergencyContact': profile.emergencyContact,
         'foodPreferences': profile.foodPreferences,
         'medicalRestrictions': profile.medicalRestrictions,
@@ -89,6 +91,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
               : null,
           country: json['country'],
           badgeName: json['badgeName'],
+          emergencyName: json['emergencyName'],
+          emergencyRelationship: json['emergencyRelationship'],
           emergencyContact: json['emergencyContact'],
           foodPreferences: (json['foodPreferences'] as List?)?.cast<String>(),
           medicalRestrictions: (json['medicalRestrictions'] as List?)
@@ -224,6 +228,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
                   : null),
         country: userResponse['pais'],
         badgeName: userResponse['nome_cracha'],
+        emergencyName: userResponse['nome_contato_emergencia'],
+        emergencyRelationship: userResponse['grau_parentesco_emergencia'],
         emergencyContact: userResponse['contato_emergencia'],
         foodPreferences: (userResponse['restricoes_alimentares'] as List?)
             ?.cast<String>(),
@@ -362,6 +368,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 birthDate: null,
                 country: null,
                 badgeName: null,
+                emergencyName: null,
+                emergencyRelationship: null,
                 emergencyContact: null,
                 cpf: null,
                 ssn: null,
@@ -590,6 +598,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 birthDate: null,
                 country: null,
                 badgeName: null,
+                emergencyName: null,
+                emergencyRelationship: null,
                 emergencyContact: null,
                 cpf: null,
                 ssn: null,
@@ -790,6 +800,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
                     : null),
           country: u['pais'],
           badgeName: u['nome_cracha'],
+          emergencyName: u['nome_contato_emergencia'],
+          emergencyRelationship: u['grau_parentesco_emergencia'],
           emergencyContact: u['contato_emergencia'],
           foodPreferences: (u['restricoes_alimentares'] as List?)
               ?.cast<String>(),
@@ -868,6 +880,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (data.containsKey('company')) dbData['empresa'] = data['company'];
       if (data.containsKey('country')) dbData['pais'] = data['country'];
       if (data.containsKey('badgeName')) dbData['nome_cracha'] = data['badgeName'];
+      if (data.containsKey('emergencyName')) dbData['nome_contato_emergencia'] = data['emergencyName'];
+      if (data.containsKey('emergencyRelationship')) dbData['grau_parentesco_emergencia'] = data['emergencyRelationship'];
       if (data.containsKey('emergencyContact')) dbData['contato_emergencia'] = data['emergencyContact'];
       if (data.containsKey('ssn')) dbData['ssn'] = data['ssn'];
 

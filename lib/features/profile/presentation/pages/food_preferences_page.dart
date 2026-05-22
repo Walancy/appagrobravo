@@ -7,6 +7,7 @@ import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/core/components/food_preferences_shimmer.dart';
 
 class FoodPreferencesPage extends StatefulWidget {
   const FoodPreferencesPage({super.key});
@@ -146,7 +147,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
                   ),
                 );
               },
-              orElse: () => const Center(child: CircularProgressIndicator()),
+              orElse: () => const FoodPreferencesShimmer(),
             );
           },
         ),
