@@ -1,10 +1,9 @@
-import 'package:agrobravo/core/components/app_header.dart'; // Re-added for HeaderSpacer and AppHeader
+import 'package:agrobravo/core/components/app_header.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
-import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/presentation/cubit/chat_cubit.dart';
@@ -22,69 +21,161 @@ class ChatPage extends StatelessWidget {
       child: BlocBuilder<ChatCubit, ChatState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
             body: state.when(
               initial: () => const SizedBox.shrink(),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (message) => Center(child: Text('Erro: $message')),
               loaded: (data) {
-                // Active chats: Only Current Mission
-                final activeChats = <Widget>[];
-
-                // History Row
-                activeChats.add(
-                  ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: 8,
-                    ),
-                    leading: const Icon(Icons.archive_outlined),
-                    title: const Text(
-                      'Histórico',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  _HistoryPage(
-                                    historyChats: data.history,
-                                    guideChats: data.guides,
-                                    lastMessages: data.lastMessages,
-                                    lastMessageTimes: data.lastMessageTimes,
-                                  ),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
-                    },
-                  ),
+                return ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const HeaderSpacer(),
+                    _buildHistoryTile(context, data),
+                    if (data.currentMission != null) ...[
+                      _buildSectionLabel(context, 'MISSÃO ATUAL'),
+                      _ChatListItem(
+                        chat: data.currentMission!,
+                        isCurrent: true,
+                        lastMessage: data.lastMessages[data.currentMission!.id],
+                        lastMessageTime: data.lastMessageTimes[data.currentMission!.id],
+                      ),
+                    ] else
+                      _buildEmptyState(context),
+                    const SizedBox(height: 80),
+                  ],
                 );
-
-                if (data.currentMission != null) {
-                  activeChats.add(
-                    _WhatsAppListItem(
-                      context: context,
-                      chat: data.currentMission!,
-                      isCurrent: true,
-                      lastMessage: data.lastMessages[data.currentMission!.id],
-                      lastMessageTime:
-                          data.lastMessageTimes[data.currentMission!.id],
-                    ),
-                  );
-                }
-
-                // If there are no active mission, maybe show a message?
-                // For now, if currentMission is null, the list only has History Row.
-
-                return SafeArea(child: ListView(children: activeChats));
               },
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel(BuildContext context, String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryTile(BuildContext context, dynamic data) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    _HistoryPage(
+                      historyChats: data.history,
+                      guideChats: data.guides,
+                      lastMessages: data.lastMessages,
+                      lastMessageTimes: data.lastMessageTimes,
+                    ),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.07),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.history_rounded,
+                    size: 22,
+                    color: Colors.indigo,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Histórico de missões',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Ver conversas anteriores',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.45),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.forum_outlined,
+              size: 36,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Nenhuma missão ativa',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -108,29 +199,19 @@ class _HistoryPage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          AppHeader(
+          const AppHeader(
             mode: HeaderMode.back,
             title: 'Histórico',
             subtitle: 'Todas as conversas',
           ),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.only(top: 8, bottom: 80),
               children: [
                 if (guideChats.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Text(
-                      'Guias',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  _buildSectionLabel(context, 'GUIAS'),
                   ...guideChats.map(
-                    (g) => _WhatsAppListItem(
-                      context: context,
+                    (g) => _ChatListItem(
                       guide: g,
                       isCurrent: true,
                       lastMessage: lastMessages[g.id],
@@ -139,19 +220,9 @@ class _HistoryPage extends StatelessWidget {
                   ),
                 ],
                 if (historyChats.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Text(
-                      'Antigos',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  _buildSectionLabel(context, 'ANTERIORES'),
                   ...historyChats.map(
-                    (m) => _WhatsAppListItem(
-                      context: context,
+                    (m) => _ChatListItem(
                       chat: m,
                       isCurrent: false,
                       lastMessage: lastMessages[m.id],
@@ -160,10 +231,18 @@ class _HistoryPage extends StatelessWidget {
                   ),
                 ],
                 if (guideChats.isEmpty && historyChats.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text('Nenhum histórico encontrado'),
+                  Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Center(
+                      child: Text(
+                        'Nenhum histórico encontrado',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.45),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -173,19 +252,31 @@ class _HistoryPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSectionLabel(BuildContext context, String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
+        ),
+      ),
+    );
+  }
 }
 
-class _WhatsAppListItem extends StatelessWidget {
-  final BuildContext context;
+class _ChatListItem extends StatelessWidget {
   final ChatEntity? chat;
   final GuideEntity? guide;
   final bool isCurrent;
-
   final String? lastMessage;
   final DateTime? lastMessageTime;
 
-  const _WhatsAppListItem({
-    required this.context,
+  const _ChatListItem({
     this.chat,
     this.guide,
     required this.isCurrent,
@@ -196,7 +287,6 @@ class _WhatsAppListItem extends StatelessWidget {
   String _formatTime(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-
     if (difference.inDays == 0 && now.day == date.day) {
       return DateFormat('HH:mm').format(date);
     } else if (difference.inDays < 2 && now.day - date.day == 1) {
@@ -213,34 +303,42 @@ class _WhatsAppListItem extends StatelessWidget {
     final imageUrl = chat?.imageUrl ?? guide?.avatarUrl;
     final time = lastMessageTime != null ? _formatTime(lastMessageTime!) : '';
     final unreadCount = chat?.unreadCount ?? 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: 8,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: CircleAvatar(
         radius: 24,
-        backgroundColor: Colors.grey[200],
+        backgroundColor: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.grey.shade100,
         backgroundImage: imageUrl != null
             ? CachedNetworkImageProvider(imageUrl)
             : null,
         child: imageUrl == null
             ? Icon(
-                guide != null ? Icons.person : Icons.group,
-                color: Colors.grey,
+                guide != null ? Icons.person_outline_rounded : Icons.group_outlined,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+                size: 22,
               )
             : null,
       ),
       title: Text(
         title,
-        style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: unreadCount > 0 ? FontWeight.w700 : FontWeight.w600,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         subtitle,
-        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+        style: AppTextStyles.bodySmall.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: unreadCount > 0 ? 0.65 : 0.45,
+          ),
+          fontWeight: unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -251,8 +349,10 @@ class _WhatsAppListItem extends StatelessWidget {
           Text(
             time,
             style: AppTextStyles.bodySmall.copyWith(
-              color: unreadCount > 0 ? AppColors.primary : Colors.grey,
-              fontSize: 10,
+              color: unreadCount > 0
+                  ? AppColors.primary
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
+              fontSize: 11,
               fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -266,7 +366,11 @@ class _WhatsAppListItem extends StatelessWidget {
               ),
               child: Text(
                 unreadCount.toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 10),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

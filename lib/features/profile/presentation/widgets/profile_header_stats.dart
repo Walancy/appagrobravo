@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 
 class ProfileHeaderStats extends StatelessWidget {
@@ -23,40 +22,65 @@ class ProfileHeaderStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        GestureDetector(
-          onTap: onConnectionsTap,
-          behavior: HitTestBehavior.opaque,
-          child: _buildStatItem(context, '$connections', 'conexões'),
+        Expanded(
+          child: GestureDetector(
+            onTap: onConnectionsTap,
+            behavior: HitTestBehavior.opaque,
+            child: _buildStatItem(context, '$connections', 'conexões'),
+          ),
         ),
-        GestureDetector(
-          onTap: onPostsTap,
-          behavior: HitTestBehavior.opaque,
-          child: _buildStatItem(context, '$posts', 'Posts'),
+        _buildDivider(context),
+        Expanded(
+          child: GestureDetector(
+            onTap: onPostsTap,
+            behavior: HitTestBehavior.opaque,
+            child: _buildStatItem(context, '$posts', 'posts'),
+          ),
         ),
-        GestureDetector(
-          onTap: onMissionsTap,
-          behavior: HitTestBehavior.opaque,
-          child: _buildStatItem(context, '$missions', 'Missões'),
+        _buildDivider(context),
+        Expanded(
+          child: GestureDetector(
+            onTap: onMissionsTap,
+            behavior: HitTestBehavior.opaque,
+            child: _buildStatItem(context, '$missions', 'missões'),
+          ),
         ),
       ],
     );
   }
 
+  Widget _buildDivider(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 28,
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+    );
+  }
+
   Widget _buildStatItem(BuildContext context, String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: AppTextStyles.h2.copyWith(fontSize: 20)),
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.6),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: AppTextStyles.h2.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 1),
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

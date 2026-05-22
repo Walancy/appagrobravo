@@ -889,10 +889,7 @@ class FeedRepositoryImpl implements FeedRepository {
         if (autReq) 'AUTORIZACAO_MENORES',
       ];
 
-      // If no flags are set, fallback to a default set (backwards compatibility)
-      final effectiveRequiredTypes = requiredTypes.isEmpty
-          ? ['PASSAPORTE', 'VISTO', 'VACINA', 'SEGURO']
-          : requiredTypes;
+      final effectiveRequiredTypes = requiredTypes;
 
       int pendingCount = 0;
       for (var type in effectiveRequiredTypes) {

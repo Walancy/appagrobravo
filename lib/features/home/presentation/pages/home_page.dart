@@ -15,6 +15,7 @@ import 'package:agrobravo/features/home/presentation/widgets/post_card.dart';
 import 'package:agrobravo/features/home/presentation/widgets/comments_bottom_sheet.dart';
 import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_sheet.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/empty_state_widget.dart';
 import 'package:agrobravo/features/chat/presentation/pages/chat_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
@@ -25,11 +26,11 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
-import 'package:agrobravo/features/home/presentation/widgets/itinerary_microcards.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import 'package:agrobravo/features/home/presentation/widgets/mission_alert_dialog.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/emergency_modal.dart';
 import 'package:agrobravo/core/components/feed_shimmer.dart';
+import 'package:agrobravo/features/home/presentation/pages/community_tab.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -73,21 +74,22 @@ class _HomePageState extends State<HomePage> {
   void _showMissionAlert(BuildContext context, MissionEntity mission) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (dialogContext) => MissionAlertDialog(
         mission: mission,
-        onDismiss: (permanently) {
-          context.read<FeedCubit>().acknowledgeMissionAlert(
-            mission.id,
-            permanently: permanently,
-          );
-        },
         onDocumentsTap: () {
           Navigator.pop(dialogContext);
           context.push('/documents');
         },
       ),
-    );
+    ).then((_) {
+      if (context.mounted) {
+        context.read<FeedCubit>().acknowledgeMissionAlert(
+          mission.id,
+          permanently: true,
+        );
+      }
+    });
   }
 
   @override
@@ -136,7 +138,7 @@ class _HomePageState extends State<HomePage> {
       mode: HeaderMode.home,
       logo: SvgPicture.asset(Assets.images.logoColorida, height: 32),
       actions: [
-        if (_selectedIndex == 0)
+        if (_selectedIndex == 2)
           BlocBuilder<FeedCubit, FeedState>(
             builder: (context, state) {
               final canPost = state.maybeWhen(
@@ -156,38 +158,7 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-        if (_selectedIndex == 3)
-          BlocBuilder<DocumentsCubit, DocumentsState>(
-            builder: (context, state) {
-              final hasPending = state.hasPendingAction;
-              return IconButton(
-                onPressed: () => context.push('/settings'),
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const Icon(Icons.settings_outlined, size: 28),
-                    if (hasPending)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.surface,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
+
         BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
             final hasUnread = state.hasUnread;
@@ -210,6 +181,7 @@ class _HomePageState extends State<HomePage> {
                         height: 10,
                         decoration: BoxDecoration(
                           color: Colors.redAccent,
+                          shape: BoxShape.circle,
                           border: Border.all(
                             color: Theme.of(context).colorScheme.surface,
                             width: 1.5,
@@ -222,7 +194,7 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        if (_selectedIndex == 2)
+        if (_selectedIndex == 0)
           IconButton(
             onPressed: () => _showEmergencyModal(context),
             icon: const Icon(
@@ -245,21 +217,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
-    if (_selectedIndex == 1) {
-      return const ChatPage();
+    if (_selectedIndex == 0) {
+      return const ItineraryTab();
     }
 
-    if (_selectedIndex == 2) {
-      return const ItineraryTab();
+    if (_selectedIndex == 1) {
+      return const ChatPage();
     }
 
     if (_selectedIndex == 3) {
       return const ProfileTab();
     }
 
-    return BlocBuilder<FeedCubit, FeedState>(
-      builder: (context, state) {
-        return state.when(
+    return CommunityTab(
+      feedWidget: BlocBuilder<FeedCubit, FeedState>(
+        builder: (context, state) {
+          return state.when(
           initial: () => const SizedBox.shrink(),
           loading: () => const FeedShimmer(),
           error: (message) => Center(child: Text(message)),
@@ -271,14 +244,19 @@ class _HomePageState extends State<HomePage> {
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
-                    const HeaderSpacer(),
-                    ItineraryMicrocards(
-                      onSeeAll: () => setState(() => _selectedIndex = 2),
-                    ),
-                    Center(
-                      child: Text(
-                        'Nenhuma publicação encontrada.',
-                        style: AppTextStyles.bodyMedium,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 60),
+                      child: EmptyStateWidget(
+                        icon: Icons.photo_library_outlined,
+                        title: 'Nenhum feed ativo',
+                        description: 'Selecione uma missão na aba Início para visualizar e interagir com as publicações.',
+                        buttonText: 'Selecionar Missão',
+                        onButtonPressed: () {
+                          // Se index 0 for Itinerário, mandamos para lá
+                          if (context.mounted) {
+                            setState(() => _selectedIndex = 0);
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -288,18 +266,16 @@ class _HomePageState extends State<HomePage> {
             return RefreshIndicator(
               edgeOffset: 120,
               onRefresh: () => context.read<FeedCubit>().loadFeed(),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: posts.length + 2,
+              child: ListView.separated(
+                padding: const EdgeInsets.only(top: 8),
+                itemCount: posts.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+                ),
                 itemBuilder: (context, index) {
-                  if (index == 0) return const HeaderSpacer();
-                  if (index == 1) {
-                    return ItineraryMicrocards(
-                      onSeeAll: () => setState(() => _selectedIndex = 2),
-                    );
-                  }
-
-                  final post = posts[index - 2];
+                  final post = posts[index];
                   final currentUserId = getIt<FeedRepository>()
                       .getCurrentUserId();
                   final isOwner = post.userId == currentUserId;
@@ -315,8 +291,7 @@ class _HomePageState extends State<HomePage> {
                       final result = await context.push<bool>(
                         '/create-post',
                         extra: {
-                          'initialImages': post
-                              .images, // Not really used for edit as we pass the whole post, but signature requires list
+                          'initialImages': post.images,
                           'postToEdit': post,
                         },
                       );
@@ -331,7 +306,7 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
-    );
+    ));
   }
 
   void _showComments(BuildContext context, String postId) {
@@ -413,47 +388,64 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNav() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.fromLTRB(
         0,
         10,
         0,
-        MediaQuery.of(context).padding.bottom + 10,
+        MediaQuery.of(context).padding.bottom + 8,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
+        border: isDark
+            ? Border(
+                top: BorderSide(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
+                    alpha: 0.1,
+                  ),
+                  width: 1,
+                ),
+              )
+            : null,
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, -3),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, Icons.home_outlined, Icons.home_outlined, 'Inicio'),
+          _buildNavItem(
+            0,
+            Icons.explore_outlined,
+            Icons.explore_rounded,
+            'Itinerário',
+          ),
           _buildNavItem(
             1,
             Icons.chat_bubble_outline_rounded,
-            Icons.chat_bubble_outline_rounded,
+            Icons.chat_bubble_rounded,
             'Chat',
           ),
           _buildNavItem(
             2,
-            Icons.explore_outlined,
-            Icons.explore_outlined,
-            'Itinerário',
+            Icons.group_outlined,
+            Icons.group,
+            'Comunidade',
           ),
           BlocBuilder<DocumentsCubit, DocumentsState>(
             builder: (context, state) {
               return _buildNavItem(
                 3,
-                Icons.person_outline_rounded,
-                Icons.person_outline_rounded,
-                'Perfil',
+                Icons.badge_outlined,
+                Icons.badge,
+                'Meus dados',
                 hasBadge: state.hasPendingAction,
               );
             },
@@ -473,13 +465,12 @@ class _HomePageState extends State<HomePage> {
     final isSelected = _selectedIndex == index;
     final color = isSelected
         ? AppColors.primary
-        : Theme.of(context).colorScheme.onSurface;
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45);
 
-    return GestureDetector(
-      onTap: () => setState(() => _selectedIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 60,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedIndex = index),
+        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -512,22 +503,23 @@ class _HomePageState extends State<HomePage> {
               style: AppTextStyles.bodyMedium.copyWith(
                 color: color,
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(height: 3),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              height: 3,
+              width: isSelected ? 18.0 : 0.0,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(1.5),
               ),
             ),
           ],
         ),
-      ).animate(isSelected),
-    );
-  }
-}
-
-extension on Widget {
-  Widget animate(bool isSelected) {
-    return AnimatedScale(
-      scale: isSelected ? 1.1 : 1.0,
-      duration: const Duration(milliseconds: 200),
-      child: this,
+      ),
     );
   }
 }

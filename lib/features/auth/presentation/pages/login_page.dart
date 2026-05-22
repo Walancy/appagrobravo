@@ -486,10 +486,10 @@ class _LoginPageState extends State<LoginPage>
           child: Text(
             linkText,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFF00E676),
+              color: const Color(0xFF2ECC71),
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
-              decorationColor: const Color(0xFF00E676),
+              decorationColor: const Color(0xFF2ECC71),
             ),
           ),
         ),
@@ -503,10 +503,10 @@ class _LoginPageState extends State<LoginPage>
       child: Text(
         text,
         style: AppTextStyles.bodyMedium.copyWith(
-          color: const Color(0xFF00E676),
+          color: const Color(0xFF2ECC71),
           fontWeight: FontWeight.w600,
           decoration: TextDecoration.underline,
-          decorationColor: const Color(0xFF00E676),
+          decorationColor: const Color(0xFF2ECC71),
         ),
       ),
     );

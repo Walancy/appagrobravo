@@ -57,14 +57,8 @@ extension DocumentsStateX on DocumentsState {
               DocumentType.autorizacaoMenores,
           ];
         } else {
-          // Fallback baseline
-          mandatoryTypes = [
-            DocumentType.passaporte,
-            DocumentType.visto,
-            DocumentType.vacina,
-            DocumentType.seguro,
-            if (isUnder18) DocumentType.autorizacaoMenores,
-          ];
+          // If the user is not linked to any active group, they have no mandatory documents
+          mandatoryTypes = [];
         }
 
         for (final type in mandatoryTypes) {

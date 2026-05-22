@@ -37,7 +37,7 @@ class FeedCubit extends Cubit<FeedState> {
       posts,
     ) async {
       MissionEntity? missionToAlert;
-      if (missionAlert != null) {
+      if (missionAlert != null && (missionAlert.pendingDocsCount ?? 0) > 0) {
         final prefs = await SharedPreferences.getInstance();
         final seenMissionId = prefs.getString('last_seen_mission_id');
         if (seenMissionId != missionAlert.id) {

@@ -37,7 +37,6 @@ class ItineraryTab extends StatelessWidget {
                   group: group,
                   items: items,
                   travelTimes: travelTimes,
-                  pendingDocs: pendingDocs,
                 );
               },
               orElse: () => const SizedBox.shrink(),
@@ -53,14 +52,12 @@ class ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
-  final List<String> pendingDocs;
 
   const ItineraryContent({
     super.key,
     required this.group,
     required this.items,
     required this.travelTimes,
-    required this.pendingDocs,
   });
 
   @override
@@ -242,7 +239,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
               travelTimes: widget.travelTimes,
               selectedDate: _selectedDate,
               filters: _filters,
-              pendingDocs: widget.pendingDocs,
             ),
           ),
         ],

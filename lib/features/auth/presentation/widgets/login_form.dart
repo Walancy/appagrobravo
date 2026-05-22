@@ -273,7 +273,7 @@ class _LoginFormState extends State<LoginForm> {
             child: Text(
               'Esqueceu senha',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: const Color(0xFF00E676),
+                color: const Color(0xFF2ECC71),
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -445,7 +445,7 @@ class _LoginFormState extends State<LoginForm> {
           child: Text(
             'Reenviar código',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFF00E676),
+              color: const Color(0xFF2ECC71),
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),

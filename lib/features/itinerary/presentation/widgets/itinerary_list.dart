@@ -12,7 +12,6 @@ class ItineraryList extends StatelessWidget {
   final List<Map<String, dynamic>> travelTimes;
   final DateTime? selectedDate;
   final ItineraryFilters? filters;
-  final List<String> pendingDocs;
 
   const ItineraryList({
     super.key,
@@ -20,7 +19,6 @@ class ItineraryList extends StatelessWidget {
     required this.travelTimes,
     required this.selectedDate,
     this.filters,
-    this.pendingDocs = const [],
   });
 
   @override
@@ -127,7 +125,7 @@ class ItineraryList extends StatelessWidget {
           }
 
           if (item.type == ItineraryType.flight) {
-            card = FlightCard(item: item, pendingDocs: pendingDocs);
+            card = FlightCard(item: item);
           } else if (item.type == ItineraryType.transfer) {
             card = TransferCard(item: item, showNextDayTag: showNextDayTag);
           } else {

@@ -3,6 +3,7 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/empty_state_widget.dart';
 import 'package:agrobravo/features/home/presentation/widgets/post_card.dart';
 import 'package:agrobravo/features/home/presentation/widgets/comments_bottom_sheet.dart';
 import 'package:agrobravo/features/profile/domain/repositories/profile_repository.dart';
@@ -82,10 +83,11 @@ class _UserFeedPageState extends State<UserFeedPage> {
             : _error != null
             ? Center(child: Text(_error!))
             : _posts.isEmpty
-            ? Center(
-                child: Text(
-                  'Nenhuma publicação encontrada.',
-                  style: AppTextStyles.bodyMedium,
+            ? const Center(
+                child: EmptyStateWidget(
+                  icon: Icons.person_off_outlined,
+                  title: 'Nenhuma publicação',
+                  description: 'Este usuário ainda não fez nenhuma publicação em seu perfil.',
                 ),
               )
             : ListView.builder(

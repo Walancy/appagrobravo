@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/phone_field.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/utils/phone_countries.dart';
+import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 
@@ -27,10 +32,19 @@ class _AccountDataPageState extends State<AccountDataPage> {
   final _numberController = TextEditingController();
   final _neighborhoodController = TextEditingController();
   final _complementController = TextEditingController();
-  final _nationalityController = TextEditingController();
-  final _passportController = TextEditingController();
+  final _badgeNameController = TextEditingController();
+  final _emergencyContactController = TextEditingController();
+  final _countryController = TextEditingController();
   final _companyController = TextEditingController();
   DateTime? _birthDate;
+
+  final _cpfMaskFormatter = MaskTextInputFormatter(
+    mask: '###.###.###-##',
+    filter: {'#': RegExp(r'[0-9]')},
+  );
+
+  PhoneCountry _phoneCountry = kDefaultPhoneCountry;
+  PhoneCountry _emergencyCountry = kDefaultPhoneCountry;
 
   bool _initialized = false;
 
@@ -47,17 +61,28 @@ class _AccountDataPageState extends State<AccountDataPage> {
     _numberController.dispose();
     _neighborhoodController.dispose();
     _complementController.dispose();
-    _nationalityController.dispose();
-    _passportController.dispose();
+    _badgeNameController.dispose();
+    _emergencyContactController.dispose();
+    _countryController.dispose();
     _companyController.dispose();
     super.dispose();
   }
 
-  void _initializeControllers(profile) {
+  /// Tries to extract a [PhoneCountry] and number portion from a stored phone
+  /// string like "+55 (11) 99999-9999". Falls back to Brazil.
+  (PhoneCountry, String) _parsePhone(String? raw) {
+    if (raw == null || raw.isEmpty) return (kDefaultPhoneCountry, '');
+    for (final c in kPhoneCountries) {
+      final prefix = '${c.dialCode} ';
+      if (raw.startsWith(prefix)) return (c, raw.substring(prefix.length));
+    }
+    return (kDefaultPhoneCountry, raw);
+  }
+
+  void _initializeControllers(ProfileEntity profile) {
     if (_initialized) return;
     _nameController.text = profile.name;
-    _phoneController.text = profile.phone ?? '';
-    _cpfController.text = profile.cpf ?? '';
+    _cpfController.text = _cpfMaskFormatter.maskText(profile.cpf ?? '');
     _ssnController.text = profile.ssn ?? '';
     _zipCodeController.text = profile.zipCode ?? '';
     _stateController.text = profile.state ?? '';
@@ -66,10 +91,18 @@ class _AccountDataPageState extends State<AccountDataPage> {
     _numberController.text = profile.number ?? '';
     _neighborhoodController.text = profile.neighborhood ?? '';
     _complementController.text = profile.complement ?? '';
-    _nationalityController.text = profile.nationality ?? '';
-    _passportController.text = profile.passport ?? '';
+    _badgeNameController.text = profile.badgeName ?? '';
+    _countryController.text = profile.country ?? '';
     _companyController.text = profile.company ?? '';
     _birthDate = profile.birthDate;
+
+    final (phoneCo, phoneNum) = _parsePhone(profile.phone);
+    final (emergCo, emergNum) = _parsePhone(profile.emergencyContact);
+    _phoneCountry = phoneCo;
+    _phoneController.text = phoneNum;
+    _emergencyCountry = emergCo;
+    _emergencyContactController.text = emergNum;
+
     _initialized = true;
   }
 
@@ -97,7 +130,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
         body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
             state.maybeWhen(
-              loaded: (profile, _, __, ___) {
+              loaded: (profile, _, _, _) {
                 _initializeControllers(profile);
               },
               orElse: () {},
@@ -105,17 +138,12 @@ class _AccountDataPageState extends State<AccountDataPage> {
           },
           builder: (context, state) {
             return state.maybeWhen(
-              loaded: (profile, _, __, ___) {
+              loaded: (profile, _, _, _) {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Informações Pessoais',
-                        style: AppTextStyles.h3.copyWith(fontSize: 18),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
                       _buildTextField(
                         context,
                         _nameController,
@@ -123,9 +151,22 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       ),
                       _buildTextField(
                         context,
-                        _phoneController,
-                        'Telefone',
-                        keyboardType: TextInputType.phone,
+                        _badgeNameController,
+                        'Nome para o Crachá',
+                      ),
+                      PhoneField(
+                        controller: _phoneController,
+                        label: 'Telefone',
+                        initialCountry: _phoneCountry,
+                        onCountryChanged: (c) =>
+                            setState(() => _phoneCountry = c),
+                      ),
+                      PhoneField(
+                        controller: _emergencyContactController,
+                        label: 'Contato de Emergência',
+                        initialCountry: _emergencyCountry,
+                        onCountryChanged: (c) =>
+                            setState(() => _emergencyCountry = c),
                       ),
                       _buildTextField(context, _companyController, 'Empresa'),
                       Row(
@@ -136,6 +177,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                               _cpfController,
                               'CPF',
                               keyboardType: TextInputType.number,
+                              inputFormatters: [_cpfMaskFormatter],
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
@@ -154,16 +196,16 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       _buildDatePicker(context, 'Data de Nascimento'),
 
                       const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Endereço',
-                        style: AppTextStyles.h3.copyWith(fontSize: 18),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
                       _buildTextField(
                         context,
                         _zipCodeController,
                         'CEP',
                         keyboardType: TextInputType.number,
+                      ),
+                      _buildTextField(
+                        context,
+                        _countryController,
+                        'País',
                       ),
                       Row(
                         children: [
@@ -211,23 +253,6 @@ class _AccountDataPageState extends State<AccountDataPage> {
                         ],
                       ),
 
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Documentação Internacional',
-                        style: AppTextStyles.h3.copyWith(fontSize: 18),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _buildTextField(
-                        context,
-                        _nationalityController,
-                        'Nacionalidade',
-                      ),
-                      _buildTextField(
-                        context,
-                        _passportController,
-                        'Passaporte',
-                      ),
-
                       const SizedBox(height: AppSpacing.xl),
                       SizedBox(
                         width: double.infinity,
@@ -236,7 +261,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
                           onPressed: () {
                             final data = {
                               'name': _nameController.text,
-                              'phone': _phoneController.text,
+                              'phone':
+                                  '${_phoneCountry.dialCode} ${_phoneController.text}',
                               'cpf': _cpfController.text,
                               'ssn': _ssnController.text,
                               'company': _companyController.text,
@@ -247,8 +273,10 @@ class _AccountDataPageState extends State<AccountDataPage> {
                               'number': _numberController.text,
                               'neighborhood': _neighborhoodController.text,
                               'complement': _complementController.text,
-                              'nationality': _nationalityController.text,
-                              'passport': _passportController.text,
+                              'country': _countryController.text,
+                              'badgeName': _badgeNameController.text,
+                              'emergencyContact':
+                                  '${_emergencyCountry.dialCode} ${_emergencyContactController.text}',
                               if (_birthDate != null) 'birthDate': _birthDate,
                             };
                             context.read<ProfileCubit>().updateAccountData(
@@ -298,6 +326,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
     TextEditingController controller,
     String label, {
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -338,6 +367,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 vertical: 12,
               ),
             ),
+            inputFormatters: inputFormatters,
           ),
         ],
       ),

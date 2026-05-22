@@ -180,27 +180,16 @@ class GenericEventCard extends StatelessWidget {
 
 class FlightCard extends StatelessWidget {
   final ItineraryItemEntity item;
-  final List<String> pendingDocs;
 
   const FlightCard({
     super.key,
     required this.item,
-    this.pendingDocs = const [],
   });
 
   @override
   Widget build(BuildContext context) {
     final connections = item.connections ?? [];
     final hasConnections = connections.isNotEmpty;
-
-    // Filter relevant docs for flight
-    final relevantDocs = pendingDocs.where((doc) {
-      final d = doc.toLowerCase();
-      return d.contains('passaporte') ||
-          d.contains('visto') ||
-          d.contains('vacina') ||
-          d.contains('menores');
-    }).toList();
 
     return Container(
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
@@ -217,42 +206,6 @@ class FlightCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          if (relevantDocs.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.orange.shade900.withValues(alpha: 0.2)
-                    : Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.orange.shade700.withValues(alpha: 0.5)
-                      : Colors.orange.shade200,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.orange.shade800,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Pendente: ${relevantDocs.join(", ")}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.orange.shade900,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
           // Header: Icon + Airline/Flight Name
           Row(
             children: [

@@ -80,20 +80,6 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Conte-nos sobre seus gostos',
-                        style: AppTextStyles.h3,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Adicione tags para indicar suas preferências alimentares (ex: Vegetariano, Sem Pimenta).',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
                       TextField(
                         controller: _controller,
                         style: TextStyle(

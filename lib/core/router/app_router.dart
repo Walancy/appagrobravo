@@ -20,7 +20,7 @@ import 'package:agrobravo/features/profile/presentation/pages/notification_prefe
 import 'package:agrobravo/features/profile/presentation/pages/account_data_page.dart';
 import 'package:agrobravo/features/profile/presentation/pages/privacy_policy_page.dart';
 import 'package:agrobravo/features/profile/presentation/pages/about_us_page.dart';
-import 'package:agrobravo/features/profile/presentation/pages/profile_tab.dart';
+import 'package:agrobravo/features/profile/presentation/pages/social_profile_page.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 
 /// Rotas que NÃO precisam de autenticação (login, criar conta, esqueceu senha).
@@ -169,7 +169,7 @@ final appRouter = GoRouter(
       path: '/profile/:userId',
       pageBuilder: (context, state) {
         final userId = state.pathParameters['userId'];
-        return NoTransitionPage(child: ProfileTab(userId: userId));
+        return NoTransitionPage(child: SocialProfilePage(userId: userId));
       },
     ),
     GoRoute(

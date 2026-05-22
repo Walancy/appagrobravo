@@ -83,30 +83,6 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.health_and_safety_outlined,
-                            color: AppColors.error,
-                            size: 28,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            'Sua saúde é prioridade',
-                            style: AppTextStyles.h3,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Adicione tags para indicar alergias ou condições médicas importantes.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
                       TextField(
                         controller: _controller,
                         style: TextStyle(

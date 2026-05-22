@@ -442,7 +442,7 @@ class _PostImageSliderState extends State<_PostImageSlider>
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF121212)
+                  ? Theme.of(context).scaffoldBackgroundColor
                   : Colors.grey[200],
               borderRadius: BorderRadius.circular(20),
             ),
@@ -473,7 +473,7 @@ class _PostImageSliderState extends State<_PostImageSlider>
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF121212)
+                        ? Theme.of(context).scaffoldBackgroundColor
                         : Colors.grey[200],
                     child: Center(
                       child: Icon(

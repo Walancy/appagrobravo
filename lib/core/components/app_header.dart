@@ -3,14 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 
-import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
-import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
-import 'package:agrobravo/core/components/scrolling_alert.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-
-import 'package:agrobravo/core/cubits/global_alert_cubit.dart';
-
 enum HeaderMode { home, back }
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
@@ -33,71 +25,67 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DocumentsCubit, DocumentsState>(
-      builder: (context, docState) {
-        return BlocBuilder<GlobalAlertCubit, bool>(
-          builder: (context, isDismissed) {
-            final hasPending = docState.hasPendingAction;
-            final isVisible = hasPending && !isDismissed;
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      height: 90,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surface.withValues(alpha: 0.7),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.1),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: SafeArea(
-                        bottom: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.md,
-                            0,
-                            AppSpacing.md,
-                            10,
-                          ),
-                          child: _buildContent(context),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (isVisible)
-                  Hero(
-                    tag: 'document_scrolling_alert',
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: ScrollingAlert(
-                        text:
-                            '⚠️ ATENÇÃO: VOCÊ POSSUI DOCUMENTOS PENDENTES PARA A VIAGEM. CLIQUE AQUI PARA REGULARIZAR.',
-                        onTap: () => context.push('/documents'),
-                        onClose: () =>
-                            context.read<GlobalAlertCubit>().dismiss(),
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        );
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeaderBackground(context),
+      ],
     );
+  }
+
+  Widget _buildHeaderBackground(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final inner = Container(
+      height: 90,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark
+            ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.85)
+            : Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withValues(
+              alpha: isDark ? 0.1 : 0.07,
+            ),
+            width: 0.5,
+          ),
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            10,
+          ),
+          child: _buildContent(context),
+        ),
+      ),
+    );
+
+    if (isDark) {
+      return ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: inner,
+        ),
+      );
+    }
+
+    return inner;
   }
 
   Widget _buildContent(BuildContext context) {
@@ -162,16 +150,6 @@ class HeaderSpacer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DocumentsCubit, DocumentsState>(
-      builder: (context, docState) {
-        return BlocBuilder<GlobalAlertCubit, bool>(
-          builder: (context, isDismissed) {
-            final hasPending = docState.hasPendingAction;
-            final isVisible = hasPending && !isDismissed;
-            return SizedBox(height: isVisible ? 120 : 90);
-          },
-        );
-      },
-    );
+    return const SizedBox(height: 90);
   }
 }

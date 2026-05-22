@@ -140,7 +140,6 @@ class _ItineraryContentState extends State<_ItineraryContent> {
             items: widget.items,
             travelTimes: widget.travelTimes,
             selectedDate: _selectedDate,
-            pendingDocs: widget.pendingDocs,
           ),
         ),
       ],

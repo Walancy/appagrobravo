@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/components/empty_state_widget.dart';
 import 'package:agrobravo/features/notifications/domain/entities/notification_entity.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
@@ -28,8 +29,13 @@ class NotificationsPage extends StatelessWidget {
               error: (message) => Center(child: Text(message)),
               loaded: (notifications) {
                 if (notifications.isEmpty) {
-                  return const Center(
-                    child: Text('Nenhuma notificação encontrada'),
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 140),
+                    child: EmptyStateWidget(
+                      icon: Icons.notifications_off_outlined,
+                      title: 'Nenhuma notificação',
+                      description: 'Você não tem novas notificações no momento.',
+                    ),
                   );
                 }
 

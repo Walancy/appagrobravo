@@ -41,8 +41,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'neighborhood': profile.neighborhood,
         'complement': profile.complement,
         'birthDate': profile.birthDate?.toIso8601String(),
-        'nationality': profile.nationality,
-        'passport': profile.passport,
+        'country': profile.country,
+        'badgeName': profile.badgeName,
+        'emergencyContact': profile.emergencyContact,
         'foodPreferences': profile.foodPreferences,
         'medicalRestrictions': profile.medicalRestrictions,
         'connectionsCount': profile.connectionsCount,
@@ -86,8 +87,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
           birthDate: json['birthDate'] != null
               ? DateTime.parse(json['birthDate'])
               : null,
-          nationality: json['nationality'],
-          passport: json['passport'],
+          country: json['country'],
+          badgeName: json['badgeName'],
+          emergencyContact: json['emergencyContact'],
           foodPreferences: (json['foodPreferences'] as List?)?.cast<String>(),
           medicalRestrictions: (json['medicalRestrictions'] as List?)
               ?.cast<String>(),
@@ -220,8 +222,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
             : (userResponse['data_nascimento'] != null
                   ? DateTime.tryParse(userResponse['data_nascimento'])
                   : null),
-        nationality: userResponse['nacionalidade'],
-        passport: userResponse['n_passaporte'],
+        country: userResponse['pais'],
+        badgeName: userResponse['nome_cracha'],
+        emergencyContact: userResponse['contato_emergencia'],
         foodPreferences: (userResponse['restricoes_alimentares'] as List?)
             ?.cast<String>(),
         medicalRestrictions: (userResponse['restricoes_medicas'] as List?)
@@ -357,8 +360,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 neighborhood: null,
                 complement: null,
                 birthDate: null,
-                nationality: null,
-                passport: null,
+                country: null,
+                badgeName: null,
+                emergencyContact: null,
                 cpf: null,
                 ssn: null,
                 foodPreferences: null,
@@ -584,8 +588,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 neighborhood: null,
                 complement: null,
                 birthDate: null,
-                nationality: null,
-                passport: null,
+                country: null,
+                badgeName: null,
+                emergencyContact: null,
                 cpf: null,
                 ssn: null,
                 foodPreferences: null,
@@ -783,8 +788,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
               : (u['data_nascimento'] != null
                     ? DateTime.tryParse(u['data_nascimento'])
                     : null),
-          nationality: u['nacionalidade'],
-          passport: u['n_passaporte'],
+          country: u['pais'],
+          badgeName: u['nome_cracha'],
+          emergencyContact: u['contato_emergencia'],
           foodPreferences: (u['restricoes_alimentares'] as List?)
               ?.cast<String>(),
           medicalRestrictions: (u['restricoes_medicas'] as List?)
@@ -860,10 +866,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
         dbData['datanascimento'] = date.toIso8601String();
       }
       if (data.containsKey('company')) dbData['empresa'] = data['company'];
-      if (data.containsKey('nationality'))
-        dbData['nacionalidade'] = data['nationality'];
-      if (data.containsKey('passport'))
-        dbData['n_passaporte'] = data['passport'];
+      if (data.containsKey('country')) dbData['pais'] = data['country'];
+      if (data.containsKey('badgeName')) dbData['nome_cracha'] = data['badgeName'];
+      if (data.containsKey('emergencyContact')) dbData['contato_emergencia'] = data['emergencyContact'];
       if (data.containsKey('ssn')) dbData['ssn'] = data['ssn'];
 
       await _supabaseClient.from('users').update(dbData).eq('id', userId);

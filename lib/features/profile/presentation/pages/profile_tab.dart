@@ -1,358 +1,394 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:dartz/dartz.dart' as dartz;
-import 'package:agrobravo/core/tokens/app_spacing.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_header_cover.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_header_stats.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_info.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_actions.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_post_grid.dart';
-import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_sheet.dart';
-import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:agrobravo/core/components/app_header.dart';
-import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
-import 'package:agrobravo/core/components/profile_shimmer.dart';
-import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
-import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/components/app_header.dart';
 
-class ProfileTab extends StatefulWidget {
+class ProfileTab extends StatelessWidget {
   final String? userId;
   const ProfileTab({super.key, this.userId});
 
   @override
-  State<ProfileTab> createState() => _ProfileTabState();
-}
-
-class _ProfileTabState extends State<ProfileTab> {
-  final ScrollController _scrollController = ScrollController();
-  final GlobalKey _postsKey = GlobalKey();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _scrollToPosts() {
-    if (_postsKey.currentContext != null) {
-      Scrollable.ensureVisible(
-        _postsKey.currentContext!,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
-  void _showMissionsModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text('Minhas Missões', style: AppTextStyles.h3),
-            ),
-            const Divider(),
-            Expanded(
-              child: FutureBuilder<dartz.Either<Exception, List<MissionEntity>>>(
-                future: getIt<FeedRepository>().getUserMissions(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final result = snapshot.data;
-                  final missions =
-                      result?.fold((l) => <MissionEntity>[], (r) => r) ?? [];
-
-                  if (missions.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.flag_outlined,
-                            size: 48,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Nenhuma missão encontrada',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    itemCount: missions.length,
-                    padding: const EdgeInsets.all(16),
-                    itemBuilder: (context, index) {
-                      final mission = missions[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).dividerColor.withOpacity(0.5),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: mission.logo != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: mission.logo!,
-                                      width: 50,
-                                      height: 50,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => Container(
-                                        color: Colors.grey[200],
-                                        child: const Icon(
-                                          Icons.image,
-                                          size: 20,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          Container(
-                                            color: Colors.grey[200],
-                                            child: const Icon(
-                                              Icons.broken_image,
-                                              size: 20,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                    )
-                                  : Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      child: const Icon(
-                                        Icons.flag,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    mission.name,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  // Add dates if available in MissionEntity?
-                                  // MissionEntity usually has date range?
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.chevron_right, color: Colors.grey),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<ProfileCubit>()..loadProfile(widget.userId),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<ProfileCubit>()..loadProfile()),
+      ],
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: widget.userId != null
-            ? const AppHeader(mode: HeaderMode.back, title: 'Perfil')
-            : null,
         body: BlocBuilder<ProfileCubit, ProfileState>(
           builder: (context, state) {
-            return state.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const ProfileShimmer(),
-              error: (message) => Center(child: Text(message)),
-              loaded: (profile, posts, isMe, isEditing) {
-                Future<void> pickAndUploadImage(bool isAvatar) async {
-                  final picker = ImagePicker();
-                  final source = await showModalBottomSheet<ImageSource>(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => ImageSourceBottomSheet(
-                      title: isAvatar
-                          ? 'Alterar foto de perfil'
-                          : 'Alterar capa',
-                    ),
-                  );
-
-                  if (source != null) {
-                    final image = await picker.pickImage(source: source);
-                    if (image != null && context.mounted) {
-                      if (isAvatar) {
-                        context.read<ProfileCubit>().updateProfilePhoto(image);
-                      } else {
-                        context.read<ProfileCubit>().updateCoverPhoto(image);
-                      }
-                    }
-                  }
-                }
-
-                Future<void> handleNewPost(BuildContext context) async {
-                  final picker = ImagePicker();
-                  final isCamera = await showModalBottomSheet<bool>(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => NewPostBottomSheet(
-                      onSourceSelected: (camera) =>
-                          Navigator.pop(context, camera),
-                    ),
-                  );
-
-                  if (isCamera != null) {
-                    final source = isCamera
-                        ? ImageSource.camera
-                        : ImageSource.gallery;
-                    try {
-                      final image = await picker.pickImage(source: source);
-                      if (image != null && context.mounted) {
-                        final result = await context.push<bool>(
-                          '/create-post',
-                          extra: [image],
-                        );
-                        if (result == true && context.mounted) {
-                          context.read<ProfileCubit>().loadProfile();
-                        }
-                      }
-                    } catch (_) {}
-                  }
-                }
-
-                return SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            return state.maybeWhen(
+              loaded: (profile, _, isMe, __) {
+                return RefreshIndicator(
+                  onRefresh: () async => context.read<ProfileCubit>().loadProfile(),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
                     children: [
                       const HeaderSpacer(),
-                      ProfileHeaderCover(
-                        coverUrl: profile.coverUrl,
-                        avatarUrl: profile.avatarUrl,
-                        isMe: isMe,
-                        isEditing: isEditing,
-                        onUpdateAvatar: () => pickAndUploadImage(true),
-                        onUpdateCover: () => pickAndUploadImage(false),
-                        statsWidget: Opacity(
-                          opacity: isEditing ? 0.3 : 1.0,
-                          child: ProfileHeaderStats(
-                            connections: profile.connectionsCount,
-                            posts: profile.postsCount,
-                            missions: profile.missionsCount,
-                            onConnectionsTap: () {
-                              context.push('/connections/${profile.id}');
-                            },
-                            onPostsTap: _scrollToPosts,
-                            onMissionsTap: _showMissionsModal,
+                      _buildUserCard(context, profile),
+                      const SizedBox(height: 8),
+
+                      _buildSectionLabel(context, 'CONTA'),
+                      _buildSection(context, [
+                        BlocBuilder<DocumentsCubit, DocumentsState>(
+                          builder: (context, docState) => _buildTile(
+                            context,
+                            icon: Icons.description_outlined,
+                            iconColor: Colors.blue.shade400,
+                            title: 'Meus documentos',
+                            onTap: () => context.push('/documents'),
+                            badgeText: docState.hasPendingAction ? 'Pendente' : null,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Opacity(
-                        opacity: isEditing ? 0.3 : 1.0,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ProfileInfo(
-                              name: profile.name,
-                              jobTitle: profile.jobTitle,
-                              bio: profile.bio,
-                              missionName: profile.missionName,
-                              groupName: profile.groupName,
-                            ),
-                          ],
+                        _buildTile(
+                          context,
+                          icon: Icons.person_outline_rounded,
+                          iconColor: AppColors.primary,
+                          title: 'Dados da conta',
+                          onTap: () => context.push('/account-data'),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      ProfileActions(
-                        isMe: isMe,
-                        connectionStatus: profile.connectionStatus,
-                        onConnect: () => context
-                            .read<ProfileCubit>()
-                            .requestConnection(profile.id),
-                        onCancelRequest: () => context
-                            .read<ProfileCubit>()
-                            .cancelConnection(profile.id),
-                        onAccept: () => context
-                            .read<ProfileCubit>()
-                            .acceptConnection(profile.id),
-                        onReject: () => context
-                            .read<ProfileCubit>()
-                            .rejectConnection(profile.id),
-                        onDisconnect: () => context
-                            .read<ProfileCubit>()
-                            .removeConnection(profile.id),
-                        onEditProfile: () =>
-                            context.read<ProfileCubit>().toggleEditing(),
-                        onPublish: () => handleNewPost(context),
-                        isEditing: isEditing,
-                        phone: profile.phone,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Opacity(
-                        key: _postsKey,
-                        opacity: isEditing ? 0.3 : 1.0,
-                        child: ProfilePostGrid(posts: posts),
+                      ]),
+
+                      const SizedBox(height: 8),
+                      _buildSectionLabel(context, 'PREFERÊNCIAS'),
+                      _buildSection(context, [
+                        _buildTile(
+                          context,
+                          icon: Icons.medical_services_outlined,
+                          iconColor: Colors.red.shade400,
+                          title: 'Condições médicas',
+                          onTap: () => context.push('/medical-restrictions'),
+                        ),
+                        _buildTile(
+                          context,
+                          icon: Icons.notifications_none_rounded,
+                          iconColor: Colors.purple.shade400,
+                          title: 'Notificações',
+                          onTap: () => context.push('/notification-preferences'),
+                        ),
+                        BlocBuilder<ThemeCubit, ThemeMode>(
+                          builder: (context, mode) => _buildThemeTile(context, mode),
+                        ),
+                      ]),
+
+                      const SizedBox(height: 8),
+                      _buildSectionLabel(context, 'SUPORTE'),
+                      _buildSection(context, [
+                        _buildTile(
+                          context,
+                          icon: Icons.privacy_tip_outlined,
+                          iconColor: Colors.grey.shade500,
+                          title: 'Política de privacidade',
+                          onTap: () => context.push('/privacy-policy'),
+                        ),
+                        _buildTile(
+                          context,
+                          icon: Icons.info_outline_rounded,
+                          iconColor: Colors.grey.shade500,
+                          title: 'Sobre nós',
+                          onTap: () => context.push('/about-us'),
+                        ),
+                      ]),
+
+                      const SizedBox(height: 32),
+                      _buildLogoutButton(context),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: Text(
+                          'AgroBravo Viajante',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 80),
                     ],
                   ),
                 );
               },
+              orElse: () => const Center(child: CircularProgressIndicator()),
             );
           },
         ),
       ),
     );
+  }
+
+  Widget _buildUserCard(BuildContext context, dynamic profile) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.07),
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipOval(
+            child: Container(
+              width: 68,
+              height: 68,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : AppColors.backgroundLight,
+              child: profile.avatarUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: profile.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) =>
+                          const Icon(Icons.person, size: 36, color: Colors.grey),
+                    )
+                  : const Icon(Icons.person, size: 36, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.name,
+                  style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if ((profile.missionName ?? '').isNotEmpty ||
+                    (profile.groupName ?? '').isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      [profile.missionName, profile.groupName]
+                          .where((s) => s != null && (s as String).isNotEmpty)
+                          .join(' · '),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                if ((profile.email ?? '').isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Text(
+                      profile.email!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.45),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel(BuildContext context, String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 5),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(BuildContext context, List<Widget> tiles) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.07),
+        ),
+      ),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+        children: List.generate(tiles.length * 2 - 1, (i) {
+          if (i.isOdd) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 68),
+              child: Divider(
+                height: 1,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+              ),
+            );
+          }
+          return ClipRRect(
+            borderRadius: BorderRadius.vertical(
+              top: i == 0 ? const Radius.circular(16) : Radius.zero,
+              bottom: i == (tiles.length * 2 - 2) ? const Radius.circular(16) : Radius.zero,
+            ),
+            child: tiles[i ~/ 2],
+          );
+        }),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required VoidCallback onTap,
+    String? badgeText,
+    Widget? trailing,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: iconColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, size: 20, color: iconColor),
+      ),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(
+              title,
+              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (badgeText != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                badgeText,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.error,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+      trailing: trailing ??
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
+          ),
+    );
+  }
+
+  Widget _buildThemeTile(BuildContext context, ThemeMode mode) {
+    final isDark = mode == ThemeMode.dark;
+    return ListTile(
+      onTap: () => context.read<ThemeCubit>().toggleTheme(),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: (isDark ? Colors.indigo : Colors.amber.shade600).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+          size: 20,
+          color: isDark ? Colors.indigo : Colors.amber.shade700,
+        ),
+      ),
+      title: Text(
+        'Modo escuro',
+        style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+      ),
+      trailing: Switch(
+        value: isDark,
+        onChanged: (value) {
+          context.read<ThemeCubit>().setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+        },
+        activeColor: Colors.white,
+        activeTrackColor: AppColors.primary,
+        inactiveThumbColor: Colors.grey.shade400,
+        inactiveTrackColor: Colors.grey.shade800,
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: OutlinedButton.icon(
+        onPressed: () => _confirmLogout(context),
+        icon: const Icon(Icons.logout_rounded, size: 20),
+        label: const Text('Sair da conta'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.error,
+          side: BorderSide(color: AppColors.error.withValues(alpha: 0.45), width: 1.5),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sair da conta'),
+        content: const Text('Tem certeza que deseja encerrar a sessão?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await context.read<AuthCubit>().logout();
+      if (context.mounted) context.go('/');
+    }
   }
 }

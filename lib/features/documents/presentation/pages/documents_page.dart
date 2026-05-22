@@ -62,22 +62,12 @@ class DocumentsPage extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Text(
-            'Pendências e Atualizações',
-            style: AppTextStyles.h3.copyWith(fontSize: 18),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Mantenha seus documentos em dia para sua viagem.',
-            style: AppTextStyles.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.lg),
           ...allTypes.map((type) {
             final doc = documents.cast<DocumentEntity?>().firstWhere(
               (d) => d?.type == type,
               orElse: () => null,
             );
-            return _DocumentTypeButton(
+            return DocumentTypeButton(
               type: type,
               document: doc,
               profile: profile,
@@ -91,13 +81,13 @@ class DocumentsPage extends StatelessWidget {
   }
 }
 
-class _DocumentTypeButton extends StatelessWidget {
+class DocumentTypeButton extends StatelessWidget {
   final DocumentType type;
   final DocumentEntity? document;
   final ProfileEntity? profile;
   final MissionEntity? mission;
 
-  const _DocumentTypeButton({
+  const DocumentTypeButton({
     required this.type,
     this.document,
     this.profile,
@@ -147,17 +137,8 @@ class _DocumentTypeButton extends StatelessWidget {
           break;
       }
     } else {
-      // Fallback baseline if mission info not loaded
-      final baselineMandatory = [
-        DocumentType.passaporte,
-        DocumentType.visto,
-        DocumentType.vacina,
-        DocumentType.seguro,
-      ];
-      isTypeMandatory = baselineMandatory.contains(type);
-      if (type == DocumentType.autorizacaoMenores) {
-        isTypeMandatory = isUnder18;
-      }
+      // If the user is not linked to any active group, no document is mandatory
+      isTypeMandatory = false;
     }
 
     bool isPending = false;
