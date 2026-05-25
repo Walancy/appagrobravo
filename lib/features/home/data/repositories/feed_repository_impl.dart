@@ -827,7 +827,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final groupResponse = await _supabaseClient
           .from('gruposParticipantes')
           .select(
-            'grupo_id, grupos:grupo_id (nome, data_inicio, data_fim, logo, missoes:missao_id (id, nome, logo, localizacao, passaporte_obrigatorio, visto_obrigatorio, vacina_obrigatorio, seguro_obrigatorio, cnh_obrigatorio, autorizacao_obrigatorio))',
+            'grupo_id, grupos!fk_gruposparticipantes_grupos (nome, data_inicio, data_fim, logo, missoes:missao_id (id, nome, logo, continente, documentos_exigidos))',
           )
           .eq('user_id', userId)
           .order('id', ascending: false)
@@ -872,13 +872,21 @@ class FeedRepositoryImpl implements FeedRepository {
           .map((d) => d['tipo'] as String)
           .toSet();
 
-      // Get mandatory flags from mission
-      final bool passReq = missionData['passaporte_obrigatorio'] ?? false;
-      final bool visaReq = missionData['visto_obrigatorio'] ?? false;
-      final bool vacReq = missionData['vacina_obrigatorio'] ?? false;
-      final bool segReq = missionData['seguro_obrigatorio'] ?? false;
-      final bool cnhReq = missionData['cnh_obrigatorio'] ?? false;
-      final bool autReq = missionData['autorizacao_obrigatorio'] ?? false;
+      // documentos_exigidos é um array de strings legíveis do painel
+      final rawDocs = missionData['documentos_exigidos'];
+      final List<String> docsExigidos = rawDocs is List
+          ? rawDocs.map((e) => e.toString().toLowerCase()).toList()
+          : [];
+
+      bool _docReq(List<String> keywords) =>
+          keywords.any((k) => docsExigidos.any((d) => d.contains(k)));
+
+      final bool passReq = _docReq(['passaporte']);
+      final bool visaReq = _docReq(['visto']);
+      final bool vacReq = _docReq(['vacina']);
+      final bool segReq = _docReq(['seguro']);
+      final bool cnhReq = _docReq(['carteira']);
+      final bool autReq = _docReq(['autoriza']);
 
       final requiredTypes = [
         if (passReq) 'PASSAPORTE',
@@ -929,7 +937,7 @@ class FeedRepositoryImpl implements FeedRepository {
         id: missionId,
         name: missionData['nome'] ?? 'Sua Missão',
         logo: missionData['logo'],
-        location: missionData['localizacao'],
+        location: missionData['continente'],
         groupName: grupoData['nome'],
         pendingDocsCount: pendingCount,
         passaporteObrigatorio: passReq,

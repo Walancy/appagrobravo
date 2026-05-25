@@ -8,8 +8,9 @@ part 'itinerary_item_dto.g.dart';
 abstract class ItineraryItemDto with _$ItineraryItemDto {
   const factory ItineraryItemDto({
     @JsonKey(name: 'id') required String id,
-    @JsonKey(name: 'titulo') String? title, // Mapped from 'titulo'
-    @JsonKey(name: 'nome') String? oldName, // Backwards compat
+    @JsonKey(name: 'titulo') String? title,
+    @JsonKey(name: 'nome') String? oldName,
+    @JsonKey(name: 'subtitulo') String? subtitle,
     @JsonKey(name: 'tipo') required String typeString,
     @JsonKey(name: 'data') String? dateString,
     @JsonKey(name: 'hora_inicio') String? timeString,
@@ -18,14 +19,41 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
     @JsonKey(name: 'descricao') String? description,
     @JsonKey(name: 'localizacao') String? location,
     @JsonKey(name: 'imagem') String? imageUrl,
+    // Flight route codes
     @JsonKey(name: 'codigo_de') String? fromCode,
     @JsonKey(name: 'codigo_para') String? toCode,
     @JsonKey(name: 'de') String? fromCity,
     @JsonKey(name: 'para') String? toCity,
+    @JsonKey(name: 'hora_de') String? fromTime,
+    @JsonKey(name: 'hora_para') String? toTime,
+    @JsonKey(name: 'atrasado') bool? isDelayed,
+    @JsonKey(name: 'atraso') String? delay,
+    // Transfer
     @JsonKey(name: 'motorista') String? driverName,
     @JsonKey(name: 'duracao') String? durationString,
     @JsonKey(name: 'tempo_deslocamento') String? travelTime,
     @JsonKey(name: 'conexoes') List<Map<String, dynamic>>? connections,
+    @JsonKey(name: 'escalas') List<Map<String, dynamic>>? escalas,
+    // Enriched location
+    @JsonKey(name: 'endereco') String? address,
+    @JsonKey(name: 'cidade') String? city,
+    @JsonKey(name: 'estado') String? state,
+    @JsonKey(name: 'pais') String? country,
+    @JsonKey(name: 'latitude') double? latitude,
+    @JsonKey(name: 'longitude') double? longitude,
+    @JsonKey(name: 'rating') double? rating,
+    @JsonKey(name: 'estrelas') double? estrelas,
+    @JsonKey(name: 'telefone') String? telefone,
+    @JsonKey(name: 'website') String? website,
+    @JsonKey(name: 'imagens') List<String>? images,
+    @JsonKey(name: 'link_maps') String? linkMaps,
+    @JsonKey(name: 'evento_referencia_id') String? eventoReferenciaId,
+    @JsonKey(name: 'is_day_after_transfer') bool? isDayAfterTransfer,
+    @JsonKey(name: 'dados') Map<String, dynamic>? dados,
+    // Booking
+    @JsonKey(name: 'preco') String? price,
+    @JsonKey(name: 'site_url') String? siteUrl,
+    @JsonKey(name: 'status') String? bookingStatus,
   }) = _ItineraryItemDto;
 
   const ItineraryItemDto._();
@@ -36,13 +64,25 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
   ItineraryItemEntity toEntity() {
     ItineraryType type;
     switch (typeString.toUpperCase()) {
-      // Standardize case
       case 'RESTAURANTE':
       case 'FOOD':
         type = ItineraryType.food;
         break;
+      case 'MEAL':
+        type = ItineraryType.meal;
+        break;
       case 'HOTEL':
         type = ItineraryType.hotel;
+        break;
+      case 'CHECKIN':
+      case 'CHECK_IN':
+      case 'CHECK-IN':
+        type = ItineraryType.checkin;
+        break;
+      case 'CHECKOUT':
+      case 'CHECK_OUT':
+      case 'CHECK-OUT':
+        type = ItineraryType.checkout;
         break;
       case 'VISITA_TECNICA':
       case 'VISIT':
@@ -52,19 +92,29 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       case 'LEISURE':
         type = ItineraryType.leisure;
         break;
+      case 'DISEMBARK':
+        type = ItineraryType.disembark;
+        break;
+      case 'CONNECTION':
+        type = ItineraryType.connection;
+        break;
+      case 'AI_RECOMMENDATION':
+        type = ItineraryType.aiRecommendation;
+        break;
+      case 'RETURN':
+        type = ItineraryType.returnType;
+        break;
       case 'TRANSPORTE':
       case 'TRANSFER':
-      case 'FLIGHT': // Flight is distinct in enum but 'tipo' in DB might differ
         if (fromCode != null && fromCode!.isNotEmpty) {
-          type = ItineraryType.flight;
-        } else if (typeString.toUpperCase() == 'FLIGHT') {
           type = ItineraryType.flight;
         } else {
           type = ItineraryType.transfer;
         }
         break;
-
-      // Handle legacy/other cases
+      case 'FLIGHT':
+        type = ItineraryType.flight;
+        break;
       case 'EVENTO':
       default:
         if (typeString.toUpperCase() == 'FLIGHT') {
@@ -76,7 +126,6 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
         }
     }
 
-    // Date Logic
     DateTime? start;
     DateTime? end;
 
@@ -100,7 +149,6 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       if (endTimeString != null) {
         try {
           final endParts = endTimeString!.split(':').map(int.parse).toList();
-          // Temporary end date constructed with same day
           DateTime tempEnd = DateTime(
             datePart.year,
             datePart.month,
@@ -110,7 +158,6 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
             endParts.length > 2 ? endParts[2] : 0,
           );
 
-          // Check for day crossing (next day arrival)
           if (start != null && tempEnd.isBefore(start)) {
             tempEnd = tempEnd.add(const Duration(days: 1));
           }
@@ -123,7 +170,6 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       start = startDateTimeOld;
     }
 
-    // Fallback if data is only in one place and not the other, try to parse what we have.
     if (start == null && dateString != null) {
       try {
         start = DateTime.parse(dateString!);
@@ -139,14 +185,37 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       description: description,
       location: location,
       imageUrl: imageUrl,
+      subtitle: subtitle,
       fromCode: fromCode,
       toCode: toCode,
       fromCity: fromCity,
       toCity: toCity,
+      fromTime: fromTime,
+      toTime: toTime,
+      isDelayed: isDelayed,
+      delay: delay,
       driverName: driverName,
       durationString: durationString,
       travelTime: travelTime,
-      connections: connections,
+      connections: connections ?? escalas,
+      address: address,
+      city: city,
+      state: state,
+      country: country,
+      latitude: latitude,
+      longitude: longitude,
+      rating: rating,
+      estrelas: estrelas,
+      telefone: telefone,
+      website: website,
+      images: images,
+      linkMaps: linkMaps,
+      transportMode: dados?['transportMode'] as String?,
+      eventoReferenciaId: eventoReferenciaId,
+      isDayAfterTransfer: isDayAfterTransfer,
+      price: price,
+      siteUrl: siteUrl,
+      bookingStatus: bookingStatus,
     );
   }
 }

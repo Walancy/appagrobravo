@@ -14,9 +14,13 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItineraryItemEntity {
 
- String get id; String get name; ItineraryType get type; DateTime? get startDateTime; DateTime? get endDateTime; String? get description; String? get location; String? get imageUrl;// Flight specific
- String? get fromCode; String? get toCode; String? get fromCity; String? get toCity;// Transfer specific
- String? get driverName; String? get durationString; String? get travelTime; List<Map<String, dynamic>>? get connections;
+ String get id; String get name; ItineraryType get type; DateTime? get startDateTime; DateTime? get endDateTime; String? get description; String? get location; String? get imageUrl;// Subtitle label (check-in / check-out from panel)
+ String? get subtitle;// Flight specific
+ String? get fromCode; String? get toCode; String? get fromCity; String? get toCity; String? get fromTime; String? get toTime; bool? get isDelayed; String? get delay;// Transfer specific
+ String? get driverName; String? get durationString; String? get travelTime; List<Map<String, dynamic>>? get connections;// Enriched location (new DB columns from panel)
+ String? get address; String? get city; String? get state; String? get country; double? get latitude; double? get longitude; double? get rating; double? get estrelas; String? get telefone; String? get website; List<String>? get images; String? get linkMaps;// Transfer
+ String? get transportMode; String? get eventoReferenciaId; bool? get isDayAfterTransfer;// Booking info
+ String? get price; String? get siteUrl; String? get bookingStatus;
 /// Create a copy of ItineraryItemEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,16 +31,16 @@ $ItineraryItemEntityCopyWith<ItineraryItemEntity> get copyWith => _$ItineraryIte
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.startDateTime, startDateTime) || other.startDateTime == startDateTime)&&(identical(other.endDateTime, endDateTime) || other.endDateTime == endDateTime)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.fromCode, fromCode) || other.fromCode == fromCode)&&(identical(other.toCode, toCode) || other.toCode == toCode)&&(identical(other.fromCity, fromCity) || other.fromCity == fromCity)&&(identical(other.toCity, toCity) || other.toCity == toCity)&&(identical(other.driverName, driverName) || other.driverName == driverName)&&(identical(other.durationString, durationString) || other.durationString == durationString)&&(identical(other.travelTime, travelTime) || other.travelTime == travelTime)&&const DeepCollectionEquality().equals(other.connections, connections));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.startDateTime, startDateTime) || other.startDateTime == startDateTime)&&(identical(other.endDateTime, endDateTime) || other.endDateTime == endDateTime)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.fromCode, fromCode) || other.fromCode == fromCode)&&(identical(other.toCode, toCode) || other.toCode == toCode)&&(identical(other.fromCity, fromCity) || other.fromCity == fromCity)&&(identical(other.toCity, toCity) || other.toCity == toCity)&&(identical(other.fromTime, fromTime) || other.fromTime == fromTime)&&(identical(other.toTime, toTime) || other.toTime == toTime)&&(identical(other.isDelayed, isDelayed) || other.isDelayed == isDelayed)&&(identical(other.delay, delay) || other.delay == delay)&&(identical(other.driverName, driverName) || other.driverName == driverName)&&(identical(other.durationString, durationString) || other.durationString == durationString)&&(identical(other.travelTime, travelTime) || other.travelTime == travelTime)&&const DeepCollectionEquality().equals(other.connections, connections)&&(identical(other.address, address) || other.address == address)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.estrelas, estrelas) || other.estrelas == estrelas)&&(identical(other.telefone, telefone) || other.telefone == telefone)&&(identical(other.website, website) || other.website == website)&&const DeepCollectionEquality().equals(other.images, images)&&(identical(other.linkMaps, linkMaps) || other.linkMaps == linkMaps)&&(identical(other.transportMode, transportMode) || other.transportMode == transportMode)&&(identical(other.eventoReferenciaId, eventoReferenciaId) || other.eventoReferenciaId == eventoReferenciaId)&&(identical(other.isDayAfterTransfer, isDayAfterTransfer) || other.isDayAfterTransfer == isDayAfterTransfer)&&(identical(other.price, price) || other.price == price)&&(identical(other.siteUrl, siteUrl) || other.siteUrl == siteUrl)&&(identical(other.bookingStatus, bookingStatus) || other.bookingStatus == bookingStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,type,startDateTime,endDateTime,description,location,imageUrl,fromCode,toCode,fromCity,toCity,driverName,durationString,travelTime,const DeepCollectionEquality().hash(connections));
+int get hashCode => Object.hashAll([runtimeType,id,name,type,startDateTime,endDateTime,description,location,imageUrl,subtitle,fromCode,toCode,fromCity,toCity,fromTime,toTime,isDelayed,delay,driverName,durationString,travelTime,const DeepCollectionEquality().hash(connections),address,city,state,country,latitude,longitude,rating,estrelas,telefone,website,const DeepCollectionEquality().hash(images),linkMaps,transportMode,eventoReferenciaId,isDayAfterTransfer,price,siteUrl,bookingStatus]);
 
 @override
 String toString() {
-  return 'ItineraryItemEntity(id: $id, name: $name, type: $type, startDateTime: $startDateTime, endDateTime: $endDateTime, description: $description, location: $location, imageUrl: $imageUrl, fromCode: $fromCode, toCode: $toCode, fromCity: $fromCity, toCity: $toCity, driverName: $driverName, durationString: $durationString, travelTime: $travelTime, connections: $connections)';
+  return 'ItineraryItemEntity(id: $id, name: $name, type: $type, startDateTime: $startDateTime, endDateTime: $endDateTime, description: $description, location: $location, imageUrl: $imageUrl, subtitle: $subtitle, fromCode: $fromCode, toCode: $toCode, fromCity: $fromCity, toCity: $toCity, fromTime: $fromTime, toTime: $toTime, isDelayed: $isDelayed, delay: $delay, driverName: $driverName, durationString: $durationString, travelTime: $travelTime, connections: $connections, address: $address, city: $city, state: $state, country: $country, latitude: $latitude, longitude: $longitude, rating: $rating, estrelas: $estrelas, telefone: $telefone, website: $website, images: $images, linkMaps: $linkMaps, transportMode: $transportMode, eventoReferenciaId: $eventoReferenciaId, isDayAfterTransfer: $isDayAfterTransfer, price: $price, siteUrl: $siteUrl, bookingStatus: $bookingStatus)';
 }
 
 
@@ -47,7 +51,7 @@ abstract mixin class $ItineraryItemEntityCopyWith<$Res>  {
   factory $ItineraryItemEntityCopyWith(ItineraryItemEntity value, $Res Function(ItineraryItemEntity) _then) = _$ItineraryItemEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, ItineraryType type, DateTime? startDateTime, DateTime? endDateTime, String? description, String? location, String? imageUrl, String? fromCode, String? toCode, String? fromCity, String? toCity, String? driverName, String? durationString, String? travelTime, List<Map<String, dynamic>>? connections
+ String id, String name, ItineraryType type, DateTime? startDateTime, DateTime? endDateTime, String? description, String? location, String? imageUrl, String? subtitle, String? fromCode, String? toCode, String? fromCity, String? toCity, String? fromTime, String? toTime, bool? isDelayed, String? delay, String? driverName, String? durationString, String? travelTime, List<Map<String, dynamic>>? connections, String? address, String? city, String? state, String? country, double? latitude, double? longitude, double? rating, double? estrelas, String? telefone, String? website, List<String>? images, String? linkMaps, String? transportMode, String? eventoReferenciaId, bool? isDayAfterTransfer, String? price, String? siteUrl, String? bookingStatus
 });
 
 
@@ -64,7 +68,7 @@ class _$ItineraryItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? startDateTime = freezed,Object? endDateTime = freezed,Object? description = freezed,Object? location = freezed,Object? imageUrl = freezed,Object? fromCode = freezed,Object? toCode = freezed,Object? fromCity = freezed,Object? toCity = freezed,Object? driverName = freezed,Object? durationString = freezed,Object? travelTime = freezed,Object? connections = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? startDateTime = freezed,Object? endDateTime = freezed,Object? description = freezed,Object? location = freezed,Object? imageUrl = freezed,Object? subtitle = freezed,Object? fromCode = freezed,Object? toCode = freezed,Object? fromCity = freezed,Object? toCity = freezed,Object? fromTime = freezed,Object? toTime = freezed,Object? isDelayed = freezed,Object? delay = freezed,Object? driverName = freezed,Object? durationString = freezed,Object? travelTime = freezed,Object? connections = freezed,Object? address = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? rating = freezed,Object? estrelas = freezed,Object? telefone = freezed,Object? website = freezed,Object? images = freezed,Object? linkMaps = freezed,Object? transportMode = freezed,Object? eventoReferenciaId = freezed,Object? isDayAfterTransfer = freezed,Object? price = freezed,Object? siteUrl = freezed,Object? bookingStatus = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -74,15 +78,38 @@ as DateTime?,endDateTime: freezed == endDateTime ? _self.endDateTime : endDateTi
 as DateTime?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
 as String?,fromCode: freezed == fromCode ? _self.fromCode : fromCode // ignore: cast_nullable_to_non_nullable
 as String?,toCode: freezed == toCode ? _self.toCode : toCode // ignore: cast_nullable_to_non_nullable
 as String?,fromCity: freezed == fromCity ? _self.fromCity : fromCity // ignore: cast_nullable_to_non_nullable
 as String?,toCity: freezed == toCity ? _self.toCity : toCity // ignore: cast_nullable_to_non_nullable
+as String?,fromTime: freezed == fromTime ? _self.fromTime : fromTime // ignore: cast_nullable_to_non_nullable
+as String?,toTime: freezed == toTime ? _self.toTime : toTime // ignore: cast_nullable_to_non_nullable
+as String?,isDelayed: freezed == isDelayed ? _self.isDelayed : isDelayed // ignore: cast_nullable_to_non_nullable
+as bool?,delay: freezed == delay ? _self.delay : delay // ignore: cast_nullable_to_non_nullable
 as String?,driverName: freezed == driverName ? _self.driverName : driverName // ignore: cast_nullable_to_non_nullable
 as String?,durationString: freezed == durationString ? _self.durationString : durationString // ignore: cast_nullable_to_non_nullable
 as String?,travelTime: freezed == travelTime ? _self.travelTime : travelTime // ignore: cast_nullable_to_non_nullable
 as String?,connections: freezed == connections ? _self.connections : connections // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>?,
+as List<Map<String, dynamic>>?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,state: freezed == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
+as String?,country: freezed == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
+as String?,latitude: freezed == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
+as double?,longitude: freezed == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+as double?,rating: freezed == rating ? _self.rating : rating // ignore: cast_nullable_to_non_nullable
+as double?,estrelas: freezed == estrelas ? _self.estrelas : estrelas // ignore: cast_nullable_to_non_nullable
+as double?,telefone: freezed == telefone ? _self.telefone : telefone // ignore: cast_nullable_to_non_nullable
+as String?,website: freezed == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
+as String?,images: freezed == images ? _self.images : images // ignore: cast_nullable_to_non_nullable
+as List<String>?,linkMaps: freezed == linkMaps ? _self.linkMaps : linkMaps // ignore: cast_nullable_to_non_nullable
+as String?,transportMode: freezed == transportMode ? _self.transportMode : transportMode // ignore: cast_nullable_to_non_nullable
+as String?,eventoReferenciaId: freezed == eventoReferenciaId ? _self.eventoReferenciaId : eventoReferenciaId // ignore: cast_nullable_to_non_nullable
+as String?,isDayAfterTransfer: freezed == isDayAfterTransfer ? _self.isDayAfterTransfer : isDayAfterTransfer // ignore: cast_nullable_to_non_nullable
+as bool?,price: freezed == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String?,siteUrl: freezed == siteUrl ? _self.siteUrl : siteUrl // ignore: cast_nullable_to_non_nullable
+as String?,bookingStatus: freezed == bookingStatus ? _self.bookingStatus : bookingStatus // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -167,10 +194,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? subtitle,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? fromTime,  String? toTime,  bool? isDelayed,  String? delay,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections,  String? address,  String? city,  String? state,  String? country,  double? latitude,  double? longitude,  double? rating,  double? estrelas,  String? telefone,  String? website,  List<String>? images,  String? linkMaps,  String? transportMode,  String? eventoReferenciaId,  bool? isDayAfterTransfer,  String? price,  String? siteUrl,  String? bookingStatus)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItineraryItemEntity() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.driverName,_that.durationString,_that.travelTime,_that.connections);case _:
+return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.subtitle,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.fromTime,_that.toTime,_that.isDelayed,_that.delay,_that.driverName,_that.durationString,_that.travelTime,_that.connections,_that.address,_that.city,_that.state,_that.country,_that.latitude,_that.longitude,_that.rating,_that.estrelas,_that.telefone,_that.website,_that.images,_that.linkMaps,_that.transportMode,_that.eventoReferenciaId,_that.isDayAfterTransfer,_that.price,_that.siteUrl,_that.bookingStatus);case _:
   return orElse();
 
 }
@@ -188,10 +215,10 @@ return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDate
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? subtitle,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? fromTime,  String? toTime,  bool? isDelayed,  String? delay,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections,  String? address,  String? city,  String? state,  String? country,  double? latitude,  double? longitude,  double? rating,  double? estrelas,  String? telefone,  String? website,  List<String>? images,  String? linkMaps,  String? transportMode,  String? eventoReferenciaId,  bool? isDayAfterTransfer,  String? price,  String? siteUrl,  String? bookingStatus)  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItemEntity():
-return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.driverName,_that.durationString,_that.travelTime,_that.connections);case _:
+return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.subtitle,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.fromTime,_that.toTime,_that.isDelayed,_that.delay,_that.driverName,_that.durationString,_that.travelTime,_that.connections,_that.address,_that.city,_that.state,_that.country,_that.latitude,_that.longitude,_that.rating,_that.estrelas,_that.telefone,_that.website,_that.images,_that.linkMaps,_that.transportMode,_that.eventoReferenciaId,_that.isDayAfterTransfer,_that.price,_that.siteUrl,_that.bookingStatus);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +235,10 @@ return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDate
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  ItineraryType type,  DateTime? startDateTime,  DateTime? endDateTime,  String? description,  String? location,  String? imageUrl,  String? subtitle,  String? fromCode,  String? toCode,  String? fromCity,  String? toCity,  String? fromTime,  String? toTime,  bool? isDelayed,  String? delay,  String? driverName,  String? durationString,  String? travelTime,  List<Map<String, dynamic>>? connections,  String? address,  String? city,  String? state,  String? country,  double? latitude,  double? longitude,  double? rating,  double? estrelas,  String? telefone,  String? website,  List<String>? images,  String? linkMaps,  String? transportMode,  String? eventoReferenciaId,  bool? isDayAfterTransfer,  String? price,  String? siteUrl,  String? bookingStatus)?  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItemEntity() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.driverName,_that.durationString,_that.travelTime,_that.connections);case _:
+return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDateTime,_that.description,_that.location,_that.imageUrl,_that.subtitle,_that.fromCode,_that.toCode,_that.fromCity,_that.toCity,_that.fromTime,_that.toTime,_that.isDelayed,_that.delay,_that.driverName,_that.durationString,_that.travelTime,_that.connections,_that.address,_that.city,_that.state,_that.country,_that.latitude,_that.longitude,_that.rating,_that.estrelas,_that.telefone,_that.website,_that.images,_that.linkMaps,_that.transportMode,_that.eventoReferenciaId,_that.isDayAfterTransfer,_that.price,_that.siteUrl,_that.bookingStatus);case _:
   return null;
 
 }
@@ -223,7 +250,7 @@ return $default(_that.id,_that.name,_that.type,_that.startDateTime,_that.endDate
 
 
 class _ItineraryItemEntity extends ItineraryItemEntity {
-  const _ItineraryItemEntity({required this.id, required this.name, required this.type, this.startDateTime, this.endDateTime, this.description, this.location, this.imageUrl, this.fromCode, this.toCode, this.fromCity, this.toCity, this.driverName, this.durationString, this.travelTime, final  List<Map<String, dynamic>>? connections}): _connections = connections,super._();
+  const _ItineraryItemEntity({required this.id, required this.name, required this.type, this.startDateTime, this.endDateTime, this.description, this.location, this.imageUrl, this.subtitle, this.fromCode, this.toCode, this.fromCity, this.toCity, this.fromTime, this.toTime, this.isDelayed, this.delay, this.driverName, this.durationString, this.travelTime, final  List<Map<String, dynamic>>? connections, this.address, this.city, this.state, this.country, this.latitude, this.longitude, this.rating, this.estrelas, this.telefone, this.website, final  List<String>? images, this.linkMaps, this.transportMode, this.eventoReferenciaId, this.isDayAfterTransfer, this.price, this.siteUrl, this.bookingStatus}): _connections = connections,_images = images,super._();
   
 
 @override final  String id;
@@ -234,11 +261,17 @@ class _ItineraryItemEntity extends ItineraryItemEntity {
 @override final  String? description;
 @override final  String? location;
 @override final  String? imageUrl;
+// Subtitle label (check-in / check-out from panel)
+@override final  String? subtitle;
 // Flight specific
 @override final  String? fromCode;
 @override final  String? toCode;
 @override final  String? fromCity;
 @override final  String? toCity;
+@override final  String? fromTime;
+@override final  String? toTime;
+@override final  bool? isDelayed;
+@override final  String? delay;
 // Transfer specific
 @override final  String? driverName;
 @override final  String? durationString;
@@ -252,6 +285,35 @@ class _ItineraryItemEntity extends ItineraryItemEntity {
   return EqualUnmodifiableListView(value);
 }
 
+// Enriched location (new DB columns from panel)
+@override final  String? address;
+@override final  String? city;
+@override final  String? state;
+@override final  String? country;
+@override final  double? latitude;
+@override final  double? longitude;
+@override final  double? rating;
+@override final  double? estrelas;
+@override final  String? telefone;
+@override final  String? website;
+ final  List<String>? _images;
+@override List<String>? get images {
+  final value = _images;
+  if (value == null) return null;
+  if (_images is EqualUnmodifiableListView) return _images;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+@override final  String? linkMaps;
+// Transfer
+@override final  String? transportMode;
+@override final  String? eventoReferenciaId;
+@override final  bool? isDayAfterTransfer;
+// Booking info
+@override final  String? price;
+@override final  String? siteUrl;
+@override final  String? bookingStatus;
 
 /// Create a copy of ItineraryItemEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -263,16 +325,16 @@ _$ItineraryItemEntityCopyWith<_ItineraryItemEntity> get copyWith => __$Itinerary
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.startDateTime, startDateTime) || other.startDateTime == startDateTime)&&(identical(other.endDateTime, endDateTime) || other.endDateTime == endDateTime)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.fromCode, fromCode) || other.fromCode == fromCode)&&(identical(other.toCode, toCode) || other.toCode == toCode)&&(identical(other.fromCity, fromCity) || other.fromCity == fromCity)&&(identical(other.toCity, toCity) || other.toCity == toCity)&&(identical(other.driverName, driverName) || other.driverName == driverName)&&(identical(other.durationString, durationString) || other.durationString == durationString)&&(identical(other.travelTime, travelTime) || other.travelTime == travelTime)&&const DeepCollectionEquality().equals(other._connections, _connections));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryItemEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.startDateTime, startDateTime) || other.startDateTime == startDateTime)&&(identical(other.endDateTime, endDateTime) || other.endDateTime == endDateTime)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.fromCode, fromCode) || other.fromCode == fromCode)&&(identical(other.toCode, toCode) || other.toCode == toCode)&&(identical(other.fromCity, fromCity) || other.fromCity == fromCity)&&(identical(other.toCity, toCity) || other.toCity == toCity)&&(identical(other.fromTime, fromTime) || other.fromTime == fromTime)&&(identical(other.toTime, toTime) || other.toTime == toTime)&&(identical(other.isDelayed, isDelayed) || other.isDelayed == isDelayed)&&(identical(other.delay, delay) || other.delay == delay)&&(identical(other.driverName, driverName) || other.driverName == driverName)&&(identical(other.durationString, durationString) || other.durationString == durationString)&&(identical(other.travelTime, travelTime) || other.travelTime == travelTime)&&const DeepCollectionEquality().equals(other._connections, _connections)&&(identical(other.address, address) || other.address == address)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.country, country) || other.country == country)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.estrelas, estrelas) || other.estrelas == estrelas)&&(identical(other.telefone, telefone) || other.telefone == telefone)&&(identical(other.website, website) || other.website == website)&&const DeepCollectionEquality().equals(other._images, _images)&&(identical(other.linkMaps, linkMaps) || other.linkMaps == linkMaps)&&(identical(other.transportMode, transportMode) || other.transportMode == transportMode)&&(identical(other.eventoReferenciaId, eventoReferenciaId) || other.eventoReferenciaId == eventoReferenciaId)&&(identical(other.isDayAfterTransfer, isDayAfterTransfer) || other.isDayAfterTransfer == isDayAfterTransfer)&&(identical(other.price, price) || other.price == price)&&(identical(other.siteUrl, siteUrl) || other.siteUrl == siteUrl)&&(identical(other.bookingStatus, bookingStatus) || other.bookingStatus == bookingStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,type,startDateTime,endDateTime,description,location,imageUrl,fromCode,toCode,fromCity,toCity,driverName,durationString,travelTime,const DeepCollectionEquality().hash(_connections));
+int get hashCode => Object.hashAll([runtimeType,id,name,type,startDateTime,endDateTime,description,location,imageUrl,subtitle,fromCode,toCode,fromCity,toCity,fromTime,toTime,isDelayed,delay,driverName,durationString,travelTime,const DeepCollectionEquality().hash(_connections),address,city,state,country,latitude,longitude,rating,estrelas,telefone,website,const DeepCollectionEquality().hash(_images),linkMaps,transportMode,eventoReferenciaId,isDayAfterTransfer,price,siteUrl,bookingStatus]);
 
 @override
 String toString() {
-  return 'ItineraryItemEntity(id: $id, name: $name, type: $type, startDateTime: $startDateTime, endDateTime: $endDateTime, description: $description, location: $location, imageUrl: $imageUrl, fromCode: $fromCode, toCode: $toCode, fromCity: $fromCity, toCity: $toCity, driverName: $driverName, durationString: $durationString, travelTime: $travelTime, connections: $connections)';
+  return 'ItineraryItemEntity(id: $id, name: $name, type: $type, startDateTime: $startDateTime, endDateTime: $endDateTime, description: $description, location: $location, imageUrl: $imageUrl, subtitle: $subtitle, fromCode: $fromCode, toCode: $toCode, fromCity: $fromCity, toCity: $toCity, fromTime: $fromTime, toTime: $toTime, isDelayed: $isDelayed, delay: $delay, driverName: $driverName, durationString: $durationString, travelTime: $travelTime, connections: $connections, address: $address, city: $city, state: $state, country: $country, latitude: $latitude, longitude: $longitude, rating: $rating, estrelas: $estrelas, telefone: $telefone, website: $website, images: $images, linkMaps: $linkMaps, transportMode: $transportMode, eventoReferenciaId: $eventoReferenciaId, isDayAfterTransfer: $isDayAfterTransfer, price: $price, siteUrl: $siteUrl, bookingStatus: $bookingStatus)';
 }
 
 
@@ -283,7 +345,7 @@ abstract mixin class _$ItineraryItemEntityCopyWith<$Res> implements $ItineraryIt
   factory _$ItineraryItemEntityCopyWith(_ItineraryItemEntity value, $Res Function(_ItineraryItemEntity) _then) = __$ItineraryItemEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, ItineraryType type, DateTime? startDateTime, DateTime? endDateTime, String? description, String? location, String? imageUrl, String? fromCode, String? toCode, String? fromCity, String? toCity, String? driverName, String? durationString, String? travelTime, List<Map<String, dynamic>>? connections
+ String id, String name, ItineraryType type, DateTime? startDateTime, DateTime? endDateTime, String? description, String? location, String? imageUrl, String? subtitle, String? fromCode, String? toCode, String? fromCity, String? toCity, String? fromTime, String? toTime, bool? isDelayed, String? delay, String? driverName, String? durationString, String? travelTime, List<Map<String, dynamic>>? connections, String? address, String? city, String? state, String? country, double? latitude, double? longitude, double? rating, double? estrelas, String? telefone, String? website, List<String>? images, String? linkMaps, String? transportMode, String? eventoReferenciaId, bool? isDayAfterTransfer, String? price, String? siteUrl, String? bookingStatus
 });
 
 
@@ -300,7 +362,7 @@ class __$ItineraryItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? startDateTime = freezed,Object? endDateTime = freezed,Object? description = freezed,Object? location = freezed,Object? imageUrl = freezed,Object? fromCode = freezed,Object? toCode = freezed,Object? fromCity = freezed,Object? toCity = freezed,Object? driverName = freezed,Object? durationString = freezed,Object? travelTime = freezed,Object? connections = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? startDateTime = freezed,Object? endDateTime = freezed,Object? description = freezed,Object? location = freezed,Object? imageUrl = freezed,Object? subtitle = freezed,Object? fromCode = freezed,Object? toCode = freezed,Object? fromCity = freezed,Object? toCity = freezed,Object? fromTime = freezed,Object? toTime = freezed,Object? isDelayed = freezed,Object? delay = freezed,Object? driverName = freezed,Object? durationString = freezed,Object? travelTime = freezed,Object? connections = freezed,Object? address = freezed,Object? city = freezed,Object? state = freezed,Object? country = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? rating = freezed,Object? estrelas = freezed,Object? telefone = freezed,Object? website = freezed,Object? images = freezed,Object? linkMaps = freezed,Object? transportMode = freezed,Object? eventoReferenciaId = freezed,Object? isDayAfterTransfer = freezed,Object? price = freezed,Object? siteUrl = freezed,Object? bookingStatus = freezed,}) {
   return _then(_ItineraryItemEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -310,15 +372,38 @@ as DateTime?,endDateTime: freezed == endDateTime ? _self.endDateTime : endDateTi
 as DateTime?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,subtitle: freezed == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
 as String?,fromCode: freezed == fromCode ? _self.fromCode : fromCode // ignore: cast_nullable_to_non_nullable
 as String?,toCode: freezed == toCode ? _self.toCode : toCode // ignore: cast_nullable_to_non_nullable
 as String?,fromCity: freezed == fromCity ? _self.fromCity : fromCity // ignore: cast_nullable_to_non_nullable
 as String?,toCity: freezed == toCity ? _self.toCity : toCity // ignore: cast_nullable_to_non_nullable
+as String?,fromTime: freezed == fromTime ? _self.fromTime : fromTime // ignore: cast_nullable_to_non_nullable
+as String?,toTime: freezed == toTime ? _self.toTime : toTime // ignore: cast_nullable_to_non_nullable
+as String?,isDelayed: freezed == isDelayed ? _self.isDelayed : isDelayed // ignore: cast_nullable_to_non_nullable
+as bool?,delay: freezed == delay ? _self.delay : delay // ignore: cast_nullable_to_non_nullable
 as String?,driverName: freezed == driverName ? _self.driverName : driverName // ignore: cast_nullable_to_non_nullable
 as String?,durationString: freezed == durationString ? _self.durationString : durationString // ignore: cast_nullable_to_non_nullable
 as String?,travelTime: freezed == travelTime ? _self.travelTime : travelTime // ignore: cast_nullable_to_non_nullable
 as String?,connections: freezed == connections ? _self._connections : connections // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>?,
+as List<Map<String, dynamic>>?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String?,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,state: freezed == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
+as String?,country: freezed == country ? _self.country : country // ignore: cast_nullable_to_non_nullable
+as String?,latitude: freezed == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
+as double?,longitude: freezed == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+as double?,rating: freezed == rating ? _self.rating : rating // ignore: cast_nullable_to_non_nullable
+as double?,estrelas: freezed == estrelas ? _self.estrelas : estrelas // ignore: cast_nullable_to_non_nullable
+as double?,telefone: freezed == telefone ? _self.telefone : telefone // ignore: cast_nullable_to_non_nullable
+as String?,website: freezed == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
+as String?,images: freezed == images ? _self._images : images // ignore: cast_nullable_to_non_nullable
+as List<String>?,linkMaps: freezed == linkMaps ? _self.linkMaps : linkMaps // ignore: cast_nullable_to_non_nullable
+as String?,transportMode: freezed == transportMode ? _self.transportMode : transportMode // ignore: cast_nullable_to_non_nullable
+as String?,eventoReferenciaId: freezed == eventoReferenciaId ? _self.eventoReferenciaId : eventoReferenciaId // ignore: cast_nullable_to_non_nullable
+as String?,isDayAfterTransfer: freezed == isDayAfterTransfer ? _self.isDayAfterTransfer : isDayAfterTransfer // ignore: cast_nullable_to_non_nullable
+as bool?,price: freezed == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String?,siteUrl: freezed == siteUrl ? _self.siteUrl : siteUrl // ignore: cast_nullable_to_non_nullable
+as String?,bookingStatus: freezed == bookingStatus ? _self.bookingStatus : bookingStatus // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

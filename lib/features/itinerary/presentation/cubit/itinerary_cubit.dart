@@ -6,6 +6,9 @@ import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/repositories/itinerary_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 part 'itinerary_state.dart';
 part 'itinerary_cubit.freezed.dart';
@@ -13,6 +16,7 @@ part 'itinerary_cubit.freezed.dart';
 @injectable
 class ItineraryCubit extends Cubit<ItineraryState> {
   final ItineraryRepository _repository;
+  RealtimeChannel? _groupSubscription;
 
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
@@ -27,7 +31,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     return message.replaceAll('Exception: ', '');
   }
 
-  Future<void> loadItinerary(String groupId) async {
+  Future<void> loadItinerary(String groupId, {bool isNewAssignment = false}) async {
     emit(const ItineraryState.loading());
 
     final groupResult = await _repository.getGroupDetails(groupId);
@@ -49,7 +53,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
                 .getUserPendingDocuments();
             final pendingDocs = pendingDocsResult.getOrElse(() => []);
 
-            emit(ItineraryState.loaded(group, items, travelTimes, pendingDocs));
+            emit(ItineraryState.loaded(
+              group,
+              items,
+              travelTimes,
+              pendingDocs,
+              isNewAssignment: isNewAssignment,
+            ));
           },
         );
       },
@@ -68,7 +78,15 @@ class ItineraryCubit extends Cubit<ItineraryState> {
             const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
           );
         } else {
-          await loadItinerary(groupId);
+          final prefs = await SharedPreferences.getInstance();
+          final lastGroupId = prefs.getString('last_notified_group_id');
+          final isNewAssignment = lastGroupId != null && lastGroupId != groupId;
+
+          if (isNewAssignment || lastGroupId == null) {
+             await prefs.setString('last_notified_group_id', groupId);
+          }
+
+          await loadItinerary(groupId, isNewAssignment: isNewAssignment);
         }
       },
     );
@@ -79,5 +97,36 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     double lng,
   ) {
     return _repository.getEmergencyContacts(lat, lng);
+  }
+
+  void listenToGroupChanges() {
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    _groupSubscription?.unsubscribe();
+    _groupSubscription = supabase
+        .channel('public:gruposParticipantes:itinerary')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'gruposParticipantes',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: userId,
+          ),
+          callback: (payload) {
+            debugPrint('Group change detected for user. Reloading itinerary...');
+            loadUserItinerary();
+          },
+        )
+        .subscribe();
+  }
+
+  @override
+  Future<void> close() {
+    _groupSubscription?.unsubscribe();
+    return super.close();
   }
 }

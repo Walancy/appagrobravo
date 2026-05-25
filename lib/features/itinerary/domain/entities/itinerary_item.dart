@@ -7,9 +7,15 @@ enum ItineraryType {
   visit,
   hotel,
   food,
+  meal,
   leisure,
   transfer,
   returnType,
+  checkin,
+  checkout,
+  disembark,
+  connection,
+  aiRecommendation,
   other,
 }
 
@@ -24,16 +30,43 @@ abstract class ItineraryItemEntity with _$ItineraryItemEntity {
     String? description,
     String? location,
     String? imageUrl,
+    // Subtitle label (check-in / check-out from panel)
+    String? subtitle,
     // Flight specific
     String? fromCode,
     String? toCode,
     String? fromCity,
     String? toCity,
+    String? fromTime,
+    String? toTime,
+    bool? isDelayed,
+    String? delay,
     // Transfer specific
     String? driverName,
     String? durationString,
     String? travelTime,
     List<Map<String, dynamic>>? connections,
+    // Enriched location (new DB columns from panel)
+    String? address,
+    String? city,
+    String? state,
+    String? country,
+    double? latitude,
+    double? longitude,
+    double? rating,
+    double? estrelas,
+    String? telefone,
+    String? website,
+    List<String>? images,
+    String? linkMaps,
+    // Transfer
+    String? transportMode,
+    String? eventoReferenciaId,
+    bool? isDayAfterTransfer,
+    // Booking info
+    String? price,
+    String? siteUrl,
+    String? bookingStatus,
   }) = _ItineraryItemEntity;
 
   const ItineraryItemEntity._();

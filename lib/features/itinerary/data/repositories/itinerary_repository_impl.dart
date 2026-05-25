@@ -361,6 +361,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           .from('paises')
           .select('id, pais')
           .or('pais.ilike.%$countryName%')
+          .limit(1)
           .maybeSingle();
 
       int? paisId;

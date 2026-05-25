@@ -38,10 +38,8 @@ class AuthCubit extends Cubit<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     if (rememberMe) {
       await prefs.setString('remembered_email', email);
-      await prefs.setString('remembered_password', password);
     } else {
       await prefs.remove('remembered_email');
-      await prefs.remove('remembered_password');
     }
 
     final result = await _authRepository.signInWithEmailAndPassword(

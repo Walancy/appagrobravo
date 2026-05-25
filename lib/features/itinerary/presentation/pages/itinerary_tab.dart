@@ -12,6 +12,12 @@ import '../widgets/itinerary_filter_modal.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
 import '../widgets/mission_header_card.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
+import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 
 /// Standalone Widget to be used as a Tab
 class ItineraryTab extends StatelessWidget {
@@ -126,12 +132,45 @@ class _ItineraryContentState extends State<ItineraryContent> {
           const HeaderSpacer(),
           const SizedBox(height: 16),
 
+          // Banners (if any)
+          BlocBuilder<ProfileCubit, ProfileState>(
+            builder: (context, profileState) {
+              final isComplete = profileState.maybeMap(
+                loaded: (s) => s.profile.isComplete,
+                orElse: () => true,
+              );
+              if (isComplete) return const SizedBox.shrink();
+              return const Padding(
+                padding: EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  child: IncompleteProfileBanner(),
+                ),
+              );
+            },
+          ),
+          
+          BlocBuilder<DocumentsCubit, DocumentsState>(
+            builder: (context, documentsState) {
+              if (!documentsState.hasPendingAction) return const SizedBox.shrink();
+              return const Padding(
+                padding: EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  child: PendingDocumentsBanner(),
+                ),
+              );
+            },
+          ),
+
           // Mission Header Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: MissionHeaderCard(
               missionName: widget.group.missionName ?? 'Missão Atual',
               groupName: widget.group.name,
+              startDate: widget.group.startDate,
+              endDate: widget.group.endDate,
             ),
           ),
           const SizedBox(height: 20),

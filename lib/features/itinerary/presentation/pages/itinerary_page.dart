@@ -135,6 +135,8 @@ class _ItineraryContentState extends State<_ItineraryContent> {
           child: MissionHeaderCard(
             missionName: widget.group.missionName ?? 'Missão Atual',
             groupName: widget.group.name,
+            startDate: widget.group.startDate,
+            endDate: widget.group.endDate,
           ),
         ),
         const SizedBox(height: 20),

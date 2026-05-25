@@ -21,46 +21,75 @@ class ItineraryList extends StatelessWidget {
     this.filters,
   });
 
+  // Events where showing a "travel time to next" label doesn't make sense.
+  static bool _isMovementEvent(ItineraryItemEntity e) =>
+      e.type == ItineraryType.flight ||
+      e.type == ItineraryType.connection ||
+      e.type == ItineraryType.transfer ||
+      e.type == ItineraryType.disembark ||
+      e.type == ItineraryType.returnType;
+
+  // Tiebreaker used only when two events share the exact same startDateTime.
+  static int _typePriority(ItineraryItemEntity e) {
+    if (e.type == ItineraryType.disembark) return -1; // just landed → first
+    if (e.type == ItineraryType.transfer) return 1;
+    if (e.type == ItineraryType.returnType) return 2;  // return → last
+    return 0;
+  }
+
+  // Sort purely by startDateTime.
+  // eventoReferenciaId is used ONLY as a tiebreaker when two events share the
+  // exact same time — it never overrides chronological order.
+  List<ItineraryItemEntity> _buildOrderedItems(
+      List<ItineraryItemEntity> source) {
+    final result = List<ItineraryItemEntity>.from(source);
+
+    result.sort((a, b) {
+      if (a.startDateTime == null && b.startDateTime == null) return 0;
+      if (a.startDateTime == null) return 1;
+      if (b.startDateTime == null) return -1;
+
+      final cmp = a.startDateTime!.compareTo(b.startDateTime!);
+      if (cmp != 0) return cmp;
+
+      // Same time: if A references B → A comes before B (e.g. transfer → event).
+      if (a.eventoReferenciaId != null && a.eventoReferenciaId == b.id) {
+        return -1;
+      }
+      if (b.eventoReferenciaId != null && b.eventoReferenciaId == a.id) {
+        return 1;
+      }
+
+      return _typePriority(a).compareTo(_typePriority(b));
+    });
+
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Filter items
-    final displayedItemsFull = items.where((item) {
-      // 1. Filter by Date
+    final filteredItems = items.where((item) {
       if (selectedDate != null && item.startDateTime != null) {
         if (!_isSameDay(item.startDateTime!, selectedDate!)) return false;
       }
-
-      // 2. Filter by Type
       if (filters != null && filters!.types.isNotEmpty) {
         if (!filters!.types.contains(item.type)) return false;
       }
-
-      // 3. Filter by Time Period
-      if ((filters?.startTime != null || filters?.endTime != null) && item.startDateTime != null) {
+      if ((filters?.startTime != null || filters?.endTime != null) &&
+          item.startDateTime != null) {
         final itemTime = TimeOfDay.fromDateTime(item.startDateTime!);
-        
-        final start = filters?.startTime ?? const TimeOfDay(hour: 0, minute: 1);
+        final start =
+            filters?.startTime ?? const TimeOfDay(hour: 0, minute: 1);
         final end = filters?.endTime ?? const TimeOfDay(hour: 23, minute: 59);
-
         final itemMinutes = itemTime.hour * 60 + itemTime.minute;
         final startMinutes = start.hour * 60 + start.minute;
         final endMinutes = end.hour * 60 + end.minute;
-
-        if (itemMinutes < startMinutes || itemMinutes > endMinutes) {
-          return false;
-        }
+        if (itemMinutes < startMinutes || itemMinutes > endMinutes) return false;
       }
-
       return true;
     }).toList();
 
-    // 1. Sort the FULL filtered list
-    final displayedItems = List<ItineraryItemEntity>.from(displayedItemsFull);
-    displayedItems.sort(_sortLogic);
-
-    // Filter items for logical neighbors logic needs the FULL sorted list
-    final fullItemsSorted = List<ItineraryItemEntity>.from(items);
-    fullItemsSorted.sort(_sortLogic);
+    final displayedItems = _buildOrderedItems(filteredItems);
 
     if (displayedItems.isEmpty) {
       return RefreshIndicator(
@@ -69,10 +98,11 @@ class ItineraryList extends StatelessWidget {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Container(
+          child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
-            alignment: Alignment.center,
-            child: const Text("Nenhum evento corresponde aos filtros."),
+            child: const Center(
+              child: Text('Nenhum evento corresponde aos filtros.'),
+            ),
           ),
         ),
       );
@@ -88,37 +118,15 @@ class ItineraryList extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = displayedItems[index];
           final bool isLast = index == displayedItems.length - 1;
-          final bool nextIsExtra =
-              !isLast &&
-              (displayedItems[index + 1].type == ItineraryType.transfer ||
-                  displayedItems[index + 1].type == ItineraryType.returnType);
 
-          // Determine if we should show the "Next day" tag
-          bool showNextDayTag = false;
-          if (item.type == ItineraryType.transfer) {
-            final globalIndex = fullItemsSorted.indexOf(item);
-            if (globalIndex > 0) {
-              final prevItem = fullItemsSorted[globalIndex - 1];
-              // If it follows a flight from a different day
-              if (prevItem.type == ItineraryType.flight &&
-                  prevItem.startDateTime != null &&
-                  item.startDateTime != null &&
-                  !_isSameDay(prevItem.startDateTime!, item.startDateTime!)) {
-                showNextDayTag = true;
-              }
-            }
-          }
-
-          Widget card;
+          // Status badge
           String? statusLabel;
           Color? statusColor;
-
           if (item.startDateTime != null) {
             final now = DateTime.now();
             final start = item.startDateTime!;
-            // Approx end if not set (1 hour)
-            final end = item.endDateTime ?? start.add(const Duration(hours: 1));
-
+            final end =
+                item.endDateTime ?? start.add(const Duration(hours: 1));
             if (now.isAfter(start) && now.isBefore(end)) {
               statusLabel = 'Acontecendo agora';
               statusColor = AppColors.primary;
@@ -130,10 +138,50 @@ class ItineraryList extends StatelessWidget {
             }
           }
 
-          if (item.type == ItineraryType.flight) {
+          // "Dia seguinte" tag: only for transfer pills that cross midnight
+          bool showNextDayTag = false;
+          if (item.type == ItineraryType.transfer) {
+            if (item.isDayAfterTransfer == true) {
+              showNextDayTag = true;
+            } else if (item.isDayAfterTransfer == null && index > 0) {
+              final prev = displayedItems[index - 1];
+              if (prev.type == ItineraryType.flight &&
+                  prev.startDateTime != null &&
+                  item.startDateTime != null &&
+                  !_isSameDay(prev.startDateTime!, item.startDateTime!)) {
+                showNextDayTag = true;
+              }
+            }
+          }
+
+          // For transfer pills: look up distance from travelTimes using the
+          // destination reference (eventoReferenciaId = destination event id).
+          String? transferKm;
+          if (item.type == ItineraryType.transfer &&
+              item.eventoReferenciaId != null) {
+            try {
+              final travel = travelTimes.firstWhere(
+                (t) => t['id_destino'].toString() == item.eventoReferenciaId,
+              );
+              final raw = travel['distancia']?.toString() ??
+                  travel['distance_text']?.toString() ??
+                  travel['distance']?.toString();
+              if (raw != null && raw.isNotEmpty) transferKm = raw;
+            } catch (_) {}
+          }
+
+          Widget card;
+          if (item.type == ItineraryType.flight ||
+              item.type == ItineraryType.connection) {
             card = FlightCard(item: item);
-          } else if (item.type == ItineraryType.transfer) {
-            card = TransferCard(item: item, showNextDayTag: showNextDayTag);
+          } else if (item.type == ItineraryType.transfer ||
+              item.type == ItineraryType.disembark ||
+              item.type == ItineraryType.returnType) {
+            card = TransferCard(
+              item: item,
+              showNextDayTag: showNextDayTag,
+              distancia: transferKm,
+            );
           } else {
             card = GenericEventCard(item: item);
           }
@@ -143,14 +191,9 @@ class ItineraryList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 8,
-                    left: 20,
-                  ), // Indent to align with content
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  margin: const EdgeInsets.only(bottom: 8, left: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor,
                     borderRadius: BorderRadius.circular(4),
@@ -169,31 +212,24 @@ class ItineraryList extends StatelessWidget {
             );
           }
 
-          // Try to find travel time:
+          // Travel time: only between two non-movement activity events.
+          // Flights, transfers, disembarks and returns handle their own context.
           String? travelDuration;
-
-          if (item.type == ItineraryType.transfer) {
-            travelDuration =
-                (item.travelTime != null && item.travelTime!.isNotEmpty)
-                ? item.travelTime
-                : item.durationString;
-          } else {
-            final bool nextIsTransfer =
-                !isLast &&
-                displayedItems[index + 1].type == ItineraryType.transfer;
-
-            if (!isLast && !nextIsTransfer) {
-              final nextItem = displayedItems[index + 1];
-              travelDuration = nextItem.travelTime;
-
-              if (travelDuration == null || travelDuration.isEmpty) {
+          if (!_isMovementEvent(item) && !isLast) {
+            final nextItem = displayedItems[index + 1];
+            if (!_isMovementEvent(nextItem)) {
+              final raw = nextItem.travelTime;
+              if (raw != null && raw.isNotEmpty) {
+                travelDuration = raw;
+              } else {
                 try {
                   final travel = travelTimes.firstWhere(
                     (t) =>
-                        t['id_origem'].toString() == item.id.toString() &&
-                        t['id_destino'].toString() == nextItem.id.toString(),
+                        t['id_origem'].toString() == item.id &&
+                        t['id_destino'].toString() == nextItem.id,
                   );
-                  travelDuration = travel['tempo_deslocamento'];
+                  final v = travel['tempo_deslocamento']?.toString();
+                  if (v != null && v.isNotEmpty) travelDuration = v;
                 } catch (_) {}
               }
             }
@@ -201,32 +237,27 @@ class ItineraryList extends StatelessWidget {
 
           return Stack(
             children: [
-              // Timeline line
               if (!isLast)
                 Positioned(
-                  left:
-                      30, // Alinhado com o centro do ícone (20 padding + 20/2 tamanho)
+                  left: 30,
                   top: 50,
                   bottom: -2,
-                  child: Container(
+                  child: SizedBox(
                     width: 2,
                     child: CustomPaint(
                       painter: DashedLineVerticalPainter(
-                        color: const Color(0xFF00BFA5).withOpacity(0.5),
+                        color: const Color(0xFF00BFA5).withValues(alpha: 0.5),
                       ),
                     ),
                   ),
                 ),
-
               Column(
                 children: [
                   card,
                   if (travelDuration != null)
-                    TravelTimeWidget(duration: travelDuration),
-                  if (!isLast && travelDuration == null && !nextIsExtra)
-                    const TravelTimeWidget(duration: null),
-                  if (!isLast && travelDuration == null && nextIsExtra)
-                    const SizedBox(height: 10),
+                    TravelTimeWidget(duration: travelDuration)
+                  else if (!isLast)
+                    const SizedBox(height: 12),
                 ],
               ),
             ],
@@ -236,36 +267,20 @@ class ItineraryList extends StatelessWidget {
     );
   }
 
-  int _sortLogic(ItineraryItemEntity a, ItineraryItemEntity b) {
-    if (a.startDateTime == null || b.startDateTime == null) return 0;
-    final dateCompare = a.startDateTime!.compareTo(b.startDateTime!);
-    if (dateCompare != 0) return dateCompare;
-
-    final bool isAExtra =
-        a.type == ItineraryType.transfer || a.type == ItineraryType.returnType;
-    final bool isBExtra =
-        b.type == ItineraryType.transfer || b.type == ItineraryType.returnType;
-
-    if (isAExtra && !isBExtra) return 1;
-    if (!isAExtra && isBExtra) return -1;
-    return 0;
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 class DashedLineVerticalPainter extends CustomPainter {
   final Color color;
   DashedLineVerticalPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
-
     double startY = 0;
     while (startY < size.height) {
       canvas.drawLine(Offset(0, startY), Offset(0, startY + 5), paint);

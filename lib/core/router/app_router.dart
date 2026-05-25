@@ -146,7 +146,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/document-details',
       pageBuilder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>;
+        final extra = state.extra as Map<String, dynamic>?;
+        if (extra == null) {
+          return const NoTransitionPage(child: DocumentsPage());
+        }
         return NoTransitionPage(
           child: DocumentDetailsPage(
             type: extra['type'] as DocumentType,
@@ -159,7 +162,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/document-history',
       pageBuilder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>;
+        final extra = state.extra as Map<String, dynamic>?;
+        if (extra == null) {
+          return const NoTransitionPage(child: DocumentsPage());
+        }
         return NoTransitionPage(
           child: DocumentHistoryPage(
             type: extra['type'] as DocumentType,

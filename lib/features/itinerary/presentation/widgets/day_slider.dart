@@ -58,7 +58,19 @@ class _DaySliderState extends State<DaySlider> {
     );
     if (index != -1) {
       // 50 is width, 12 is separator
-      final offset = index * (50.0 + 12.0);
+      double offset = index * (50.0 + 12.0);
+
+      if (_scrollController.hasClients) {
+        final viewportWidth = _scrollController.position.viewportDimension;
+        final itemCenter = offset + (50.0 / 2);
+        offset = itemCenter - (viewportWidth / 2);
+
+        if (offset < _scrollController.position.minScrollExtent) {
+          offset = _scrollController.position.minScrollExtent;
+        } else if (offset > _scrollController.position.maxScrollExtent) {
+          offset = _scrollController.position.maxScrollExtent;
+        }
+      }
 
       // Calculate center if possible, but simple scroll is usually fine
       _scrollController.animateTo(

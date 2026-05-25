@@ -12,11 +12,17 @@ part of 'itinerary_cubit.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$ItineraryState {
+mixin _$ItineraryState implements DiagnosticableTreeMixin {
 
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'ItineraryState'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -28,7 +34,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'ItineraryState()';
 }
 
@@ -128,12 +134,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error() when error != null:
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +158,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error():
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +181,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error() when error != null:
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -192,7 +198,7 @@ return error(_that.message);case _:
 /// @nodoc
 
 
-class _Initial implements ItineraryState {
+class _Initial with DiagnosticableTreeMixin implements ItineraryState {
   const _Initial();
   
 
@@ -200,6 +206,12 @@ class _Initial implements ItineraryState {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'ItineraryState.initial'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -211,7 +223,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'ItineraryState.initial()';
 }
 
@@ -224,7 +236,7 @@ String toString() {
 /// @nodoc
 
 
-class _Loading implements ItineraryState {
+class _Loading with DiagnosticableTreeMixin implements ItineraryState {
   const _Loading();
   
 
@@ -232,6 +244,12 @@ class _Loading implements ItineraryState {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'ItineraryState.loading'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -243,7 +261,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'ItineraryState.loading()';
 }
 
@@ -256,8 +274,8 @@ String toString() {
 /// @nodoc
 
 
-class _Loaded implements ItineraryState {
-  const _Loaded(this.group, final  List<ItineraryItemEntity> items, final  List<Map<String, dynamic>> travelTimes, final  List<String> pendingDocs): _items = items,_travelTimes = travelTimes,_pendingDocs = pendingDocs;
+class _Loaded with DiagnosticableTreeMixin implements ItineraryState {
+  const _Loaded(this.group, final  List<ItineraryItemEntity> items, final  List<Map<String, dynamic>> travelTimes, final  List<String> pendingDocs, {this.isNewAssignment = false}): _items = items,_travelTimes = travelTimes,_pendingDocs = pendingDocs;
   
 
  final  ItineraryGroupEntity group;
@@ -282,6 +300,7 @@ class _Loaded implements ItineraryState {
   return EqualUnmodifiableListView(_pendingDocs);
 }
 
+@JsonKey() final  bool isNewAssignment;
 
 /// Create a copy of ItineraryState
 /// with the given fields replaced by the non-null parameter values.
@@ -290,19 +309,25 @@ class _Loaded implements ItineraryState {
 _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'ItineraryState.loaded'))
+    ..add(DiagnosticsProperty('group', group))..add(DiagnosticsProperty('items', items))..add(DiagnosticsProperty('travelTimes', travelTimes))..add(DiagnosticsProperty('pendingDocs', pendingDocs))..add(DiagnosticsProperty('isNewAssignment', isNewAssignment));
+}
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.group, group) || other.group == group)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._travelTimes, _travelTimes)&&const DeepCollectionEquality().equals(other._pendingDocs, _pendingDocs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.group, group) || other.group == group)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._travelTimes, _travelTimes)&&const DeepCollectionEquality().equals(other._pendingDocs, _pendingDocs)&&(identical(other.isNewAssignment, isNewAssignment) || other.isNewAssignment == isNewAssignment));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,group,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_travelTimes),const DeepCollectionEquality().hash(_pendingDocs));
+int get hashCode => Object.hash(runtimeType,group,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_travelTimes),const DeepCollectionEquality().hash(_pendingDocs),isNewAssignment);
 
 @override
-String toString() {
-  return 'ItineraryState.loaded(group: $group, items: $items, travelTimes: $travelTimes, pendingDocs: $pendingDocs)';
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'ItineraryState.loaded(group: $group, items: $items, travelTimes: $travelTimes, pendingDocs: $pendingDocs, isNewAssignment: $isNewAssignment)';
 }
 
 
@@ -313,7 +338,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $ItineraryStateCopyWith<$
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- ItineraryGroupEntity group, List<ItineraryItemEntity> items, List<Map<String, dynamic>> travelTimes, List<String> pendingDocs
+ ItineraryGroupEntity group, List<ItineraryItemEntity> items, List<Map<String, dynamic>> travelTimes, List<String> pendingDocs, bool isNewAssignment
 });
 
 
@@ -330,13 +355,14 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? group = null,Object? items = null,Object? travelTimes = null,Object? pendingDocs = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? group = null,Object? items = null,Object? travelTimes = null,Object? pendingDocs = null,Object? isNewAssignment = null,}) {
   return _then(_Loaded(
 null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as ItineraryGroupEntity,null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<ItineraryItemEntity>,null == travelTimes ? _self._travelTimes : travelTimes // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,null == pendingDocs ? _self._pendingDocs : pendingDocs // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,isNewAssignment: null == isNewAssignment ? _self.isNewAssignment : isNewAssignment // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -355,7 +381,7 @@ $ItineraryGroupEntityCopyWith<$Res> get group {
 /// @nodoc
 
 
-class _Error implements ItineraryState {
+class _Error with DiagnosticableTreeMixin implements ItineraryState {
   const _Error(this.message);
   
 
@@ -368,6 +394,12 @@ class _Error implements ItineraryState {
 _$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'ItineraryState.error'))
+    ..add(DiagnosticsProperty('message', message));
+}
 
 @override
 bool operator ==(Object other) {
@@ -379,7 +411,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,message);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'ItineraryState.error(message: $message)';
 }
 

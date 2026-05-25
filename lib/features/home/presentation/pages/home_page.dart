@@ -35,6 +35,7 @@ import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/profile_nag_modal.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
+import 'package:agrobravo/features/home/presentation/widgets/welcome_mission_modal.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/documents_nag_modal.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
 import 'dart:async';
@@ -50,6 +51,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = -1;
   static bool _hasShownIncompleteProfileModal = false;
   static bool _hasShownPendingDocumentsModal = false;
+  static bool _isShowingWelcomeModal = false;
   @override
   void initState() {
     super.initState();
@@ -67,6 +69,7 @@ class _HomePageState extends State<HomePage> {
       );
 
       final itineraryCubit = context.read<ItineraryCubit>();
+      itineraryCubit.listenToGroupChanges();
       itineraryCubit.state.maybeMap(
         initial: (_) => itineraryCubit.loadUserItinerary(),
         orElse: () {},
@@ -122,10 +125,10 @@ class _HomePageState extends State<HomePage> {
             listener: (context, state) {
               state.maybeMap(
                 loaded: (s) {
-                  if (!s.profile.isComplete && !_hasShownIncompleteProfileModal) {
+                  if (!s.profile.isComplete && !_hasShownIncompleteProfileModal && !_isShowingWelcomeModal) {
                     _hasShownIncompleteProfileModal = true;
                     Future.delayed(const Duration(seconds: 2), () {
-                      if (context.mounted) {
+                      if (context.mounted && !_isShowingWelcomeModal) {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -142,10 +145,10 @@ class _HomePageState extends State<HomePage> {
           ),
           BlocListener<DocumentsCubit, DocumentsState>(
             listener: (context, state) {
-              if (state.hasPendingAction && !_hasShownPendingDocumentsModal) {
+              if (state.hasPendingAction && !_hasShownPendingDocumentsModal && !_isShowingWelcomeModal) {
                 _hasShownPendingDocumentsModal = true;
                 Future.delayed(const Duration(seconds: 3), () {
-                  if (context.mounted) {
+                  if (context.mounted && !_isShowingWelcomeModal) {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -160,7 +163,7 @@ class _HomePageState extends State<HomePage> {
           BlocListener<ItineraryCubit, ItineraryState>(
             listener: (context, state) {
               state.maybeWhen(
-                loaded: (group, _, __, ___) {
+                loaded: (group, _, __, pendingDocs, isNewAssignment) {
                   final now = DateTime.now();
                   final endOfDay = DateTime(
                     group.endDate.year,
@@ -178,6 +181,27 @@ class _HomePageState extends State<HomePage> {
                   } else if (!isActive &&
                       (_selectedIndex == 0 || _selectedIndex == 1)) {
                     setState(() => _selectedIndex = 2);
+                  }
+                  
+                  if (isNewAssignment) {
+                    _isShowingWelcomeModal = true;
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (dialogContext) => WelcomeMissionModal(
+                        group: group,
+                        pendingDocsCount: pendingDocs.length,
+                        onAddDocumentsTap: () {
+                          Navigator.pop(dialogContext);
+                          _isShowingWelcomeModal = false;
+                          context.push('/documents');
+                        },
+                        onContinueTap: () {
+                          Navigator.pop(dialogContext);
+                          _isShowingWelcomeModal = false;
+                        },
+                      ),
+                    );
                   }
                 },
                 error: (_) {
@@ -226,8 +250,9 @@ class _HomePageState extends State<HomePage> {
                 Widget bodyContent = _buildBody();
 
                 final hasPendingDocs = context.read<DocumentsCubit>().state.hasPendingAction;
-                final shouldShowBanners = (!isComplete || hasPendingDocs) && 
-                                          (_selectedIndex == 0 || _selectedIndex == 2);
+                final showProfileBanner = !isComplete && _selectedIndex == 2;
+                final showPendingDocsBanner = hasPendingDocs && _selectedIndex == 2;
+                final shouldShowBanners = showProfileBanner || showPendingDocsBanner;
 
                 if (shouldShowBanners) {
                   return Stack(
@@ -240,14 +265,14 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!isComplete) ...[
+                            if (showProfileBanner) ...[
                               const ClipRRect(
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
                                 child: IncompleteProfileBanner(),
                               ),
                               const SizedBox(height: 8),
                             ],
-                            if (hasPendingDocs)
+                            if (showPendingDocsBanner)
                               const ClipRRect(
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
                                 child: PendingDocumentsBanner(),

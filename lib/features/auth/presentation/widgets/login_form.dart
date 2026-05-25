@@ -110,13 +110,9 @@ class _LoginFormState extends State<LoginForm> {
     if (widget.authMode == AuthMode.login) {
       final prefs = await SharedPreferences.getInstance();
       final email = prefs.getString('remembered_email');
-      final password = prefs.getString('remembered_password');
       if (email != null && mounted) {
         setState(() {
           _emailController.text = email;
-          if (password != null) {
-            _passwordController.text = password;
-          }
           _rememberMe = true;
         });
       }
