@@ -51,7 +51,6 @@ extension DocumentsStateX on DocumentsState {
             if (mission.passaporteObrigatorio) DocumentType.passaporte,
             if (mission.vistoObrigatorio) DocumentType.visto,
             if (mission.vacinaObrigatoria) DocumentType.vacina,
-            if (mission.seguroObrigatorio) DocumentType.seguro,
             if (mission.carteiraObrigatoria) DocumentType.carteiraMotorista,
             if (mission.autorizacaoObrigatoria && isUnder18)
               DocumentType.autorizacaoMenores,

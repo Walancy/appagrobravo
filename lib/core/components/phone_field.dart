@@ -10,6 +10,7 @@ class PhoneField extends StatefulWidget {
   final String label;
   final PhoneCountry initialCountry;
   final ValueChanged<PhoneCountry>? onCountryChanged;
+  final bool hasError;
 
   const PhoneField({
     super.key,
@@ -17,6 +18,7 @@ class PhoneField extends StatefulWidget {
     required this.label,
     this.initialCountry = kDefaultPhoneCountry,
     this.onCountryChanged,
+    this.hasError = false,
   });
 
   @override
@@ -66,11 +68,15 @@ class _PhoneFieldState extends State<PhoneField> {
     );
   }
 
-  InputBorder _border(BuildContext context, {bool focused = false}) {
+  InputBorder _border(BuildContext context, {bool focused = false, bool hasError = false}) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(
-        color: focused ? AppColors.primary : Theme.of(context).dividerColor,
+        color: hasError 
+            ? AppColors.error 
+            : focused 
+                ? AppColors.primary 
+                : Theme.of(context).dividerColor,
       ),
     );
   }
@@ -105,7 +111,7 @@ class _PhoneFieldState extends State<PhoneField> {
                   decoration: BoxDecoration(
                     color: fillColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).dividerColor),
+                    border: Border.all(color: widget.hasError ? AppColors.error : Theme.of(context).dividerColor),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -152,9 +158,9 @@ class _PhoneFieldState extends State<PhoneField> {
                           .withValues(alpha: 0.3),
                       fontSize: 13,
                     ),
-                    border: _border(context),
-                    enabledBorder: _border(context),
-                    focusedBorder: _border(context, focused: true),
+                    border: _border(context, hasError: widget.hasError),
+                    enabledBorder: _border(context, hasError: widget.hasError),
+                    focusedBorder: _border(context, focused: true, hasError: widget.hasError),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,

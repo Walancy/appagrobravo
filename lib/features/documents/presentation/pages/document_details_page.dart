@@ -88,6 +88,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
     try {
       if (_selectedFile != null) {
         await cubit.uploadDocument(
+          id: widget.currentDocument?.id,
           type: widget.type,
           file: _selectedFile!,
           documentNumber: _numberController.text,

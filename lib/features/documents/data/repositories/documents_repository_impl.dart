@@ -74,6 +74,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
   @override
   Future<Either<Exception, void>> uploadDocument({
+    String? id,
     required DocumentType type,
     required File file,
     String? documentNumber,
@@ -93,14 +94,6 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
           .from('files')
           .getPublicUrl(path);
 
-      // 2. Check if document already exists to update or insert
-      final existingDoc = await _supabaseClient
-          .from('documentos')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('tipo', type.name.toUpperCase())
-          .maybeSingle();
-
       final docData = {
         'user_id': userId,
         'tipo': type.name.toUpperCase(),
@@ -112,12 +105,14 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
         'nome_documento': type.label,
       };
 
-      if (existingDoc != null) {
+      if (id != null) {
+        // Update existing document in history
         await _supabaseClient
             .from('documentos')
             .update(docData)
-            .eq('id', existingDoc['id']);
+            .eq('id', id);
       } else {
+        // Insert new document (create history)
         await _supabaseClient.from('documentos').insert(docData);
       }
 

@@ -11,6 +11,7 @@ import '../widgets/itinerary_list.dart';
 import '../widgets/itinerary_filter_modal.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
+import '../widgets/mission_header_card.dart';
 
 /// Standalone Widget to be used as a Tab
 class ItineraryTab extends StatelessWidget {
@@ -96,12 +97,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
   }
 
   void _showFilterModal() async {
-    // Generate dates between start and end
-    final availableDates = List.generate(
-      widget.group.endDate.difference(widget.group.startDate).inDays + 1,
-      (i) => widget.group.startDate.add(Duration(days: i)),
-    );
-
     final result = await showDialog<ItineraryFilters>(
       context: context,
       builder: (context) => Dialog(
@@ -110,7 +105,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ItineraryFilterModal(
           initialFilters: _filters,
-          availableDates: availableDates,
         ),
       ),
     );
@@ -118,14 +112,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
     if (result != null) {
       setState(() {
         _filters = result;
-        if (result.date != null) {
-          // Normalize selected date from filter modal
-          _selectedDate = DateTime(
-            result.date!.year,
-            result.date!.month,
-            result.date!.day,
-          );
-        }
       });
     }
   }
@@ -138,7 +124,17 @@ class _ItineraryContentState extends State<ItineraryContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const HeaderSpacer(),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+
+          // Mission Header Card
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: MissionHeaderCard(
+              missionName: widget.group.missionName ?? 'Missão Atual',
+              groupName: widget.group.name,
+            ),
+          ),
+          const SizedBox(height: 20),
 
           // Day Slider
           DaySlider(
@@ -149,11 +145,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
               setState(() {
                 // Normalize selected date from slider
                 _selectedDate = DateTime(date.year, date.month, date.day);
-                // If filter had a different date, we clear it or sync it
-                if (_filters.date != null &&
-                    !_isSameDay(_filters.date!, _selectedDate!)) {
-                  _filters = _filters.copyWith(date: _selectedDate);
-                }
               });
             },
           ),

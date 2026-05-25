@@ -60,6 +60,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
   bool _loadingCep = false;
   bool _initialized = false;
   bool _isSaving = false;
+  bool _attemptedSave = false;
   Map<String, dynamic> _initialData = {};
 
   List<TextEditingController> get _allControllers => [
@@ -232,27 +233,32 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  InputDecoration _inputDecoration(BuildContext context, {Widget? suffix}) {
+  InputDecoration _inputDecoration(BuildContext context, {Widget? suffix, bool hasError = false, String? helperText}) {
     final fillColor = Theme.of(context).brightness == Brightness.dark
         ? Theme.of(context).colorScheme.surface
         : const Color(0xFFFAFAFA);
+        
+    final borderColor = hasError ? AppColors.error : Theme.of(context).dividerColor;
+
     return InputDecoration(
       filled: true,
       fillColor: fillColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Theme.of(context).dividerColor),
+        borderSide: BorderSide(color: borderColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Theme.of(context).dividerColor),
+        borderSide: BorderSide(color: borderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary),
+        borderSide: BorderSide(color: hasError ? AppColors.error : AppColors.primary),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       suffixIcon: suffix,
+      helperText: helperText,
+      helperMaxLines: 3,
     );
   }
 
@@ -275,7 +281,10 @@ class _AccountDataPageState extends State<AccountDataPage> {
     List<TextInputFormatter>? inputFormatters,
     Widget? suffixIcon,
     bool readOnly = false,
+    bool isMandatory = false,
+    String? helperText,
   }) {
+    final hasError = _attemptedSave && isMandatory && controller.text.trim().isEmpty;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
@@ -288,7 +297,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
             inputFormatters: inputFormatters,
             readOnly: readOnly,
             style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            decoration: _inputDecoration(context, suffix: suffixIcon),
+            decoration: _inputDecoration(context, suffix: suffixIcon, hasError: hasError, helperText: helperText),
           ),
         ],
       ),
@@ -353,7 +362,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
               decoration: BoxDecoration(
                 color: fillColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).dividerColor),
+                border: Border.all(color: _attemptedSave && _selectedCountry.code.trim().isEmpty ? AppColors.error : Theme.of(context).dividerColor),
               ),
               child: Row(
                 children: [
@@ -394,12 +403,15 @@ class _AccountDataPageState extends State<AccountDataPage> {
         context,
         _stateTextController,
         'Estado / Província',
+        isMandatory: true,
       );
     }
 
     final fillColor = Theme.of(context).brightness == Brightness.dark
         ? Theme.of(context).colorScheme.surface
         : const Color(0xFFFAFAFA);
+
+    final hasError = _attemptedSave && (_selectedStateUf ?? '').trim().isEmpty;
 
     final selectedName = _selectedStateUf != null
         ? kBrazilianStates
@@ -437,7 +449,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
               decoration: BoxDecoration(
                 color: fillColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).dividerColor),
+                border: Border.all(color: hasError ? AppColors.error : Theme.of(context).dividerColor),
               ),
               child: Row(
                 children: [
@@ -487,7 +499,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                     ? Theme.of(context).colorScheme.surface
                     : const Color(0xFFFAFAFA),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).dividerColor),
+                border: Border.all(color: _attemptedSave && _birthDate == null ? AppColors.error : Theme.of(context).dividerColor),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -580,14 +592,30 @@ class _AccountDataPageState extends State<AccountDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(
+            child: Text(
+              'Não esqueça de salvar suas alterações',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
           // ── Dados pessoais ──────────────────────────────────────────────
-          _buildTextField(context, _nameController, 'Nome Completo'),
-          _buildTextField(context, _badgeNameController, 'Nome para o Crachá'),
+          _buildTextField(context, _nameController, 'Nome Completo', isMandatory: true),
+          _buildTextField(
+            context,
+            _badgeNameController,
+            'Apelido',
+            helperText: 'Esse nome será usado no seu crachá quando estiver em viagem.',
+          ),
           PhoneField(
             controller: _phoneController,
             label: 'Telefone',
             initialCountry: _phoneCountry,
             onCountryChanged: (c) => setState(() => _phoneCountry = c),
+            hasError: _attemptedSave && _phoneController.text.trim().isEmpty,
           ),
           const SizedBox(height: AppSpacing.sm),
           Container(
@@ -610,19 +638,20 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _buildTextField(context, _emergencyNameController, 'Nome do Contato'),
-                _buildTextField(context, _emergencyRelationshipController, 'Grau de Parentesco (Ex: Pai, Mãe, etc)'),
+                _buildTextField(context, _emergencyNameController, 'Nome do Contato', isMandatory: true),
+                _buildTextField(context, _emergencyRelationshipController, 'Grau de Parentesco (Ex: Pai, Mãe, etc)', isMandatory: true),
                 PhoneField(
                   controller: _emergencyContactController,
                   label: 'Telefone de Emergência',
                   initialCountry: _emergencyCountry,
                   onCountryChanged: (c) => setState(() => _emergencyCountry = c),
+                  hasError: _attemptedSave && _emergencyContactController.text.trim().isEmpty,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _buildTextField(context, _companyController, 'Empresa'),
+          _buildTextField(context, _companyController, 'Empresa', isMandatory: true),
           Row(
             children: [
               Expanded(
@@ -632,6 +661,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   'CPF',
                   keyboardType: TextInputType.number,
                   inputFormatters: [_cpfMask],
+                  isMandatory: true,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -649,75 +679,97 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
           // ── Endereço ────────────────────────────────────────────────────
           const SizedBox(height: AppSpacing.sm),
-          _buildSectionTitle(context, 'Endereço'),
-          const SizedBox(height: AppSpacing.md),
-
-          // CEP + País na mesma linha
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 130,
-                child: _buildTextField(
-                  context,
-                  _zipCodeController,
-                  'CEP',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [_cepMask],
-                  suffixIcon: _loadingCep
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        )
-                      : null,
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : AppColors.primary.withValues(alpha: 0.05),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
+                    const SizedBox(width: AppSpacing.xs),
+                    _buildSectionTitle(context, 'Endereço'),
+                  ],
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(child: _buildCountryDropdown(context)),
-            ],
-          ),
+                const SizedBox(height: AppSpacing.md),
 
-          // Estado + Cidade
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _buildStateField(context)),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildTextField(context, _cityController, 'Cidade'),
-              ),
-            ],
-          ),
+                // CEP + País na mesma linha
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 130,
+                      child: _buildTextField(
+                        context,
+                        _zipCodeController,
+                        'CEP',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [_cepMask],
+                        isMandatory: true,
+                        suffixIcon: _loadingCep
+                            ? const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(child: _buildCountryDropdown(context)),
+                  ],
+                ),
 
-          _buildTextField(context, _neighborhoodController, 'Bairro'),
-          _buildTextField(context, _streetController, 'Rua'),
-          Row(
-            children: [
-              SizedBox(
-                width: 100,
-                child: _buildTextField(
-                  context,
-                  _numberController,
-                  'Número',
-                  keyboardType: TextInputType.number,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildStateField(context)),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _buildTextField(context, _cityController, 'Cidade', isMandatory: true),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildTextField(
-                  context,
-                  _complementController,
-                  'Complemento',
+
+                _buildTextField(context, _neighborhoodController, 'Bairro', isMandatory: true),
+                _buildTextField(context, _streetController, 'Rua', isMandatory: true),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: _buildTextField(
+                        context,
+                        _numberController,
+                        'Número',
+                        keyboardType: TextInputType.number,
+                        isMandatory: true,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _buildTextField(
+                        context,
+                        _complementController,
+                        'Complemento',
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
 
           const SizedBox(height: AppSpacing.xl),
@@ -808,7 +860,42 @@ class _AccountDataPageState extends State<AccountDataPage> {
     return false;
   }
 
+  bool _validateFields() {
+    final stateValue = _selectedCountry.code == 'BR'
+        ? (_selectedStateUf ?? '')
+        : _stateTextController.text;
+
+    if (_nameController.text.trim().isEmpty ||
+        _phoneController.text.trim().isEmpty ||
+        _cpfController.text.trim().isEmpty ||
+        _companyController.text.trim().isEmpty ||
+        _emergencyNameController.text.trim().isEmpty ||
+        _emergencyRelationshipController.text.trim().isEmpty ||
+        _emergencyContactController.text.trim().isEmpty ||
+        _zipCodeController.text.trim().isEmpty ||
+        stateValue.trim().isEmpty ||
+        _cityController.text.trim().isEmpty ||
+        _neighborhoodController.text.trim().isEmpty ||
+        _streetController.text.trim().isEmpty ||
+        _numberController.text.trim().isEmpty ||
+        _birthDate == null) {
+      return false;
+    }
+    return true;
+  }
+
   void _save(BuildContext context) {
+    setState(() => _attemptedSave = true);
+    if (!_validateFields()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, preencha todos os campos obrigatórios.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
     context.read<ProfileCubit>().updateAccountData(_getCurrentData());
   }

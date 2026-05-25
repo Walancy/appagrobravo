@@ -14,6 +14,8 @@ import '../cubit/documents_state.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
 
+enum DocumentUserState { nuncaParticipou, semMissao, emMissao }
+
 class DocumentsPage extends StatelessWidget {
   const DocumentsPage({super.key});
 
@@ -95,8 +97,16 @@ class DocumentTypeButton extends StatelessWidget {
     this.mission,
   });
 
+  DocumentUserState _getUserState() {
+    if (mission != null) return DocumentUserState.emMissao;
+    if ((profile?.missionsCount ?? 0) > 0) return DocumentUserState.semMissao;
+    return DocumentUserState.nuncaParticipou;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final userState = _getUserState();
+
     // Calculate Age
     bool isUnder18 = false;
     if (profile?.birthDate != null) {
@@ -113,7 +123,7 @@ class DocumentTypeButton extends StatelessWidget {
     // MANDATORY LOGIC
     bool isTypeMandatory = false;
 
-    if (mission != null) {
+    if (userState == DocumentUserState.emMissao) {
       switch (type) {
         case DocumentType.passaporte:
           isTypeMandatory = mission!.passaporteObrigatorio;
@@ -137,61 +147,78 @@ class DocumentTypeButton extends StatelessWidget {
           isTypeMandatory = false;
           break;
       }
-    } else {
-      // If the user is not linked to any active group, no document is mandatory
-      isTypeMandatory = false;
     }
 
     bool isPending = false;
-    if (document == null) {
-      // If document is missing, it's only pending if it's mandatory
-      isPending = isTypeMandatory;
-    } else {
-      // If document exists, it's pending if status is PENDENTE
-      isPending = document!.status == DocumentStatus.pendente;
-    }
+    bool isAlert = false;
 
-    bool isAlert =
-        document != null &&
-        (document!.status == DocumentStatus.recusado ||
-            document!.status == DocumentStatus.expirado);
+    if (userState == DocumentUserState.emMissao) {
+      if (document == null) {
+        // Exception for "seguro", does not show pendency if missing
+        isPending = isTypeMandatory && type != DocumentType.seguro;
+      } else {
+        isPending = document!.status == DocumentStatus.pendente;
+        isAlert = document!.status == DocumentStatus.recusado ||
+            document!.status == DocumentStatus.expirado;
+      }
+    }
 
     // Status visual
     Color statusColor = AppColors.primary;
-    if (document == null) {
-      statusColor = isPending ? Colors.orange : Colors.grey;
-    } else {
-      switch (document!.status) {
-        case DocumentStatus.aprovado:
-          statusColor = AppColors.primary;
-          break;
-        case DocumentStatus.pendente:
-          statusColor = Colors.orange;
-          break;
-        case DocumentStatus.recusado:
-        case DocumentStatus.expirado:
-          statusColor = AppColors.error;
-          break;
+    if (userState == DocumentUserState.emMissao) {
+      if (document == null) {
+        statusColor = isPending ? Colors.orange : Colors.grey;
+      } else {
+        switch (document!.status) {
+          case DocumentStatus.aprovado:
+            statusColor = AppColors.primary;
+            break;
+          case DocumentStatus.pendente:
+            statusColor = Colors.orange;
+            break;
+          case DocumentStatus.recusado:
+          case DocumentStatus.expirado:
+            statusColor = AppColors.error;
+            break;
+        }
       }
+    } else {
+      statusColor = AppColors.textSecondary.withOpacity(0.5);
     }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: InkWell(
-        onTap: () => context
-            .push(
+        onTap: () {
+          final isHistoryType = type == DocumentType.seguro ||
+              type == DocumentType.visto ||
+              type == DocumentType.vacina;
+
+          if (userState == DocumentUserState.semMissao || isHistoryType) {
+            context.push(
+              '/document-history',
+              extra: {
+                'type': type,
+                'cubit': context.read<DocumentsCubit>(),
+              },
+            ).then((value) {
+              context.read<DocumentsCubit>().loadDocuments();
+            });
+          } else {
+            context.push(
               '/document-details',
               extra: {
                 'type': type,
                 'document': document,
                 'cubit': context.read<DocumentsCubit>(),
               },
-            )
-            .then((value) {
+            ).then((value) {
               if (value == true) {
                 context.read<DocumentsCubit>().loadDocuments();
               }
-            }),
+            });
+          }
+        },
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -217,10 +244,18 @@ class DocumentTypeButton extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: userState == DocumentUserState.emMissao
+                      ? statusColor.withOpacity(0.1)
+                      : Theme.of(context).dividerColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(_getIcon(type), color: statusColor, size: 24),
+                child: Icon(
+                  _getIcon(type),
+                  color: userState == DocumentUserState.emMissao
+                      ? statusColor
+                      : AppColors.textSecondary,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -234,7 +269,7 @@ class DocumentTypeButton extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      _getStatusText(),
+                      _getStatusText(userState),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: (isPending || isAlert)
                             ? statusColor
@@ -247,23 +282,36 @@ class DocumentTypeButton extends StatelessWidget {
                   ],
                 ),
               ),
-              if (isPending || isAlert)
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.priority_high,
-                    color: Colors.white,
-                    size: 12,
-                  ),
-                )
+              if (userState == DocumentUserState.emMissao)
+                if (isPending || isAlert)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.priority_high,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  )
+                else if (document?.status == DocumentStatus.aprovado)
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.primary,
+                    size: 24,
+                  )
+                else
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textSecondary,
+                    size: 24,
+                  )
               else
                 const Icon(
-                  Icons.check_circle,
-                  color: AppColors.primary,
+                  Icons.chevron_right,
+                  color: AppColors.textSecondary,
                   size: 24,
                 ),
             ],
@@ -273,7 +321,15 @@ class DocumentTypeButton extends StatelessWidget {
     );
   }
 
-  String _getStatusText() {
+  String _getStatusText(DocumentUserState state) {
+    if (state != DocumentUserState.emMissao) {
+      if (state == DocumentUserState.semMissao) {
+        return 'Ver documentos';
+      } else {
+        return 'Adicionar / Ver documentos';
+      }
+    }
+    
     if (document == null) return 'Pendente de envio';
     if (document!.status == DocumentStatus.pendente)
       return 'Aguardando aprovação';

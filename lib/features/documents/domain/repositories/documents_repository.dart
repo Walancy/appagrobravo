@@ -6,6 +6,7 @@ import 'package:dartz/dartz.dart';
 abstract class DocumentsRepository {
   Future<Either<Exception, List<DocumentEntity>>> getDocuments();
   Future<Either<Exception, void>> uploadDocument({
+    String? id,
     required DocumentType type,
     required File file,
     String? documentNumber,

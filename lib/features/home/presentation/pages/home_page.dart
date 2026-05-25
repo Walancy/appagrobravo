@@ -35,6 +35,8 @@ import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/profile_nag_modal.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
+import 'package:agrobravo/features/documents/presentation/widgets/documents_nag_modal.dart';
+import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -47,6 +49,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = -1;
   static bool _hasShownIncompleteProfileModal = false;
+  static bool _hasShownPendingDocumentsModal = false;
   @override
   void initState() {
     super.initState();
@@ -137,6 +140,23 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
+          BlocListener<DocumentsCubit, DocumentsState>(
+            listener: (context, state) {
+              if (state.hasPendingAction && !_hasShownPendingDocumentsModal) {
+                _hasShownPendingDocumentsModal = true;
+                Future.delayed(const Duration(seconds: 3), () {
+                  if (context.mounted) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const DocumentsNagModal(),
+                    );
+                  }
+                });
+              }
+            },
+          ),
           BlocListener<ItineraryCubit, ItineraryState>(
             listener: (context, state) {
               state.maybeWhen(
@@ -205,7 +225,11 @@ class _HomePageState extends State<HomePage> {
 
                 Widget bodyContent = _buildBody();
 
-                if (!isComplete && (_selectedIndex == 0 || _selectedIndex == 2)) {
+                final hasPendingDocs = context.read<DocumentsCubit>().state.hasPendingAction;
+                final shouldShowBanners = (!isComplete || hasPendingDocs) && 
+                                          (_selectedIndex == 0 || _selectedIndex == 2);
+
+                if (shouldShowBanners) {
                   return Stack(
                     children: [
                       bodyContent,
@@ -213,9 +237,22 @@ class _HomePageState extends State<HomePage> {
                         top: kToolbarHeight + MediaQuery.of(context).padding.top + 8,
                         left: 16,
                         right: 16,
-                        child: const ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
-                          child: IncompleteProfileBanner(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!isComplete) ...[
+                              const ClipRRect(
+                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                                child: IncompleteProfileBanner(),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            if (hasPendingDocs)
+                              const ClipRRect(
+                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                                child: PendingDocumentsBanner(),
+                              ),
+                          ],
                         ),
                       ),
                     ],

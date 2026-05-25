@@ -11,6 +11,7 @@ import 'package:agrobravo/features/notifications/presentation/pages/notification
 import 'package:agrobravo/features/profile/presentation/pages/settings_page.dart';
 import 'package:agrobravo/features/documents/presentation/pages/documents_page.dart';
 import 'package:agrobravo/features/documents/presentation/pages/document_details_page.dart';
+import 'package:agrobravo/features/documents/presentation/pages/document_history_page.dart';
 import 'package:agrobravo/features/documents/domain/entities/document_enums.dart';
 import 'package:agrobravo/features/documents/domain/entities/document_entity.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
@@ -151,6 +152,18 @@ final appRouter = GoRouter(
             type: extra['type'] as DocumentType,
             currentDocument: extra['document'] as DocumentEntity?,
             cubit: extra['cubit'] as DocumentsCubit?,
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/document-history',
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return NoTransitionPage(
+          child: DocumentHistoryPage(
+            type: extra['type'] as DocumentType,
+            cubit: extra['cubit'] as DocumentsCubit,
           ),
         );
       },

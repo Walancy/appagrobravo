@@ -9,6 +9,7 @@ abstract class ItineraryGroupDto with _$ItineraryGroupDto {
   const factory ItineraryGroupDto({
     required String id,
     @JsonKey(name: 'nome') required String name,
+    String? missionName,
     @JsonKey(name: 'data_inicio') required DateTime startDate,
     @JsonKey(name: 'data_fim') required DateTime endDate,
   }) = _ItineraryGroupDto;
@@ -22,6 +23,7 @@ abstract class ItineraryGroupDto with _$ItineraryGroupDto {
     return ItineraryGroupEntity(
       id: id,
       name: name,
+      missionName: missionName,
       startDate: startDate,
       endDate: endDate,
     );

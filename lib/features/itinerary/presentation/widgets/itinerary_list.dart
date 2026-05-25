@@ -25,10 +25,9 @@ class ItineraryList extends StatelessWidget {
   Widget build(BuildContext context) {
     // Filter items
     final displayedItemsFull = items.where((item) {
-      // 1. Filter by Date (Priority to filter.date, fallback to selectedDate)
-      final filterDate = filters?.date ?? selectedDate;
-      if (filterDate != null && item.startDateTime != null) {
-        if (!_isSameDay(item.startDateTime!, filterDate)) return false;
+      // 1. Filter by Date
+      if (selectedDate != null && item.startDateTime != null) {
+        if (!_isSameDay(item.startDateTime!, selectedDate!)) return false;
       }
 
       // 2. Filter by Type
@@ -36,13 +35,20 @@ class ItineraryList extends StatelessWidget {
         if (!filters!.types.contains(item.type)) return false;
       }
 
-      // 3. Filter by Time
-      if (filters?.startTime != null && item.startDateTime != null) {
+      // 3. Filter by Time Period
+      if ((filters?.startTime != null || filters?.endTime != null) && item.startDateTime != null) {
         final itemTime = TimeOfDay.fromDateTime(item.startDateTime!);
-        if (itemTime.hour < filters!.startTime!.hour) return false;
-        if (itemTime.hour == filters!.startTime!.hour &&
-            itemTime.minute < filters!.startTime!.minute)
+        
+        final start = filters?.startTime ?? const TimeOfDay(hour: 0, minute: 1);
+        final end = filters?.endTime ?? const TimeOfDay(hour: 23, minute: 59);
+
+        final itemMinutes = itemTime.hour * 60 + itemTime.minute;
+        final startMinutes = start.hour * 60 + start.minute;
+        final endMinutes = end.hour * 60 + end.minute;
+
+        if (itemMinutes < startMinutes || itemMinutes > endMinutes) {
           return false;
+        }
       }
 
       return true;

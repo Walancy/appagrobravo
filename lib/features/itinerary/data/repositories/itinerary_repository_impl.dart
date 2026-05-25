@@ -26,9 +26,12 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     try {
       final response = await _supabaseClient
           .from('grupos')
-          .select()
+          .select('*, missoes:missao_id(nome)')
           .eq('id', groupId)
           .single();
+
+      final missao = response['missoes'] as Map<String, dynamic>?;
+      response['missionName'] = missao?['nome'];
 
       // Cache the response
       final prefs = await SharedPreferences.getInstance();

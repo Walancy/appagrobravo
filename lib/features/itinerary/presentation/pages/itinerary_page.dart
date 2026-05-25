@@ -9,6 +9,7 @@ import '../../domain/entities/itinerary_item.dart';
 import '../cubit/itinerary_cubit.dart';
 import '../widgets/day_slider.dart';
 import '../widgets/itinerary_list.dart';
+import '../widgets/mission_header_card.dart';
 
 class ItineraryPage extends StatelessWidget {
   final String groupId;
@@ -128,6 +129,15 @@ class _ItineraryContentState extends State<_ItineraryContent> {
               ],
             ),
           ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: MissionHeaderCard(
+            missionName: widget.group.missionName ?? 'Missão Atual',
+            groupName: widget.group.name,
+          ),
+        ),
+        const SizedBox(height: 20),
         DaySlider(
           startDate: widget.group.startDate,
           endDate: widget.group.endDate,
