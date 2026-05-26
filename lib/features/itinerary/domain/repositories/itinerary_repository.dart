@@ -35,4 +35,7 @@ abstract class ItineraryRepository {
     String itemId,
     bool isChecked,
   );
+
+  /// Returns true if [groupId] has primeiraAcesso = true for the current user.
+  Future<Either<Exception, bool>> checkPrimeiraAcesso(String groupId);
 }

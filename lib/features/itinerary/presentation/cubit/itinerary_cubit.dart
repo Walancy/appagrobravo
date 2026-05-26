@@ -6,6 +6,7 @@ import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/repositories/itinerary_repository.dart';
+import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer' as dev;
 
@@ -64,6 +65,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
             // INC-004: subscribe to real-time changes for this group's events
             _subscribeToEventsChanges(groupId);
+
+            // Onboarding gate: check primeiraAcesso for this group/user
+            _checkPrimeiraAcesso(groupId, group);
           },
         );
       },
@@ -82,6 +86,23 @@ class ItineraryCubit extends Cubit<ItineraryState> {
             emit(ItineraryState.loaded(group, newItems, travelTimes, pendingDocs));
           },
           orElse: () {},
+        );
+      },
+    );
+  }
+
+  Future<void> _checkPrimeiraAcesso(
+    String groupId,
+    ItineraryGroupEntity group,
+  ) async {
+    final result = await _repository.checkPrimeiraAcesso(groupId);
+    result.fold(
+      (_) {},
+      (primeiraAcesso) {
+        OnboardingService.instance.setNeedsOnboarding(
+          primeiraAcesso,
+          groupId: groupId,
+          group: group,
         );
       },
     );

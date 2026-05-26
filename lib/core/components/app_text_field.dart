@@ -12,6 +12,7 @@ class AppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final bool hasError;
+  final TextInputType? keyboardType;
 
   const AppTextField({
     super.key,
@@ -23,6 +24,7 @@ class AppTextField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.hasError = false,
+    this.keyboardType,
   });
 
   @override
@@ -49,6 +51,7 @@ class AppTextField extends StatelessWidget {
             obscureText: obscureText,
             validator: validator,
             onChanged: onChanged,
+            keyboardType: keyboardType,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.surface,
             ), // Fonte interna ajustada

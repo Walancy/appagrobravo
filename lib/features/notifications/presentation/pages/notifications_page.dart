@@ -456,10 +456,21 @@ class _FollowRequestsSummary extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 // Item de notificação individual
 // ─────────────────────────────────────────────────────────────
-class _NotificationItem extends StatelessWidget {
+class _NotificationItem extends StatefulWidget {
   final NotificationEntity notification;
 
   const _NotificationItem({required this.notification});
+
+  @override
+  State<_NotificationItem> createState() => _NotificationItemState();
+}
+
+class _NotificationItemState extends State<_NotificationItem> {
+
+  bool _expanded = false;
+  bool _hasOverflow = false;
+
+  static const int _collapsedMaxLines = 3;
 
   String _formatTime(DateTime date) {
     final diff = DateTime.now().difference(date);
@@ -472,8 +483,37 @@ class _NotificationItem extends StatelessWidget {
     return '$weeks semana${weeks > 1 ? 's' : ''} atrás';
   }
 
+  /// Verifica se o texto transborda além de [_collapsedMaxLines] linhas
+  /// no espaço disponível [maxWidth].
+  bool _textOverflows(BuildContext context, double maxWidth) {
+    final notification = widget.notification;
+    final style = AppTextStyles.bodyMedium.copyWith(
+      color: Theme.of(context).colorScheme.onSurface,
+      height: 1.4,
+    );
+    final boldStyle = style.copyWith(fontWeight: FontWeight.w700);
+
+    final span = TextSpan(
+      style: style,
+      children: [
+        TextSpan(text: notification.userName, style: boldStyle),
+        const TextSpan(text: ' '),
+        TextSpan(text: notification.message),
+      ],
+    );
+
+    final painter = TextPainter(
+      text: span,
+      maxLines: _collapsedMaxLines,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+
+    return painter.didExceedMaxLines;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final notification = widget.notification;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isUnread = !notification.isRead;
 
@@ -521,51 +561,82 @@ class _NotificationItem extends StatelessWidget {
 
             // Conteúdo principal
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nome + mensagem
-                  RichText(
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        height: 1.4,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: notification.userName,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const TextSpan(text: ' '),
-                        TextSpan(text: notification.message),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  // Timestamp separado
-                  Text(
-                    _formatTime(notification.createdAt),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isUnread
-                          ? AppColors.primary.withOpacity(0.85)
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.4),
-                    ),
-                  ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Detecta overflow na primeira renderização
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final overflows = _textOverflows(context, constraints.maxWidth);
+                    if (overflows != _hasOverflow) {
+                      setState(() => _hasOverflow = overflows);
+                    }
+                  });
 
-                  // Ações inline (follow accept/reject)
-                  if (notification.type == NotificationType.follow &&
-                      isUnread) ...[
-                    const SizedBox(height: 8),
-                    _FollowActions(notification: notification),
-                  ],
-                ],
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Nome + mensagem
+                      RichText(
+                        maxLines: _expanded ? null : _collapsedMaxLines,
+                        overflow: _expanded
+                            ? TextOverflow.visible
+                            : TextOverflow.ellipsis,
+                        text: TextSpan(
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            height: 1.4,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: notification.userName,
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const TextSpan(text: ' '),
+                            TextSpan(text: notification.message),
+                          ],
+                        ),
+                      ),
+
+                      // Botão Ver mais / Ver menos
+                      if (_hasOverflow) ...[
+                        const SizedBox(height: 3),
+                        GestureDetector(
+                          onTap: () => setState(() => _expanded = !_expanded),
+                          child: Text(
+                            _expanded ? 'Ver menos' : 'Ver mais',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 5),
+                      // Timestamp separado
+                      Text(
+                        _formatTime(notification.createdAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isUnread
+                              ? AppColors.primary.withOpacity(0.85)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.4),
+                        ),
+                      ),
+
+                      // Ações inline (follow accept/reject)
+                      if (notification.type == NotificationType.follow &&
+                          isUnread) ...[
+                        const SizedBox(height: 8),
+                        _FollowActions(notification: notification),
+                      ],
+                    ],
+                  );
+                },
               ),
             ),
 

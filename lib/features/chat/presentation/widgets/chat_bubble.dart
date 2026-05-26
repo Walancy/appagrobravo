@@ -405,25 +405,12 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageText(BuildContext context, Color textColor) {
-    // Estimated width for time + "editado" label
-    final timeWidth = (isEdited ? 46.0 : 0.0) + 36.0;
-    final isLong = message.length > 180;
+    // Estimated width for time + "editado" label — always reserve this space
+    final timeWidth = (isEdited ? 46.0 : 0.0) + 40.0;
 
-    if (isLong) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildLinkifiedText(textColor),
-            const SizedBox(height: 4),
-            _buildTimeRow(textColor),
-          ],
-        ),
-      );
-    }
-
-    // Short message: Stack trick so time sits at bottom-right inline
+    // Always use Stack so the time is fixed at the bottom-right corner
+    // regardless of message length. A WidgetSpan spacer at the end of the
+    // text ensures the last line never overlaps the timestamp.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         12,
@@ -442,6 +429,7 @@ class ChatBubble extends StatelessWidget {
               ),
               children: [
                 ..._buildMessageSpans(textColor),
+                // Invisible spacer so the last word never sits under the time
                 WidgetSpan(
                   child: SizedBox(width: timeWidth + 4),
                 ),

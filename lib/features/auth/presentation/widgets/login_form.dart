@@ -33,6 +33,7 @@ class LoginForm extends StatefulWidget {
   onResetPasswordAction;
   final void Function(String otp)? onVerifyOtpAction;
   final VoidCallback? onResendOtpAction;
+  final void Function(String email)? onEmailChanged; // Notifica email digitado na tela OTP
   final String? errorMessage; // Nova prop para erros
   final String? registeredEmail;
 
@@ -48,6 +49,7 @@ class LoginForm extends StatefulWidget {
     this.onResetPasswordAction,
     this.onVerifyOtpAction,
     this.onResendOtpAction,
+    this.onEmailChanged,
     this.errorMessage,
     this.registeredEmail,
   });
@@ -410,6 +412,8 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   List<Widget> _buildOtpVerificationContent() {
+    final bool needsEmail =
+        widget.registeredEmail == null || widget.registeredEmail!.isEmpty;
     return [
       Text(
         'Enviamos um código de verificação para o seu email. Insira o código abaixo:',
@@ -419,6 +423,20 @@ class _LoginFormState extends State<LoginForm> {
         ),
         textAlign: TextAlign.center,
       ),
+      if (needsEmail) ...[
+        const SizedBox(height: AppSpacing.sm),
+        AppTextField(
+          onChanged: (value) {
+            _clearError(value);
+            widget.onEmailChanged?.call(value);
+          },
+          hasError: _localErrorMessage != null,
+          label: 'E-mail:',
+          hint: 'example@gmail.com',
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+        ),
+      ],
       const SizedBox(height: AppSpacing.md),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -437,7 +455,14 @@ class _LoginFormState extends State<LoginForm> {
       const SizedBox(height: AppSpacing.sm),
       Center(
         child: TextButton(
-          onPressed: widget.onResendOtpAction,
+          onPressed: () {
+            if (needsEmail) {
+              // Reenvia OTP usando o email digitado no campo
+              widget.onRecoverPasswordAction?.call(_emailController.text);
+            } else {
+              widget.onResendOtpAction?.call();
+            }
+          },
           child: Text(
             'Reenviar código',
             style: AppTextStyles.bodyMedium.copyWith(

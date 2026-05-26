@@ -611,4 +611,23 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return Left(Exception('Erro ao salvar checklist: $e'));
     }
   }
+
+  @override
+  Future<Either<Exception, bool>> checkPrimeiraAcesso(String groupId) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return const Right(false);
+
+      final res = await _supabaseClient
+          .from('gruposParticipantes')
+          .select('primeiraAcesso')
+          .eq('grupo_id', groupId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      return Right(res?['primeiraAcesso'] as bool? ?? false);
+    } catch (e) {
+      return const Right(false);
+    }
+  }
 }

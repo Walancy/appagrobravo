@@ -14,8 +14,13 @@ import 'package:agrobravo/features/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatefulWidget {
   final AuthMode initialAuthMode;
+  final String? initialEmail;
 
-  const LoginPage({super.key, this.initialAuthMode = AuthMode.login});
+  const LoginPage({
+    super.key,
+    this.initialAuthMode = AuthMode.login,
+    this.initialEmail,
+  });
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -38,6 +43,7 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     super.initState();
     _authMode = widget.initialAuthMode;
+    _recoveryEmail = widget.initialEmail ?? '';
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -351,6 +357,11 @@ class _LoginPageState extends State<LoginPage>
                                                               confirm,
                                                             );
                                                       },
+                                                  onEmailChanged: (email) {
+                                                    setState(() {
+                                                      _recoveryEmail = email;
+                                                    });
+                                                  },
                                                   onVerifyOtpAction: (otp) {
                                                     context
                                                         .read<AuthCubit>()

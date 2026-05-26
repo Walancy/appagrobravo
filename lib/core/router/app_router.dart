@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/features/auth/presentation/pages/login_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/home_page.dart';
+import 'package:agrobravo/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/create_post_page.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/itinerary_page.dart';
@@ -29,6 +31,7 @@ const _publicPaths = <String>{'/', '/reset-password'};
 
 final appRouter = GoRouter(
   initialLocation: '/',
+  refreshListenable: OnboardingService.instance,
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final isAuthenticated = session != null;
@@ -46,6 +49,13 @@ final appRouter = GoRouter(
       return '/home';
     }
 
+    // Onboarding gate: bloqueia todas as rotas até o onboarding ser concluído
+    if (isAuthenticated &&
+        OnboardingService.instance.needsOnboarding &&
+        currentPath != '/onboarding') {
+      return '/onboarding';
+    }
+
     // Nenhum redirecionamento necessário
     return null;
   },
@@ -57,9 +67,15 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/reset-password',
-      pageBuilder: (context, state) => const NoTransitionPage(
-        child: LoginPage(initialAuthMode: AuthMode.resetPassword),
-      ),
+      pageBuilder: (context, state) {
+        final email = state.uri.queryParameters['email'];
+        return NoTransitionPage(
+          child: LoginPage(
+            initialAuthMode: AuthMode.otpVerification,
+            initialEmail: email,
+          ),
+        );
+      },
     ),
     GoRoute(
       path: '/home',
@@ -195,6 +211,11 @@ final appRouter = GoRouter(
       path: '/about-us',
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: AboutUsPage()),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: OnboardingPage()),
     ),
   ],
 );
