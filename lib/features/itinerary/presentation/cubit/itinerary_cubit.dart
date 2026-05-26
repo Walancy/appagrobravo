@@ -180,6 +180,18 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         .subscribe();
   }
 
+  /// Cancels all subscriptions and resets to initial state.
+  /// Must be called on logout so the next login triggers a full reload.
+  void reset() {
+    _groupSubscription?.unsubscribe();
+    _groupSubscription = null;
+    _eventsSubscription?.unsubscribe();
+    _eventsSubscription = null;
+    _currentGroupId = null;
+    OnboardingService.instance.reset();
+    emit(const ItineraryState.initial());
+  }
+
   @override
   Future<void> close() {
     _groupSubscription?.unsubscribe();

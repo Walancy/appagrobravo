@@ -3,6 +3,8 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/core/di/injection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
 
@@ -199,6 +201,12 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logout() async {
+    // Reset itinerary + onboarding state before signing out so the next
+    // login triggers a full reload (fixes BUG: onboarding/itinerary not
+    // shown after re-login when cubit singleton retained stale loaded state).
+    try {
+      getIt<ItineraryCubit>().reset();
+    } catch (_) {}
     await _authRepository.signOut();
     emit(const AuthState.unauthenticated());
   }

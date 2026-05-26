@@ -65,13 +65,10 @@ class _HomePageState extends State<HomePage> {
 
       final itineraryCubit = context.read<ItineraryCubit>();
       itineraryCubit.listenToGroupChanges();
-      // Dispara load se cubit está em initial OU error (singleton pode estar em error
-      // de sessão anterior — o BlocListener não dispara para estado já existente).
-      itineraryCubit.state.maybeMap(
-        initial: (_) => itineraryCubit.loadUserItinerary(),
-        error: (_) => itineraryCubit.loadUserItinerary(),
-        orElse: () {},
-      );
+      // Always reload on home entry — the singleton cubit may retain a stale
+      // 'loaded' state from a previous session, which would prevent the
+      // onboarding gate and itinerary/chat tabs from appearing correctly.
+      itineraryCubit.loadUserItinerary();
 
       // Fallback extra: se já está em error/loaded no momento da montagem,
       // o BlocListener não vai disparar — trata agora.

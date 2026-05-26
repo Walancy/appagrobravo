@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
@@ -26,32 +25,29 @@ class ItineraryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => GetIt.I<ItineraryCubit>()..loadUserItinerary(),
-      child: Scaffold(
-        // Inner scaffold to handle background and body
-        body: BlocBuilder<ItineraryCubit, ItineraryState>(
-          builder: (context, state) {
-            return state.maybeWhen(
-              loading: () => const ItineraryShimmer(),
-              error: (msg) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text('Erro: $msg', textAlign: TextAlign.center),
-                ),
+    return Scaffold(
+      // Inner scaffold to handle background and body
+      body: BlocBuilder<ItineraryCubit, ItineraryState>(
+        builder: (context, state) {
+          return state.maybeWhen(
+            loading: () => const ItineraryShimmer(),
+            error: (msg) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Erro: $msg', textAlign: TextAlign.center),
               ),
-              loaded: (group, items, travelTimes, pendingDocs) {
-                // BUG-013: use private _ItineraryContent to enforce BlocProvider requirement
-                return _ItineraryContent(
-                  group: group,
-                  items: items,
-                  travelTimes: travelTimes,
-                );
-              },
-              orElse: () => const SizedBox.shrink(),
-            );
-          },
-        ),
+            ),
+            loaded: (group, items, travelTimes, pendingDocs) {
+              // BUG-013: use private _ItineraryContent to enforce BlocProvider requirement
+              return _ItineraryContent(
+                group: group,
+                items: items,
+                travelTimes: travelTimes,
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

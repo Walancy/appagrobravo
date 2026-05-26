@@ -63,4 +63,14 @@ class OnboardingService extends ChangeNotifier {
     _needsOnboarding = false;
     notifyListeners();
   }
+
+  /// Resets all onboarding state. Call on logout so the next login
+  /// triggers a fresh check of primeiraAcesso.
+  void reset() {
+    _needsOnboarding = false;
+    _groupId = null;
+    _group = null;
+    // Do NOT call notifyListeners here — GoRouter may not have a valid
+    // context during logout. The caller manages navigation.
+  }
 }
