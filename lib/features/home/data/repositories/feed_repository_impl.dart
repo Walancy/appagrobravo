@@ -868,8 +868,8 @@ class FeedRepositoryImpl implements FeedRepository {
           .eq('user_id', userId);
 
       final docsList = docsResponse as List;
-      final approvedTypes = docsList
-          .where((d) => d['status'] == 'APROVADO')
+      final validTypes = docsList
+          .where((d) => d['status'] == 'APROVADO' || d['status'] == 'PENDENTE')
           .map((d) => d['tipo'] as String)
           .toSet();
 
@@ -902,7 +902,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       int pendingCount = 0;
       for (var type in effectiveRequiredTypes) {
-        if (!approvedTypes.contains(type)) {
+        if (!validTypes.contains(type)) {
           pendingCount++;
         }
       }

@@ -100,7 +100,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
       final docData = {
         'user_id': userId,
-        'tipo': type.name.toUpperCase(),
+        'tipo': _documentTypeToDb(type),
         'status': 'PENDENTE',
         'foto_doc': publicUrl,
         'numero_documento': documentNumber,
@@ -123,6 +123,25 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
       return const Right(null);
     } catch (e) {
       return Left(Exception('Erro ao enviar documento: $e'));
+    }
+  }
+
+  String _documentTypeToDb(DocumentType type) {
+    switch (type) {
+      case DocumentType.passaporte:
+        return 'PASSAPORTE';
+      case DocumentType.visto:
+        return 'VISTO';
+      case DocumentType.vacina:
+        return 'VACINA';
+      case DocumentType.seguro:
+        return 'SEGURO';
+      case DocumentType.carteiraMotorista:
+        return 'CARTEIRA_MOTORISTA';
+      case DocumentType.autorizacaoMenores:
+        return 'AUTORIZACAO_MENORES';
+      case DocumentType.outro:
+        return 'OUTRO';
     }
   }
 

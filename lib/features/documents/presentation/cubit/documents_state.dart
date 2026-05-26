@@ -67,8 +67,7 @@ extension DocumentsStateX on DocumentsState {
           );
 
           if (doc == null) return true;
-          if (doc.status == DocumentStatus.pendente ||
-              doc.status == DocumentStatus.recusado ||
+          if (doc.status == DocumentStatus.recusado ||
               doc.status == DocumentStatus.expirado) {
             return true;
           }

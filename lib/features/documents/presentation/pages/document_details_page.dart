@@ -9,6 +9,7 @@ import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../cubit/documents_cubit.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
@@ -56,10 +57,34 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   }
 
   void _openImagePreview() {
-    final hasLocalImage = _selectedFile != null && !_selectedFile!.path.toLowerCase().endsWith('.pdf');
+    final selectedPath = _selectedFile?.path.toLowerCase();
+    final hasLocalImage =
+        _selectedFile != null && selectedPath?.endsWith('.pdf') == false;
+    final hasLocalPdf =
+        _selectedFile != null && selectedPath?.endsWith('.pdf') == true;
+    final remoteUrl = widget.currentDocument?.imageUrl;
+    final hasRemotePdf = remoteUrl != null &&
+        (remoteUrl.toLowerCase().contains('.pdf') ||
+            remoteUrl.toLowerCase().contains('/pdf'));
     final hasRemoteImage = widget.currentDocument?.imageUrl != null &&
         !widget.currentDocument!.imageUrl!.toLowerCase().contains('.pdf') &&
         !widget.currentDocument!.imageUrl!.toLowerCase().contains('/pdf');
+
+    if (hasLocalPdf) {
+      launchUrl(
+        Uri.file(_selectedFile!.path),
+        mode: LaunchMode.externalApplication,
+      );
+      return;
+    }
+
+    if (hasRemotePdf) {
+      final uri = Uri.tryParse(remoteUrl);
+      if (uri != null) {
+        launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+      return;
+    }
 
     if (!hasLocalImage && !hasRemoteImage) return;
 
@@ -285,7 +310,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       builder: (context) => ImageSourceBottomSheet(
         title: _selectedFile != null || widget.currentDocument?.imageUrl != null
             ? 'Alterar arquivo do documento'
-            : 'Enviar documento',
+            : 'Enviar ${widget.type.label}',
         supportFiles: true,
       ),
     );
@@ -322,7 +347,16 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
     if (_selectedFile == null && widget.currentDocument?.imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, selecione uma foto do documento'),
+          content: Text('Selecione um PDF ou imagem do documento.'),
+        ),
+      );
+      return;
+    }
+
+    if (_selectedFile == null && widget.currentDocument != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Escolha um novo arquivo para atualizar o documento.'),
         ),
       );
       return;
@@ -345,24 +379,6 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
           expiryDate: _selectedDate,
           documentName: _nameController.text,
         );
-      } else if (widget.currentDocument != null) {
-        // Only metadata update support? The repository current impl expects a file.
-        // For now, if user doesn't pick a new file, we might just stay as is,
-        // OR we need to update the repository to allow metadata-only updates.
-        // Users requested "preview of sent document" and "new screen".
-        // Let's assume they might want to just see it or change metadata.
-        // However, the current requirement is to upload.
-        // BUG-015: guard mounted before using context after async gap
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Selecione uma nova imagem para atualizar o documento.',
-            ),
-          ),
-        );
-        setState(() => _isUploading = false);
-        return;
       }
 
       if (mounted) {
@@ -381,11 +397,19 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isPdf = _selectedFile != null && _selectedFile!.path.toLowerCase().endsWith('.pdf');
+    final selectedFileName = _selectedFile?.path.split('/').last;
+    final hasCurrentDocument = widget.currentDocument?.imageUrl != null;
+    final canSubmit = _selectedFile != null && !_isUploading;
+
     return Scaffold(
       appBar: AppHeader(mode: HeaderMode.back, title: widget.type.label),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.xl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -396,8 +420,10 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  border: Border.all(color: Colors.red[200]!),
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.2),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -408,7 +434,9 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                       child: Text(
                         _ocrError!,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.red[900],
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.red.shade200
+                              : Colors.red.shade900,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -420,7 +448,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
             ],
 
             Text(
-              isPdf ? 'Arquivo do Documento (PDF)' : 'Imagem do Documento',
+              'Arquivo do documento',
               style: AppTextStyles.bodyLarge.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -431,67 +459,70 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               child: _buildImagePreview(),
             ),
             const SizedBox(height: AppSpacing.sm),
-            TextButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.camera_alt, size: 20),
-              label: Text(
-                _selectedFile != null ||
-                        widget.currentDocument?.imageUrl != null
-                    ? 'Alterar Arquivo'
-                    : 'Escolher Arquivo / Foto',
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: _pickImage,
+                icon: Icon(
+                  hasCurrentDocument || _selectedFile != null
+                      ? Icons.swap_horiz_rounded
+                      : Icons.upload_file_rounded,
+                  size: 20,
+                ),
+                label: Text(
+                  hasCurrentDocument || _selectedFile != null
+                      ? 'Substituir arquivo'
+                      : 'Selecionar PDF ou imagem',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
+            if (selectedFileName != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Novo arquivo: $selectedFileName',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.56),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
 
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Nome no Documento',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            TextField(
+            _buildFieldLabel('Nome no documento'),
+            _DocumentTextField(
               controller: _nameController,
-              decoration: InputDecoration(
-                hintText: 'Ex: NELSON VIEIRA',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-              ),
+              hintText: 'Ex: NELSON VIEIRA',
             ),
 
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Número do Documento',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            TextField(
+            _buildFieldLabel('Número do documento'),
+            _DocumentTextField(
               controller: _numberController,
-              decoration: InputDecoration(
-                hintText: 'Ex: CD123456',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-              ),
+              hintText: 'Ex: CD123456',
             ),
 
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Data de Validade',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
+            _buildFieldLabel('Data de validade'),
             InkWell(
               onTap: _showDatePickerBottomSheet,
+              borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -528,10 +559,18 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: _isUploading ? null : () => _onSave(context),
+                onPressed: canSubmit ? () => _onSave(context) : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.08),
+                  disabledForegroundColor: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.38),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -539,9 +578,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                 ),
                 child: _isUploading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Salvar e Enviar para Análise',
-                        style: TextStyle(
+                    : Text(
+                        hasCurrentDocument
+                            ? 'Enviar substituição para análise'
+                            : 'Enviar para análise',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -571,7 +612,9 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               child: Text(
                 'Este documento ainda não foi enviado. Envie agora para análise.',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.orange[800],
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.orange.shade200
+                      : Colors.orange.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -605,8 +648,9 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.1),
+            color: statusColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: statusColor.withValues(alpha: 0.22)),
           ),
           child: Row(
             children: [
@@ -638,102 +682,64 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
     );
   }
 
+  Widget _buildFieldLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Text(
+        label,
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   Widget _buildImagePreview() {
-    final isPdf = _selectedFile != null && _selectedFile!.path.toLowerCase().endsWith('.pdf');
+    final localPath = _selectedFile?.path.toLowerCase();
+    final remoteUrl = widget.currentDocument?.imageUrl;
+    final remoteLower = remoteUrl?.toLowerCase() ?? '';
+    final isLocalPdf = localPath?.endsWith('.pdf') ?? false;
+    final isRemotePdf = remoteLower.contains('.pdf') ||
+        remoteLower.contains('/pdf') ||
+        remoteLower.contains('application/pdf');
+    final fileName = _selectedFile?.path.split('/').last ??
+        widget.currentDocument?.title ??
+        '${widget.type.label}.pdf';
+
     return Container(
       width: double.infinity,
-      height: 220,
+      height: 230,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
             Positioned.fill(
               child: _selectedFile != null
-                  ? (isPdf
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.picture_as_pdf,
-                                size: 56,
-                                color: Colors.redAccent,
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  _selectedFile!.path.split('/').last,
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                  ? (isLocalPdf
+                      ? _buildPdfPreview(fileName)
                       : Image.file(_selectedFile!, fit: BoxFit.cover))
-                  : (widget.currentDocument?.imageUrl != null
-                      ? Image.network(
+                  : (remoteUrl != null
+                      ? (isRemotePdf
+                          ? _buildPdfPreview(fileName)
+                          : Image.network(
                           widget.currentDocument!.imageUrl!,
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return const Center(child: CircularProgressIndicator());
                           },
-                          errorBuilder: (context, error, stackTrace) {
-                            final urlLower = widget.currentDocument!.imageUrl!.toLowerCase();
-                            if (urlLower.contains('.pdf') || urlLower.contains('/pdf')) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.picture_as_pdf,
-                                      size: 56,
-                                      color: Colors.redAccent,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      widget.currentDocument!.title ?? 'Documento PDF',
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                            return const Icon(Icons.broken_image_outlined, size: 50);
-                          },
-                        )
-                      : const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.image_search,
-                                size: 48,
-                                color: AppColors.textSecondary,
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Nenhum documento enviado',
-                                style: TextStyle(color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
-                        )),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildPdfPreview(fileName),
+                        ))
+                      : _buildEmptyPreview()),
             ),
             if (_isProcessingOcr)
               const Positioned.fill(
@@ -741,6 +747,156 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPdfPreview(String fileName) {
+    return Container(
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.025),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 280),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.picture_as_pdf_outlined,
+                  size: 30,
+                  color: AppColors.error,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                fileName,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'PDF anexado • toque para abrir',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.54),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyPreview() {
+    return Container(
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.025),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.upload_file_rounded,
+                  size: 30,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Nenhum arquivo anexado',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Envie um PDF ou uma imagem legível do documento.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.54),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DocumentTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+
+  const _DocumentTextField({
+    required this.controller,
+    required this.hintText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      style: AppTextStyles.bodyMedium.copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: AppTextStyles.bodyMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.36),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+        ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.035),
       ),
     );
   }
