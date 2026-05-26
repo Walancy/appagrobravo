@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
@@ -299,9 +300,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Faz upsert em public.users após autenticação social.
-  /// [authUser] é o usuário retornado pelo Supabase após signInWithIdToken.
-  /// [nome] pode ser nulo — neste caso usa o email como fallback.
-  /// [foto] e [email] vêm do provider.
+  /// - Primeira vez (INSERT): salva todos os campos inclusive nome.
+  /// - Relogin (UPDATE): atualiza apenas email e foto — NÃO sobrescreve nome
+  ///   para não substituir um nome real por um fallback de email.
   Future<void> _upsertPublicUser({
     required String id,
     required String nome,
@@ -309,9 +310,17 @@ class AuthRepositoryImpl implements AuthRepository {
     String? foto,
   }) async {
     try {
-      final now = DateTime.now().toUtc().toIso8601String();
-      await _supabaseClient.from('users').upsert(
-        {
+      // Verifica se já existe registro
+      final existing = await _supabaseClient
+          .from('users')
+          .select('nome')
+          .eq('id', id)
+          .maybeSingle();
+
+      if (existing == null) {
+        // Primeiro acesso — INSERT com todos os campos
+        final now = DateTime.now().toUtc().toIso8601String();
+        await _supabaseClient.from('users').insert({
           'id': id,
           'nome': nome.isNotEmpty ? nome : (email ?? 'Usuário'),
           'email': email,
@@ -319,14 +328,54 @@ class AuthRepositoryImpl implements AuthRepository {
           'tipouser': ['USER_APP'],
           'primeiroacesso': true,
           'created_at': now,
-        },
-        onConflict: 'id',
-        ignoreDuplicates: false, // atualiza se já existe
-      );
-      log('public.users upsert OK para $id');
+        });
+        log('public.users INSERT OK para $id (nome: $nome)');
+      } else {
+        // Relogin — atualiza apenas campos não-críticos, preserva nome existente
+        final updateData = <String, dynamic>{};
+        if (email != null) updateData['email'] = email;
+        if (foto != null) updateData['foto'] = foto;
+        if (updateData.isNotEmpty) {
+          await _supabaseClient
+              .from('users')
+              .update(updateData)
+              .eq('id', id);
+        }
+        log('public.users UPDATE OK para $id (preservou nome: ${existing['nome']})');
+      }
     } catch (e) {
-      // Não bloqueia o login — o perfil pode ser completado depois
       log('Aviso: falha no upsert de public.users: $e');
+    }
+  }
+
+  /// Salva o FCM token atual em public.users.
+  /// Chamado após login social para garantir que o token seja persistido
+  /// mesmo que setupFCM() tenha rodado antes do usuário logar.
+  Future<void> _persistFcmTokenIfAvailable() async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final messaging = FirebaseMessaging.instance;
+
+      // iOS: tenta obter token se APNS já estiver disponível
+      String? token;
+      try {
+        token = await messaging.getToken();
+      } catch (_) {
+        // APNS ainda não disponível — o onTokenRefresh cuidará depois
+        return;
+      }
+
+      if (token != null) {
+        await _supabaseClient
+            .from('users')
+            .update({'fcm_token': token})
+            .eq('id', userId);
+        log('FCM token salvo após login: $token');
+      }
+    } catch (e) {
+      log('Erro ao persistir FCM token após login: $e');
     }
   }
 
@@ -381,6 +430,10 @@ class AuthRepositoryImpl implements AuthRepository {
           email: googleUser.email,
           foto: foto,
         );
+
+        // Salva FCM token imediatamente após login (caso setupFCM() tenha
+        // rodado antes do login e userId fosse null naquele momento)
+        await _persistFcmTokenIfAvailable();
       }
 
       return const Right(null);
@@ -455,6 +508,10 @@ class AuthRepositoryImpl implements AuthRepository {
           email: email,
           foto: null, // Apple não fornece foto
         );
+
+        // Salva FCM token imediatamente após login (caso setupFCM() tenha
+        // rodado antes do login e userId fosse null naquele momento)
+        await _persistFcmTokenIfAvailable();
       }
 
       return const Right(null);

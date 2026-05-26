@@ -70,10 +70,38 @@ class _HomePageState extends State<HomePage> {
 
       final itineraryCubit = context.read<ItineraryCubit>();
       itineraryCubit.listenToGroupChanges();
+      // Dispara load se cubit está em initial OU error (singleton pode estar em error
+      // de sessão anterior — o BlocListener não dispara para estado já existente).
       itineraryCubit.state.maybeMap(
         initial: (_) => itineraryCubit.loadUserItinerary(),
+        error: (_) => itineraryCubit.loadUserItinerary(),
         orElse: () {},
       );
+
+      // Fallback extra: se já está em error/loaded no momento da montagem,
+      // o BlocListener não vai disparar — trata agora.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final state = context.read<ItineraryCubit>().state;
+        state.maybeWhen(
+          loaded: (group, _, __, pendingDocs, isNewAssignment) {
+            if (_selectedIndex == -1) {
+              final now = DateTime.now();
+              final endOfDay = DateTime(
+                group.endDate.year,
+                group.endDate.month,
+                group.endDate.day, 23, 59, 59,
+              );
+              final isActive = endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
+              setState(() => _selectedIndex = isActive ? 0 : 2);
+            }
+          },
+          error: (_) {
+            if (_selectedIndex == -1) setState(() => _selectedIndex = 2);
+          },
+          orElse: () {},
+        );
+      });
     });
   }
 
