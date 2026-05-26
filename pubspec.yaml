@@ -1,5 +1,5 @@
 name: agrobravo
-description: "A new Flutter project."
+description: "Aplicativo oficial da AgroBravo para gestão de viagens técnicas e integração de participantes."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -55,7 +55,7 @@ dependencies:
   dartz: ^0.10.1
   flutter_bloc: ^9.1.1
   image_picker: ^1.2.1
-  file_picker: ^6.1.1
+  file_picker: ^8.1.2
   intl: ^0.20.2
   swipe_to: ^1.0.6
   shared_preferences: ^2.5.2
