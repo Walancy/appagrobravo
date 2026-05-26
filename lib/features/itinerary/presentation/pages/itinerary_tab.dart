@@ -11,6 +11,7 @@ import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_list
 import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filter_modal.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/travel_data_page.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/mission_header_card.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
@@ -174,6 +175,13 @@ class _ItineraryContentState extends State<_ItineraryContent> {
               groupName: widget.group.name,
               startDate: widget.group.startDate,
               endDate: widget.group.endDate,
+              onTravelDataTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TravelDataPage(group: widget.group),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 20),

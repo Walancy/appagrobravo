@@ -86,6 +86,42 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
+  bool _canDeleteMessage(MessageEntity message) {
+    return message.type == MessageType.me &&
+        !message.isDeleted &&
+        DateTime.now().difference(message.timestamp) <= const Duration(hours: 1);
+  }
+
+  void _deleteSelectedMessages() {
+    context.read<ChatDetailCubit>().state.whenOrNull(
+      loaded: (messages) {
+        final selectedMessages = messages
+            .where((message) => _selectedMessageIds.contains(message.id))
+            .toList();
+        final canDeleteAll = selectedMessages.isNotEmpty &&
+            selectedMessages.every(_canDeleteMessage);
+
+        if (!canDeleteAll) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Só é possível apagar mensagens enviadas há até 1 hora.',
+              ),
+            ),
+          );
+          return;
+        }
+
+        context.read<ChatDetailCubit>().deleteMessages(
+          _selectedMessageIds.toList(),
+        );
+        setState(() {
+          _selectedMessageIds.clear();
+        });
+      },
+    );
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
@@ -222,14 +258,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                         ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          context.read<ChatDetailCubit>().deleteMessages(
-                            _selectedMessageIds.toList(),
-                          );
-                          setState(() {
-                            _selectedMessageIds.clear();
-                          });
-                        },
+                        onPressed: _deleteSelectedMessages,
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),

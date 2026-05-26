@@ -10,6 +10,7 @@ import '../../domain/repositories/itinerary_repository.dart';
 import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
+import '../../domain/entities/mission_material.dart';
 import '../models/itinerary_group_dto.dart';
 import '../models/itinerary_item_dto.dart';
 
@@ -172,6 +173,45 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     return [];
   }
 
+  Future<void> _saveMissionMaterialsToCache(
+    String groupId,
+    List<MissionMaterialEntity> materials,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = materials.map((material) => material.toJson()).toList();
+      await prefs.setString(
+        'cached_mission_materials_$groupId',
+        jsonEncode(jsonList),
+      );
+    } catch (e) {
+      debugPrint('Erro ao salvar materiais no cache: $e');
+    }
+  }
+
+  Future<List<MissionMaterialEntity>> _getMissionMaterialsFromCache(
+    String groupId,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('cached_mission_materials_$groupId');
+      if (jsonString != null) {
+        final List<dynamic> data = jsonDecode(jsonString);
+        return data
+            .map(
+              (json) => MissionMaterialEntity.fromJson(
+                Map<String, dynamic>.from(json as Map),
+              ),
+            )
+            .where((material) => material.url.isNotEmpty)
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Erro ao recuperar materiais do cache: $e');
+    }
+    return [];
+  }
+
   Future<void> _saveEmergencyContactsToCache(EmergencyContacts contacts) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -300,6 +340,40 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         'Erro ao buscar documentos pendentes online: $e. Tentando cache.',
       );
       final cached = await _getPendingDocsFromCache();
+      if (cached.isNotEmpty) {
+        return Right(cached);
+      }
+      return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<MissionMaterialEntity>>> getMissionMaterials(
+    String groupId,
+  ) async {
+    try {
+      final response = await _supabaseClient
+          .from('materiais')
+          .select('id, nome, tamanho, url, created_at, updated_at')
+          .eq('grupo_id', groupId)
+          .eq('status', 'Visivel')
+          .order('created_at', ascending: false);
+
+      final data = response as List<dynamic>;
+      final materials = data
+          .map(
+            (json) => MissionMaterialEntity.fromJson(
+              Map<String, dynamic>.from(json as Map),
+            ),
+          )
+          .where((material) => material.url.isNotEmpty)
+          .toList();
+
+      await _saveMissionMaterialsToCache(groupId, materials);
+      return Right(materials);
+    } catch (e) {
+      debugPrint('Erro ao buscar materiais online: $e. Tentando cache.');
+      final cached = await _getMissionMaterialsFromCache(groupId);
       if (cached.isNotEmpty) {
         return Right(cached);
       }

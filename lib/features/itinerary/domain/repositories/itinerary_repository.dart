@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../entities/itinerary_item.dart';
 import '../entities/itinerary_group.dart';
 import '../entities/emergency_contacts.dart';
+import '../entities/mission_material.dart';
 
 abstract class ItineraryRepository {
   Future<Either<Exception, ItineraryGroupEntity>> getGroupDetails(
@@ -15,6 +16,9 @@ abstract class ItineraryRepository {
   );
   Future<Either<Exception, String?>> getUserGroupId();
   Future<Either<Exception, List<String>>> getUserPendingDocuments();
+  Future<Either<Exception, List<MissionMaterialEntity>>> getMissionMaterials(
+    String groupId,
+  );
   Future<Either<Exception, EmergencyContacts>> getEmergencyContacts(
     double lat,
     double lng,

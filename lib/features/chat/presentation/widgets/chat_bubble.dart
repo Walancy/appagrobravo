@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/full_screen_image_viewer.dart';
 import 'package:swipe_to/swipe_to.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum ChatBubbleType { me, other, guide }
 
@@ -414,14 +415,7 @@ class ChatBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: textColor,
-                fontSize: 15,
-                height: 1.4,
-              ),
-            ),
+            _buildLinkifiedText(textColor),
             const SizedBox(height: 4),
             _buildTimeRow(textColor),
           ],
@@ -447,7 +441,7 @@ class ChatBubble extends StatelessWidget {
                 height: 1.4,
               ),
               children: [
-                TextSpan(text: message),
+                ..._buildMessageSpans(textColor),
                 WidgetSpan(
                   child: SizedBox(width: timeWidth + 4),
                 ),
@@ -462,6 +456,76 @@ class ChatBubble extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildLinkifiedText(Color textColor) {
+    return RichText(
+      text: TextSpan(
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: textColor,
+          fontSize: 15,
+          height: 1.4,
+        ),
+        children: _buildMessageSpans(textColor),
+      ),
+    );
+  }
+
+  List<InlineSpan> _buildMessageSpans(Color textColor) {
+    final spans = <InlineSpan>[];
+    final linkRegex = RegExp(
+      r'((?:https?:\/\/|www\.)[^\s<>()]+)',
+      caseSensitive: false,
+    );
+    var start = 0;
+
+    for (final match in linkRegex.allMatches(message)) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: message.substring(start, match.start)));
+      }
+
+      final rawUrl = match.group(0)!;
+      final url = rawUrl.startsWith(
+        RegExp(r'https?:\/\/', caseSensitive: false),
+      )
+          ? rawUrl
+          : 'https://$rawUrl';
+
+      spans.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () async {
+              final uri = Uri.tryParse(url);
+              if (uri != null) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: Text(
+              rawUrl,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isMe ? Colors.white : AppColors.secondary,
+                decoration: TextDecoration.underline,
+                decorationColor: isMe ? Colors.white : AppColors.secondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      start = match.end;
+    }
+
+    if (start < message.length) {
+      spans.add(TextSpan(text: message.substring(start)));
+    }
+
+    return spans.isEmpty ? [TextSpan(text: message)] : spans;
   }
 
   Widget _buildTimeRow(Color textColor) {
