@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItineraryGroupEntity {
 
- String get id; String get name; String? get missionName; DateTime get startDate; DateTime get endDate;
+ String get id; String get name; String? get missionName; DateTime get startDate; DateTime get endDate; String? get status;
 /// Create a copy of ItineraryGroupEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ItineraryGroupEntityCopyWith<ItineraryGroupEntity> get copyWith => _$ItineraryG
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryGroupEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryGroupEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate);
+int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate,status);
 
 @override
 String toString() {
-  return 'ItineraryGroupEntity(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate)';
+  return 'ItineraryGroupEntity(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate, status: $status)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $ItineraryGroupEntityCopyWith<$Res>  {
   factory $ItineraryGroupEntityCopyWith(ItineraryGroupEntity value, $Res Function(ItineraryGroupEntity) _then) = _$ItineraryGroupEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? missionName, DateTime startDate, DateTime endDate
+ String id, String name, String? missionName, DateTime startDate, DateTime endDate, String? status
 });
 
 
@@ -62,14 +62,15 @@ class _$ItineraryGroupEntityCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryGroupEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,Object? status = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,missionName: freezed == missionName ? _self.missionName : missionName // ignore: cast_nullable_to_non_nullable
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: null == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate,  String? status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItineraryGroupEntity() when $default != null:
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate,  String? status)  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryGroupEntity():
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? missionName,  DateTime startDate,  DateTime endDate,  String? status)?  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryGroupEntity() when $default != null:
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   return null;
 
 }
@@ -210,7 +211,7 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 
 
 class _ItineraryGroupEntity extends ItineraryGroupEntity {
-  const _ItineraryGroupEntity({required this.id, required this.name, this.missionName, required this.startDate, required this.endDate}): super._();
+  const _ItineraryGroupEntity({required this.id, required this.name, this.missionName, required this.startDate, required this.endDate, this.status}): super._();
   
 
 @override final  String id;
@@ -218,6 +219,7 @@ class _ItineraryGroupEntity extends ItineraryGroupEntity {
 @override final  String? missionName;
 @override final  DateTime startDate;
 @override final  DateTime endDate;
+@override final  String? status;
 
 /// Create a copy of ItineraryGroupEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ _$ItineraryGroupEntityCopyWith<_ItineraryGroupEntity> get copyWith => __$Itinera
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryGroupEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryGroupEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate);
+int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate,status);
 
 @override
 String toString() {
-  return 'ItineraryGroupEntity(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate)';
+  return 'ItineraryGroupEntity(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate, status: $status)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$ItineraryGroupEntityCopyWith<$Res> implements $ItineraryG
   factory _$ItineraryGroupEntityCopyWith(_ItineraryGroupEntity value, $Res Function(_ItineraryGroupEntity) _then) = __$ItineraryGroupEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? missionName, DateTime startDate, DateTime endDate
+ String id, String name, String? missionName, DateTime startDate, DateTime endDate, String? status
 });
 
 
@@ -266,14 +268,15 @@ class __$ItineraryGroupEntityCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryGroupEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,Object? status = freezed,}) {
   return _then(_ItineraryGroupEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,missionName: freezed == missionName ? _self.missionName : missionName // ignore: cast_nullable_to_non_nullable
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: null == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

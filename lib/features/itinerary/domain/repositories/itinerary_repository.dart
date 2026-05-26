@@ -3,6 +3,7 @@ import '../entities/itinerary_item.dart';
 import '../entities/itinerary_group.dart';
 import '../entities/emergency_contacts.dart';
 import '../entities/mission_material.dart';
+import '../entities/checklist_item.dart';
 
 abstract class ItineraryRepository {
   Future<Either<Exception, ItineraryGroupEntity>> getGroupDetails(
@@ -22,5 +23,16 @@ abstract class ItineraryRepository {
   Future<Either<Exception, EmergencyContacts>> getEmergencyContacts(
     double lat,
     double lng,
+  );
+
+  /// Returns all checklist items for the group, with isChecked set per current user.
+  Future<Either<Exception, List<ChecklistItemEntity>>> getChecklist(
+    String groupId,
+  );
+
+  /// Marks [itemId] as checked (insert) or unchecked (delete).
+  Future<Either<Exception, void>> toggleChecklistItem(
+    String itemId,
+    bool isChecked,
   );
 }

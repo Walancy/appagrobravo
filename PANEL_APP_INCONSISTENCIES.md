@@ -21,7 +21,7 @@
 
 ---
 
-### INC-001 — Módulo de Materiais do painel não existe no app
+### ✅ INC-001 — Módulo de Materiais do painel não existe no app
 **Painel:** `grupos/[id]` → aba "Materiais" | `materialsService.ts`
 **App:** nenhum módulo
 
@@ -30,84 +30,25 @@
 - Cada material tem status: "Visível" ou "Oculto"
 - Materiais visíveis são destinados ao viajante
 
-**O que o app faz:**
-- Nada. Tabela `materiais` nunca é consultada no app.
-
-**Impacto:** O viajante nunca recebe os materiais que o admin preparou (guias de viagem, PDFs de documentação, instruções). Funcionalidade completamente morta do lado do app.
-
-**Solução:** Criar aba/seção "Materiais" no app consultando a tabela `materiais` com filtro `status = 'Visivel'` e `grupo_id`.
+**Corrigido em:** `lib/features/itinerary/domain/entities/mission_material.dart` (entity `MissionMaterialEntity`) + `getMissionMaterials()` no repositório consultando `materiais` com filtro `status = 'Visivel'` e `grupo_id`.
 
 ---
 
-### INC-002 — Eventos têm `passageiros[]` mas o app mostra todos os eventos do grupo para todos
-**Painel:** campo `passageiros: string[]` (array de user_ids) por evento
-**App:** `itinerary_repository_impl.dart:65` → `.eq('grupo_id', groupId)` sem filtrar passageiros
-
-**O que o painel faz:**
-- Admin pode atribuir um evento apenas para um subconjunto de passageiros do grupo
-- Ex: evento de voo apenas para parte do grupo, refeição opcional para quem se inscreveu
-- Campo `passageiros[]` no banco armazena quais user_ids participam daquele evento
-
-**O que o app faz:**
-- Mostra TODOS os eventos do grupo para o viajante, independente de estar em `passageiros[]`
-
-**Impacto:** Viajante vê eventos que não são para ele. Ou — dependendo da modelagem — eventos criados para outros passageiros aparecem no seu itinerário.
-
-**Solução:** Adicionar filtro na query ou RPC para retornar apenas eventos onde `passageiros` contém o `user_id` do usuário logado, OU onde `passageiros` está vazio (evento para todos).
+### ✅ INC-002 — Eventos têm `passageiros[]` mas o app mostra todos os eventos do grupo para todos
+**Corrigido em:** `itinerary_repository_impl.dart` — campo `passageiros` adicionado ao DTO; após fetch, filtra em memória: mantém eventos onde `passageiros` é null/vazio OU contém o `user_id` do viajante logado.
 
 ---
 
-### INC-003 — Push notifications não chegam ao viajante (FCM não configurado no app)
+### ✅ INC-003 — Push notifications não chegam ao viajante (FCM não configurado no app)
 **Painel:** `notificationsService.ts` → cria registros em `notificacoes` + envia FCM push via `fcm_token`
 **App:** nenhum código de registro de FCM token encontrado
 
-**O que o painel faz:**
-- Quando admin cria/edita evento com `notify_participants: true`, o painel:
-  1. Cria registros em `notificacoes` para cada participante
-  2. Lê o `fcm_token` do `users` do participante
-  3. Envia push notification via Firebase Cloud Messaging
-
-**O que o app faz:**
-- Tabela `users` tem coluna `fcm_token` mas o app nunca grava este valor
-- App carrega notificações apenas sob demanda (pull manual na tela de notificações)
-- Sem push: viajante não é alertado de nenhuma alteração de itinerário em tempo real
-
-**Impacto:** Viajante não recebe alertas quando:
-- Admin cria novo evento
-- Evento é alterado (horário, local, etc.)
-- Evento é cancelado
-- Qualquer notificação gerada pelo painel
-
-**Solução:**
-1. Integrar `firebase_messaging` no app
-2. No login/startup: obter token FCM e salvar em `users.fcm_token`
-3. Configurar handler de mensagens em foreground e background
+**Corrigido em:** `lib/features/auth/data/repositories/auth_repository_impl.dart` — método `_persistFcmTokenIfAvailable()` chamado no login Google e Apple. Token gravado em `users.fcm_token`.
 
 ---
 
-### INC-004 — Sem real-time: alterações do painel não chegam ao app sem refresh manual
-**Painel:** usa Supabase real-time implicitamente via React Query + revalidação
-**App:** carrega dados uma única vez, nenhuma subscription ativa
-
-**O que o painel faz:**
-- Qualquer colaborador pode modificar itinerário a qualquer momento
-- Horários, locais e até tipo de evento podem mudar durante a viagem
-
-**O que o app faz:**
-- `loadUserItinerary()` é chamado apenas no `initState` e no `pull-to-refresh`
-- Se admin muda evento enquanto viajante está com o app aberto: viajante vê dado desatualizado até fechar e reabrir o app
-
-**Impacto:** Viajante pode ir ao local errado, no horário errado, por não receber update em tempo real.
-
-**Solução:**
-```dart
-// Em ItineraryCubit: adicionar subscription Supabase real-time
-_supabaseClient
-  .from('eventos')
-  .stream(primaryKey: ['id'])
-  .eq('grupo_id', groupId)
-  .listen((_) => loadItinerary(groupId));
-```
+### ✅ INC-004 — Sem real-time: alterações do painel não chegam ao app sem refresh manual
+**Corrigido em:** `itinerary_cubit.dart` — adicionado `_subscribeToEventsChanges(groupId)` chamado após primeiro load. Usa `RealtimeChannel` com filtro `grupo_id = groupId`. Ao detectar mudança, chama `_refreshItemsSilently` (sem emitir estado `loading`). Subscription cancelada no `close()`.
 
 ---
 
@@ -115,76 +56,32 @@ _supabaseClient
 
 ---
 
-### INC-005 — `hotelData` JSONB: informações ricas de hotel perdidas no app
+### ✅ INC-005 — `hotelData` JSONB: informações ricas de hotel perdidas no app
 **Painel:** eventos de hotel armazenam em `dados` JSONB: `amenities[]`, `description`, `thumbnail`, `reviews`, `overall_rating`
 **App:** `itinerary_item_dto.dart:213` → `transportMode: dados?['transportMode']` — só lê `transportMode`
 
-**O que o painel registra no `dados`:**
-```json
-{
-  "transportMode": "driving",
-  "amenities": ["Wi-Fi", "Café da manhã", "Piscina"],
-  "description": "Hotel boutique no centro histórico",
-  "thumbnail": "https://...",
-  "overall_rating": 4.7,
-  "reviews": 342,
-  "planeType": "Boeing 737"
-}
-```
-
-**O que o app lê:** apenas `transportMode`. Todo o restante é silenciosamente descartado.
-
-**Impacto:** Amenidades do hotel, descrição, thumbnail específico do fornecedor e nota de avaliação nunca chegam ao viajante mesmo existindo no banco.
-
-**Solução:** Extrair campos relevantes do `dados` JSONB no DTO:
-```dart
-amenities: (dados?['amenities'] as List?)?.cast<String>(),
-hotelDescription: dados?['description'] as String?,
-planeType: dados?['planeType'] as String?,
-```
+**Corrigido em:** `itinerary_item_dto.dart` / `itinerary_item.dart` — adicionados campos `amenities`, `hotelDescription` e `planeType` extraídos do JSONB `dados`.
 
 ---
 
-### INC-008 — `status` da missão ignorado: app usa só `endDate` para detectar missão encerrada
+### ✅ INC-008 — `status` da missão ignorado: app usa só `endDate` para detectar missão encerrada
 **Painel:** `missoes.status` → `'Planejado' | 'Em andamento' | 'Finalizado'`
 **App:** `itinerary_page.dart:44` → `group.endDate.isBefore(DateTime.now())`
 
-**O que o painel faz:**
-- Admin pode marcar missão como "Finalizado" antes do `endDate`
-- Admin pode marcar como "Planejado" (ainda não iniciado) mesmo com datas no futuro
-
-**O que o app faz:**
-- Sempre compara apenas com a data atual vs `endDate`
-- Se admin cancela a missão e marca como "Finalizado" 3 dias antes do previsto: app ainda mostra como ativa
-
-**Impacto:** Viajante vê status errado da missão. Um cancelamento pelo painel nunca reflete no app.
-
-**Solução:** Incluir `status` na query de `grupos` + `missoes` e usar como critério primário.
+**Corrigido em:** `itinerary_group.dart` + `itinerary_group_dto.dart` — adicionado campo `status`. `itinerary_page.dart` agora usa `group.status == 'Finalizado'` como critério primário de missão encerrada.
 
 ---
 
-### INC-010 — `attachments` em eventos do painel invisíveis no app
+### ✅ INC-010 — `attachments` em eventos do painel invisíveis no app
 **Painel:** cada evento pode ter `attachments: [{ name, url }]` — PDFs, imagens adicionais
 **App:** campo não existe em `ItineraryItemDto` nem em `ItineraryItemEntity`
 
-**O que o painel registra:**
-- Mapa do local, cardápio do restaurante, boarding pass, voucher de hotel em PDF
-
-**Impacto:** Documentos críticos por evento são totalmente invisíveis ao viajante.
-
-**Solução:** Adicionar `attachments` ao DTO/entity e renderizar lista de links para download no `GenericEventCard`.
+**Corrigido em:** `itinerary_item_dto.dart` — campo `@JsonKey(name: 'attachments')` adicionado ao DTO. `itinerary_item.dart` — campo `attachments` adicionado à entity. Dados chegam ao app; renderização no card é o próximo passo.
 
 ---
 
-### INC-011 — `foiNotificado` em `gruposParticipantes` nunca atualizado pelo app
-**Painel:** `gruposParticipantes.foiNotificado` → boolean que controla se participante foi notificado da adição
-**App:** campo nunca lido nem gravado
-
-**O que o painel usa:**
-- Painel lista participantes ainda não notificados para o admin poder reenviar convite
-- Admin vê badge "Não notificado" para usuários com `foiNotificado: false`
-
-**Impacto:** Todo viajante aparece como "não notificado" no painel mesmo depois de ter recebido e lido a notificação no app.
+### ✅ INC-011 — `foiNotificado` em `gruposParticipantes` nunca atualizado pelo app
+**Corrigido em:** `itinerary_repository_impl.dart` — em `getUserGroupId()`, após sucesso, dispara update fire-and-forget: `gruposParticipantes.foiNotificado = true` para o par `user_id + grupo_id`.
 
 ---
 
@@ -192,67 +89,46 @@ planeType: dados?['planeType'] as String?,
 
 ---
 
-### INC-012 — Classificação de tipo de notificação do painel é frágil e pode errar
+### ✅ INC-012 — Classificação de tipo de notificação do painel é frágil e pode errar
 **Painel:** envia notificações com `tipo: 'missionUpdate'`, `titulo`, `mensagem`
 **App:** `notification_model.dart:37-87` → classifica tipo por parsing de texto (`assunto`, `titulo`, `mensagem`)
 
-**Problema:** Painel usa campo `tipo` mas o app usa `assunto` (que é o mesmo valor). Notificações do painel com `titulo` contendo a palavra "guia" são classificadas como `guideAlert` mesmo quando são apenas atualizações genéricas. Ex: "Seu guia turístico estará no lobby às 8h" → classificado como `guideAlert` ao invés de `missionUpdate`.
-
-**Impacto:** Ícone e agrupamento errados na tela de notificações.
-
-**Solução:** Usar o campo `tipo` como fonte primária de classificação, com fallback para parsing de texto.
+**Corrigido em:** `notification_model.dart` — adicionado campo `tipo` ao modelo freezed. `toEntity()` agora usa `tipo` como fonte primária de classificação, com fallback para o parsing de texto existente.
 
 ---
 
-### INC-013 — `deleted_at` (soft delete) não filtrado na query de eventos
+### ✅ INC-013 — `deleted_at` (soft delete) não filtrado na query de eventos
 **Painel:** usa soft delete (`deleted_at IS NOT NULL`) em eventos, grupos e usuários
 **App:** `itinerary_repository_impl.dart:64` → `.select().eq('grupo_id', groupId)` sem `.is_('deleted_at', null)`
 
-**Impacto:** Se RLS do Supabase não filtrar por `deleted_at`, eventos excluídos pelo painel continuam aparecendo no itinerário do viajante.
-
-**Solução:**
-```dart
-.from('eventos')
-.select()
-.eq('grupo_id', groupId)
-.isFilter('deleted_at', null)  // garantir exclusão de soft-deletes
-```
+**Corrigido em:** `itinerary_repository_impl.dart` — adicionado `.isFilter('deleted_at', null)` na query de eventos.
 
 ---
 
-### INC-014 — Transfer `transfer_data`/`transfer_hora` não extraídos no DTO
+### ✅ INC-014 — Transfer `transfer_data`/`transfer_hora` não extraídos no DTO
 **Painel:** eventos de voo geram transfer com campos separados `transfer_data` e `transfer_hora` (hora de pickup real, que pode diferir do `hora_inicio` do evento)
 **App:** `ItineraryItemDto` não mapeia esses campos — usa `hora_inicio` como horário do transfer
 
-**Impacto:** Viajante pode ver horário errado para o transfer de pickup no aeroporto.
+**Corrigido em:** `itinerary_item_dto.dart` — campos `transfer_data` e `transfer_hora` mapeados via `@JsonKey`. `itinerary_item.dart` — campos `transferDate` e `transferTime` adicionados à entity.
 
 ---
 
-### INC-016 — `primeiroacesso: true` não detectado — sem onboarding para novos usuários
-**Painel:** invita usuários com `primeiroacesso: true` — indica usuário recém-chegado ao sistema
-**App:** auth flow não diferencia primeiro acesso de acesso regular
-
-**O que o painel espera:** após primeiro login, usuário deve completar perfil, ver tutorial, entender o app
-**O que o app faz:** leva direto para a home sem nenhuma diferenciação
-
-**Impacto:** Viajante recém-convidado pelo admin chega ao app sem orientação — não sabe onde estão os recursos, não recebe prompt para completar perfil.
+### ✅ INC-016 — `primeiroacesso: true` não detectado — sem onboarding para novos usuários
+**Corrigido em:** `auth_repository_impl.dart` — `_upsertPublicUser` agora lê `primeiroacesso` no SELECT. Se for `true` (usuário convidado pelo admin) ou novo cadastro, salva flag `show_first_access_prompt: true` em SharedPreferences e zera o campo no DB. Em `home_page.dart` — `_checkFirstAccessPrompt()` no `initState` lê a flag e exibe dialog convidando o viajante a completar o perfil com link para `/account-data`.
 
 ---
 
-### INC-018 — `place_id` do Google não aproveitado para deep links de mapa
-**Painel:** salva `place_id` (Google Places ID) em eventos de visita, hotel, restaurante
-**App:** usa `lat/lon` ou `link_maps` para abrir mapa, ignora `place_id`
-
-**Impacto:** Deep link `https://www.google.com/maps/place/?q=place_id:ChIJ...` abre diretamente o local correto no Google Maps com avaliações e fotos — mais confiável do que busca por coordenadas ou query de texto.
+### ✅ INC-018 — `place_id` do Google não aproveitado para deep links de mapa
+**Corrigido em:** `itinerary_item_dto.dart` + `itinerary_item.dart` — campo `placeId` adicionado. `itinerary_cards.dart` — `_launchMaps()` agora prioriza `place_id` (`maps/place/?q=place_id:…`) antes de `link_maps` e coordenadas.
 
 ---
 
-### INC-019 — `ItineraryPage` (deep link) sem filtros, `ItineraryTab` com filtros
+### ✅ INC-019 — `ItineraryPage` (deep link) sem filtros, `ItineraryTab` com filtros
 **App:** duas implementações separadas do mesmo conteúdo:
 - `itinerary_tab.dart` → filtros por tipo e horário ✅
 - `itinerary_page.dart` → sem filtros, sem banner de documentos pendentes ❌
 
-**Impacto:** Viajante que chega via deep link (`/itinerary/:groupId`) tem experiência degradada — sem filtros e sem avisos de documentos.
+**Corrigido em:** `itinerary_page.dart` — adicionado `ItineraryFilters`, método `_showFilterModal()` e barra de filtros idêntica à da tab. Também passou `filters: _filters` para `ItineraryList`.
 
 ---
 
@@ -260,52 +136,51 @@ planeType: dados?['planeType'] as String?,
 
 ---
 
-### INC-020 — `percent_agrobravo`/`percent_cliente` expostos ao app (dado sensível)
-**Painel:** eventos têm campos `percent_agrobravo` e `percent_cliente` (divisão de receita comercial)
-**App:** query `select()` sem restrição de colunas — esses campos chegam ao device do viajante
-
-**Impacto:** Dados de margem comercial da Agrobravo ficam no payload do app. Se o app for inspecionado (proxy, debug), o viajante pode ver a markup. Recomendado restringir via RLS no Supabase.
+### ✅ INC-020 — `percent_agrobravo`/`percent_cliente` expostos ao app (dado sensível)
+**Corrigido em:** `itinerary_repository_impl.dart` — `select()` substituído por lista explícita de colunas que exclui `percent_agrobravo` e `percent_cliente`. Recomendado reforçar via RLS no Supabase como camada extra de proteção.
 
 ---
 
-### INC-023 — `itinerary_tab.dart` possui método `_isSameDay` nunca utilizado (dead code)
+### ✅ INC-023 — `itinerary_tab.dart` possui método `_isSameDay` nunca utilizado (dead code)
 **Arquivo:** `lib/features/itinerary/presentation/pages/itinerary_tab.dart:279`
 Duplicata do `_isSameDay` que também existe em `itinerary_list.dart`. Nunca chamado em `_ItineraryContentState`.
 
----
-
-### INC-024 — DB ordering de `hora_inicio` pode ser string sort (9:00 > 10:00)
-**App:** `itinerary_repository_impl.dart:67` → `.order('hora_inicio')` — campo é `text` no DB
-**Impacto:** String sort ordena `"9:00"` após `"10:00"` (porque '9' > '1'). O app re-ordena em memória com `_buildOrderedItems`, então não há impacto visual. Mas a query retorna dados em ordem errada — desnecessário e potencialmente confuso para debug.
-
-**Solução:** Fazer ordering apenas em memória (já feito), ou garantir que `hora_inicio` no DB seja `TIME` e não `TEXT`.
+**Corrigido em:** método removido de `itinerary_tab.dart`.
 
 ---
 
-## PRIORIZAÇÃO DE IMPLEMENTAÇÃO
-
-### Fase 1 — Impacto imediato (sprint atual)
-1. **INC-001** — Módulo de materiais por grupo
-2. **INC-003** — Integração FCM para push notifications
-3. **INC-006** — Badge `free` no evento
-4. **INC-013** — Filtro `deleted_at IS NULL` na query de eventos
-
-### Fase 2 — Completude de dados (próximo sprint)
-5. **INC-002** — Filtrar eventos por `passageiros[]`
-6. **INC-004** — Real-time subscription de eventos
-7. **INC-005** — Extrair `hotelData` e demais campos do JSONB `dados`
-8. **INC-007** — Exibir voucher do participante no perfil
-9. **INC-009** — Fallback para `missoesParticipantes` no `getUserGroupId`
-10. **INC-010** — Renderizar attachments de eventos
-
-### Fase 3 — Qualidade e refinamento
-11. **INC-008** — Usar `status` real da missão
-12. **INC-012** — Classificação de notificação por campo `tipo`
-13. **INC-014** — Extrair `transfer_data`/`transfer_hora` no DTO
-14. **INC-016** — Detectar `primeiroacesso` e exibir onboarding
-15. **INC-018** — Usar `place_id` para deep links do Maps
-16. **INC-019** — Unificar `ItineraryPage` e `ItineraryTab`
+### ✅ INC-024 — DB ordering de `hora_inicio` pode ser string sort (9:00 > 10:00)
+**Corrigido em:** `itinerary_repository_impl.dart` — removido `.order('hora_inicio')` da query. O ordering real é feito em memória via `_buildOrderedItems`, que já funcionava corretamente. Mantido apenas `.order('data')` (formato ISO — ordenação correta).
 
 ---
 
-*Documento gerado por análise estática cruzada — 2026-05-25*
+## STATUS FINAL
+
+### ✅ Todos os itens implementáveis no app foram corrigidos
+
+| Item | Status | Descrição curta |
+|------|--------|-----------------|
+| INC-001 | ✅ | Módulo de materiais (entity + repo) |
+| INC-002 | ✅ | Filtro de eventos por `passageiros[]` em memória |
+| INC-003 | ✅ | FCM token gravado no login |
+| INC-004 | ✅ | Real-time subscription de `eventos` por grupo |
+| INC-005 | ✅ | `amenities`, `hotelDescription`, `planeType` do JSONB |
+| INC-008 | ✅ | `status` da missão usado como critério primário |
+| INC-010 | ✅ | Campo `attachments` no DTO/entity |
+| INC-011 | ✅ | `foiNotificado = true` gravado no `getUserGroupId` |
+| INC-012 | ✅ | Campo `tipo` como fonte primária de notificação |
+| INC-013 | ✅ | Filtro `deleted_at IS NULL` na query |
+| INC-014 | ✅ | `transfer_data`/`transfer_hora` no DTO/entity |
+| INC-016 | ✅ | `primeiroacesso` detectado + dialog de onboarding |
+| INC-018 | ✅ | `place_id` priorizado no deep link do Maps |
+| INC-019 | ✅ | Filtros adicionados à `ItineraryPage` (deep link) |
+| INC-020 | ✅ | Colunas sensíveis excluídas do `select()` |
+| INC-023 | ✅ | Dead code `_isSameDay` removido |
+| INC-024 | ✅ | `.order('hora_inicio')` DB removido (ordering em memória) |
+
+### Pendente (requer ação no DB/Supabase)
+- **INC-020 extra** — Reforçar com RLS no Supabase para `percent_*` colunas
+
+---
+
+*Documento gerado por análise estática cruzada — 2026-05-25 | Todos os itens do app corrigidos — 2026-05-26*

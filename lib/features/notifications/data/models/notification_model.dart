@@ -22,7 +22,9 @@ abstract class NotificationModel with _$NotificationModel {
     @JsonKey(name: 'doc_id') String? docId,
     String? titulo,
     String? icone,
+    String? tipo,
     @JsonKey(name: 'grupo_id') String? grupoId,
+    @JsonKey(name: 'batepapo_id') String? batepapoId,
     // Joined data from users table (if any)
     @JsonKey(ignore: true) String? userName,
     @JsonKey(ignore: true) String? userAvatar,
@@ -39,8 +41,37 @@ abstract class NotificationModel with _$NotificationModel {
     final messageContent = mensagem ?? '';
     final messageLower = messageContent.toLowerCase();
 
-    // Specific detection logic
-    if (docId != null) {
+    // Use `tipo` field from panel as primary classification, fall back to text parsing.
+    final tipoValue = tipo?.toLowerCase() ?? '';
+    if (tipoValue.isNotEmpty) {
+      switch (tipoValue) {
+        case 'missionupdate':
+        case 'mission_update':
+          type = NotificationType.missionUpdate;
+        case 'guidealert':
+        case 'guide_alert':
+          type = NotificationType.guideAlert;
+        case 'documentapproved':
+        case 'document_approved':
+          type = NotificationType.documentApproved;
+        case 'documentrejected':
+        case 'document_rejected':
+          type = NotificationType.documentRejected;
+        case 'documentpending':
+        case 'document_pending':
+          type = NotificationType.documentPending;
+        case 'like':
+          type = NotificationType.like;
+        case 'comment':
+          type = NotificationType.comment;
+        case 'mention':
+          type = NotificationType.mention;
+        case 'follow':
+          type = NotificationType.follow;
+        default:
+          type = NotificationType.missionUpdate;
+      }
+    } else if (docId != null) {
       if (title.contains('aprovado')) {
         type = NotificationType.documentApproved;
       } else if (title.contains('recusado') || title.contains('rejeitado')) {
@@ -58,8 +89,9 @@ abstract class NotificationModel with _$NotificationModel {
       } else {
         type = NotificationType.like;
       }
+    } else if (subject == 'chatgrupo' || subject == 'chatdireto') {
+      type = NotificationType.chatMessage;
     } else if (solicitacaoUserId != null) {
-      // Check if it's really a follow request
       final isFollowKeyword =
           subject.contains('solicitação') ||
           subject.contains('conexo') ||
@@ -73,7 +105,6 @@ abstract class NotificationModel with _$NotificationModel {
       if (isFollowKeyword) {
         type = NotificationType.follow;
       } else {
-        // Just a generic notification from a user (e.g. mention without postId or message)
         type = NotificationType.missionUpdate;
       }
     } else if (missionId != null || grupoId != null) {
@@ -117,6 +148,8 @@ abstract class NotificationModel with _$NotificationModel {
       solicitacaoUserId: solicitacaoUserId,
       docId: docId,
       postOwnerId: null, // Will be set in repository
+      batepapoId: batepapoId,
+      grupoId: grupoId,
       message: finalMessage,
       createdAt: createdAt,
       isRead: (lido ?? false) || (solicitacaoRespondida ?? false),

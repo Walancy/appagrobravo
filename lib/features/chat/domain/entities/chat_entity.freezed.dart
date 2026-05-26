@@ -489,7 +489,7 @@ return $default(_that.id,_that.name,_that.role,_that.avatarUrl,_that.unreadCount
 
 class _GuideEntity implements GuideEntity {
   const _GuideEntity({required this.id, required this.name, required this.role, this.avatarUrl, this.unreadCount = 0});
-
+  
 
 @override final  String id;
 @override final  String name;

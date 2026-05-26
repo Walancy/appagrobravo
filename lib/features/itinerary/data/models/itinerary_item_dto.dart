@@ -54,6 +54,15 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
     @JsonKey(name: 'preco') String? price,
     @JsonKey(name: 'site_url') String? siteUrl,
     @JsonKey(name: 'status') String? bookingStatus,
+    // Transfer pickup time (separate from event start)
+    @JsonKey(name: 'transfer_data') String? transferDate,
+    @JsonKey(name: 'transfer_hora') String? transferHora,
+    // Attachments (per-event docs/links)
+    @JsonKey(name: 'attachments') List<Map<String, dynamic>>? attachments,
+    // Per-passenger filter
+    @JsonKey(name: 'passageiros') List<dynamic>? passageiros,
+    // Google Places ID
+    @JsonKey(name: 'place_id') String? placeId,
   }) = _ItineraryItemDto;
 
   const ItineraryItemDto._();
@@ -208,9 +217,16 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
       transportMode: dados?['transportMode'] as String?,
       eventoReferenciaId: eventoReferenciaId,
       isDayAfterTransfer: isDayAfterTransfer,
+      transferDate: transferDate,
+      transferTime: transferHora,
       price: price,
       siteUrl: siteUrl,
       bookingStatus: bookingStatus,
+      amenities: (dados?['amenities'] as List?)?.cast<String>(),
+      hotelDescription: dados?['description'] as String?,
+      planeType: dados?['planeType'] as String?,
+      attachments: attachments,
+      placeId: placeId,
     );
   }
 }

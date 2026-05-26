@@ -11,6 +11,7 @@ import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/entities/mission_material.dart';
+import '../../domain/entities/checklist_item.dart';
 import '../models/itinerary_group_dto.dart';
 import '../models/itinerary_item_dto.dart';
 
@@ -60,21 +61,45 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     String groupId,
   ) async {
     try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+
       final response = await _supabaseClient
           .from('eventos')
-          .select()
+          // INC-020: explicit columns to exclude percent_agrobravo/percent_cliente
+          .select(
+            'id, titulo, nome, subtitulo, tipo, data, hora_inicio, hora_fim,'
+            ' hora_inicio2, descricao, localizacao, imagem, codigo_de,'
+            ' codigo_para, de, para, hora_de, hora_para, atrasado, atraso,'
+            ' motorista, duracao, tempo_deslocamento, conexoes, escalas,'
+            ' endereco, cidade, estado, pais, latitude, longitude, rating,'
+            ' estrelas, telefone, website, imagens, link_maps,'
+            ' evento_referencia_id, is_day_after_transfer, dados, preco,'
+            ' site_url, status, transfer_data, transfer_hora, attachments,'
+            ' passageiros, place_id, grupo_id, deleted_at',
+          )
           .eq('grupo_id', groupId)
-          .order('data')
-          .order('hora_inicio');
+          .isFilter('deleted_at', null)
+          .order('data');
+      // INC-024: hora_inicio is TEXT so DB sort is unreliable; app re-orders in memory
 
       final List<dynamic> data = response as List<dynamic>;
 
+      // INC-002: keep only events where passageiros is empty/null OR contains this user
+      final filtered = userId == null
+          ? data
+          : data.where((json) {
+              final p = json['passageiros'];
+              if (p == null) return true;
+              if (p is List) return p.isEmpty || p.contains(userId);
+              return true;
+            }).toList();
+
       // Cache the response
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cached_itinerary_$groupId', jsonEncode(data));
+      await prefs.setString('cached_itinerary_$groupId', jsonEncode(filtered));
 
-      final items = data
-          .map((json) => ItineraryItemDto.fromJson(json).toEntity())
+      final items = filtered
+          .map((json) => ItineraryItemDto.fromJson(json as Map<String, dynamic>).toEntity())
           .toList();
 
       return Right(items);
@@ -292,6 +317,17 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       await _saveUserGroupIdToCache(groupId);
 
+      // INC-011: mark participant as notified (fire-and-forget, non-blocking)
+      if (groupId != null) {
+        _supabaseClient
+            .from('gruposParticipantes')
+            .update({'foiNotificado': true})
+            .eq('user_id', userId)
+            .eq('grupo_id', groupId)
+            .then((_) {})
+            .catchError((_) {});
+      }
+
       return Right(groupId);
     } catch (e) {
       debugPrint('Erro ao buscar ID do grupo online: $e. Tentando cache.');
@@ -498,6 +534,81 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         return Right(cached);
       }
       return Left(Exception('Erro ao buscar contatos de emergência: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<ChecklistItemEntity>>> getChecklist(
+    String groupId,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+
+      // Fetch all items for this group
+      final itemsRes = await _supabaseClient
+          .from('grupoChecklist')
+          .select('id, grupo_id, titulo, created_at')
+          .eq('grupo_id', groupId)
+          .order('created_at');
+
+      final items = (itemsRes as List<dynamic>).map((row) {
+        return ChecklistItemEntity(
+          id: row['id'] as String,
+          groupId: row['grupo_id'] as String,
+          titulo: row['titulo'] as String,
+          createdAt: row['created_at'] != null
+              ? DateTime.tryParse(row['created_at'].toString())
+              : null,
+        );
+      }).toList();
+
+      if (items.isEmpty || userId == null) return Right(items);
+
+      // Fetch which items the current user has checked
+      final checkedRes = await _supabaseClient
+          .from('respostasGruposChecklist')
+          .select('checklist_id')
+          .eq('user_id', userId);
+
+      final checkedIds = (checkedRes as List<dynamic>)
+          .map((row) => row['checklist_id'] as String)
+          .toSet();
+
+      for (final item in items) {
+        item.isChecked = checkedIds.contains(item.id);
+      }
+
+      return Right(items);
+    } catch (e) {
+      return Left(Exception('Erro ao buscar checklist: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> toggleChecklistItem(
+    String itemId,
+    bool isChecked,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      if (isChecked) {
+        await _supabaseClient.from('respostasGruposChecklist').upsert({
+          'user_id': userId,
+          'checklist_id': itemId,
+        }, onConflict: 'user_id,checklist_id');
+      } else {
+        await _supabaseClient
+            .from('respostasGruposChecklist')
+            .delete()
+            .eq('user_id', userId)
+            .eq('checklist_id', itemId);
+      }
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Exception('Erro ao salvar checklist: $e'));
     }
   }
 }

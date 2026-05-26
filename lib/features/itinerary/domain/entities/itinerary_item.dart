@@ -63,10 +63,20 @@ abstract class ItineraryItemEntity with _$ItineraryItemEntity {
     String? transportMode,
     String? eventoReferenciaId,
     bool? isDayAfterTransfer,
+    String? transferDate,
+    String? transferTime,
     // Booking info
     String? price,
     String? siteUrl,
     String? bookingStatus,
+    // Hotel / venue extras (from dados JSONB)
+    List<String>? amenities,
+    String? hotelDescription,
+    String? planeType,
+    // Attachments (per-event documents/links from panel)
+    List<Map<String, dynamic>>? attachments,
+    // Google Places deep link
+    String? placeId,
   }) = _ItineraryItemEntity;
 
   const ItineraryItemEntity._();

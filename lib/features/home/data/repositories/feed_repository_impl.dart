@@ -907,26 +907,6 @@ class FeedRepositoryImpl implements FeedRepository {
         }
       }
 
-      // 3. Ensure a notification record exists for this mission addition
-      // BUG-007: replaced non-atomic check-then-insert with upsert to eliminate
-      // race condition that could create duplicate notifications.
-      try {
-        await _supabaseClient.from('notificacoes').upsert(
-          {
-            'user_id': userId,
-            'assunto': 'missionUpdate',
-            'grupo_id': groupResponse['grupo_id'],
-            'missao_id': missionData['id'],
-            'titulo': 'Nova Missão',
-            'mensagem': 'Você foi adicionado à missão ${missionData['nome']}!',
-            'lido': false,
-          },
-          ignoreDuplicates: true,
-        );
-      } catch (e) {
-        debugPrint('Erro ao criar notificação de missão: $e');
-      }
-
       final missionEntity = MissionEntity(
         id: missionId,
         name: missionData['nome'] ?? 'Sua Missão',

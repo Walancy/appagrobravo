@@ -53,6 +53,14 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     });
   }
 
+  Future<void> clearAll() async {
+    final result = await _repository.clearAll();
+    result.fold(
+      (failure) => null,
+      (_) => emit(const NotificationsState.loaded([])),
+    );
+  }
+
   Future<void> respondFollowRequest(String userId, bool accept) async {
     final result = await _repository.respondFollowRequest(userId, accept);
     result.fold(

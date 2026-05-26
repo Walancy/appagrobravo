@@ -40,7 +40,7 @@ class ItineraryTab extends StatelessWidget {
                   child: Text('Erro: $msg', textAlign: TextAlign.center),
                 ),
               ),
-              loaded: (group, items, travelTimes, pendingDocs, _) {
+              loaded: (group, items, travelTimes, pendingDocs) {
                 // BUG-013: use private _ItineraryContent to enforce BlocProvider requirement
                 return _ItineraryContent(
                   group: group,
@@ -184,7 +184,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
               },
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
           // Day Slider
           DaySlider(
@@ -199,7 +199,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
             },
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           // Filter Bar
           Padding(

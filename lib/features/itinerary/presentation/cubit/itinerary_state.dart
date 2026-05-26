@@ -8,8 +8,7 @@ class ItineraryState with _$ItineraryState {
     ItineraryGroupEntity group,
     List<ItineraryItemEntity> items,
     List<Map<String, dynamic>> travelTimes,
-    List<String> pendingDocs, {
-    @Default(false) bool isNewAssignment,
-  }) = _Loaded;
+    List<String> pendingDocs,
+  ) = _Loaded;
   const factory ItineraryState.error(String message) = _Error;
 }

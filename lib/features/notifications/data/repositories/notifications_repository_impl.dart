@@ -28,6 +28,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
               'solicitacaoUserId': e.solicitacaoUserId,
               'docId': e.docId,
               'postOwnerId': e.postOwnerId,
+              'batepapoId': e.batepapoId,
+              'grupoId': e.grupoId,
               'message': e.message,
               'createdAt': e.createdAt.toIso8601String(),
               'isRead': e.isRead,
@@ -57,6 +59,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
             solicitacaoUserId: json['solicitacaoUserId'],
             docId: json['docId'],
             postOwnerId: json['postOwnerId'],
+            batepapoId: json['batepapoId'],
+            grupoId: json['grupoId'],
             message: json['message'],
             createdAt: DateTime.parse(json['createdAt']),
             isRead: json['isRead'] ?? false,
@@ -189,6 +193,27 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       return const Right(unit);
     } catch (e) {
       return Left(Exception('Erro ao marcar todas como lidas: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Unit>> clearAll() async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      await _supabaseClient
+          .from('notificacoes')
+          .delete()
+          .eq('user_id', userId);
+
+      // Limpa cache local
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('cached_notifications');
+
+      return const Right(unit);
+    } catch (e) {
+      return Left(Exception('Erro ao limpar notificações: $e'));
     }
   }
 

@@ -313,7 +313,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Verifica se já existe registro
       final existing = await _supabaseClient
           .from('users')
-          .select('nome')
+          .select('nome, primeiroacesso')
           .eq('id', id)
           .maybeSingle();
 
@@ -326,15 +326,27 @@ class AuthRepositoryImpl implements AuthRepository {
           'email': email,
           'foto': foto,
           'tipouser': ['USER_APP'],
-          'primeiroacesso': true,
+          'primeiroacesso': false,
           'created_at': now,
         });
         log('public.users INSERT OK para $id (nome: $nome)');
+        // INC-016: new self-registered user — flag for onboarding
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('show_first_access_prompt', true);
       } else {
         // Relogin — atualiza apenas campos não-críticos, preserva nome existente
         final updateData = <String, dynamic>{};
         if (email != null) updateData['email'] = email;
         if (foto != null) updateData['foto'] = foto;
+
+        // INC-016: admin-invited user has primeiroacesso = true — detect and clear
+        final isFirstAccess = existing['primeiroacesso'] == true;
+        if (isFirstAccess) {
+          updateData['primeiroacesso'] = false;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('show_first_access_prompt', true);
+        }
+
         if (updateData.isNotEmpty) {
           await _supabaseClient
               .from('users')

@@ -81,7 +81,7 @@ class ChatBubble extends StatelessWidget {
 
     // Spacing: to visually align bubbles, add a placeholder on the opposite side
     // so the max-width constraint works symmetrically.
-    final avatarPlaceholderWidth = (!isMe && showAvatar) ? 44.0 : 0.0;
+    final avatarPlaceholderWidth = (!isMe && showAvatar && isGroupChat) ? 44.0 : 0.0;
 
     return SwipeTo(
       onRightSwipe: (details) => onReply?.call(),
@@ -115,8 +115,8 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
 
-              // Avatar (left side, other messages)
-              if (!isMe) ...[
+              // Avatar (left side, other messages — only in group chats)
+              if (!isMe && isGroupChat) ...[
                 SizedBox(
                   width: 36,
                   child: showAvatar

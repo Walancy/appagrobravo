@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error() when error != null:
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error():
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs,  bool isNewAssignment)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( ItineraryGroupEntity group,  List<ItineraryItemEntity> items,  List<Map<String, dynamic>> travelTimes,  List<String> pendingDocs)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs,_that.isNewAssignment);case _Error() when error != null:
+return loaded(_that.group,_that.items,_that.travelTimes,_that.pendingDocs);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,7 +257,7 @@ String toString() {
 
 
 class _Loaded implements ItineraryState {
-  const _Loaded(this.group, final  List<ItineraryItemEntity> items, final  List<Map<String, dynamic>> travelTimes, final  List<String> pendingDocs, {this.isNewAssignment = false}): _items = items,_travelTimes = travelTimes,_pendingDocs = pendingDocs;
+  const _Loaded(this.group, final  List<ItineraryItemEntity> items, final  List<Map<String, dynamic>> travelTimes, final  List<String> pendingDocs): _items = items,_travelTimes = travelTimes,_pendingDocs = pendingDocs;
   
 
  final  ItineraryGroupEntity group;
@@ -282,7 +282,6 @@ class _Loaded implements ItineraryState {
   return EqualUnmodifiableListView(_pendingDocs);
 }
 
-@JsonKey() final  bool isNewAssignment;
 
 /// Create a copy of ItineraryState
 /// with the given fields replaced by the non-null parameter values.
@@ -294,16 +293,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.group, group) || other.group == group)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._travelTimes, _travelTimes)&&const DeepCollectionEquality().equals(other._pendingDocs, _pendingDocs)&&(identical(other.isNewAssignment, isNewAssignment) || other.isNewAssignment == isNewAssignment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.group, group) || other.group == group)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._travelTimes, _travelTimes)&&const DeepCollectionEquality().equals(other._pendingDocs, _pendingDocs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,group,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_travelTimes),const DeepCollectionEquality().hash(_pendingDocs),isNewAssignment);
+int get hashCode => Object.hash(runtimeType,group,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_travelTimes),const DeepCollectionEquality().hash(_pendingDocs));
 
 @override
 String toString() {
-  return 'ItineraryState.loaded(group: $group, items: $items, travelTimes: $travelTimes, pendingDocs: $pendingDocs, isNewAssignment: $isNewAssignment)';
+  return 'ItineraryState.loaded(group: $group, items: $items, travelTimes: $travelTimes, pendingDocs: $pendingDocs)';
 }
 
 
@@ -314,7 +313,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $ItineraryStateCopyWith<$
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- ItineraryGroupEntity group, List<ItineraryItemEntity> items, List<Map<String, dynamic>> travelTimes, List<String> pendingDocs, bool isNewAssignment
+ ItineraryGroupEntity group, List<ItineraryItemEntity> items, List<Map<String, dynamic>> travelTimes, List<String> pendingDocs
 });
 
 
@@ -331,14 +330,13 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? group = null,Object? items = null,Object? travelTimes = null,Object? pendingDocs = null,Object? isNewAssignment = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? group = null,Object? items = null,Object? travelTimes = null,Object? pendingDocs = null,}) {
   return _then(_Loaded(
 null == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
 as ItineraryGroupEntity,null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<ItineraryItemEntity>,null == travelTimes ? _self._travelTimes : travelTimes // ignore: cast_nullable_to_non_nullable
 as List<Map<String, dynamic>>,null == pendingDocs ? _self._pendingDocs : pendingDocs // ignore: cast_nullable_to_non_nullable
-as List<String>,isNewAssignment: null == isNewAssignment ? _self.isNewAssignment : isNewAssignment // ignore: cast_nullable_to_non_nullable
-as bool,
+as List<String>,
   ));
 }
 

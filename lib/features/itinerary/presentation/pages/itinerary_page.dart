@@ -9,6 +9,7 @@ import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/travel_data_page.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/day_slider.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filter_modal.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_list.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/mission_header_card.dart';
 
@@ -41,10 +42,10 @@ class ItineraryPage extends StatelessWidget {
             return state.maybeWhen(
               loading: () => const ItineraryShimmer(),
               error: (msg) => Center(child: Text('Erro: $msg')),
-              loaded: (group, items, travelTimes, pendingDocs, _) {
-                final isEnded = group.endDate.isBefore(DateTime.now());
-                // BUG-009: pendingDocs was received but never used in build;
-                // document pending state is handled via DocumentsCubit in ItineraryTab.
+              loaded: (group, items, travelTimes, pendingDocs) {
+                final isEnded =
+                    group.status == 'Finalizado' ||
+                    group.endDate.isBefore(DateTime.now());
                 return _ItineraryContent(
                   group: group,
                   items: items,
@@ -80,6 +81,7 @@ class _ItineraryContent extends StatefulWidget {
 
 class _ItineraryContentState extends State<_ItineraryContent> {
   DateTime? _selectedDate;
+  ItineraryFilters _filters = const ItineraryFilters();
 
   @override
   void initState() {
@@ -103,6 +105,21 @@ class _ItineraryContentState extends State<_ItineraryContent> {
         _selectedDate!.month,
         _selectedDate!.day,
       );
+    }
+  }
+
+  void _showFilterModal() async {
+    final result = await showDialog<ItineraryFilters>(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: ItineraryFilterModal(initialFilters: _filters),
+      ),
+    );
+    if (result != null) {
+      setState(() => _filters = result);
     }
   }
 
@@ -153,11 +170,81 @@ class _ItineraryContentState extends State<_ItineraryContent> {
             setState(() => _selectedDate = date);
           },
         ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _filters.isActive
+                    ? '${_filters.count} filtros aplicados'
+                    : 'Sem filtros aplicados',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: _filters.isActive
+                      ? AppColors.primary
+                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontWeight: _filters.isActive
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+              GestureDetector(
+                onTap: _showFilterModal,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _filters.isActive
+                        ? AppColors.primary.withOpacity(0.1)
+                        : (Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF1E1E1E)
+                              : const Color(0xFFF2F4F7)),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _filters.isActive
+                          ? AppColors.primary
+                          : Theme.of(context).dividerColor.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.filter_list,
+                        size: 16,
+                        color: _filters.isActive
+                            ? AppColors.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Filtrar',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _filters.isActive
+                              ? AppColors.primary
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         Expanded(
           child: ItineraryList(
             items: widget.items,
             travelTimes: widget.travelTimes,
             selectedDate: _selectedDate,
+            filters: _filters,
           ),
         ),
       ],

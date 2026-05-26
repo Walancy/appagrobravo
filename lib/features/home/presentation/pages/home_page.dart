@@ -32,9 +32,9 @@ import 'package:agrobravo/features/home/presentation/pages/community_tab.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
-import 'package:agrobravo/features/home/presentation/widgets/welcome_mission_modal.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -45,11 +45,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = -1;
-  static bool _isShowingWelcomeModal = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkFirstAccessPrompt();
+
       final documentsCubit = context.read<DocumentsCubit>();
       documentsCubit.state.maybeMap(
         initial: (_) => documentsCubit.loadDocuments(),
@@ -78,7 +79,7 @@ class _HomePageState extends State<HomePage> {
         if (!mounted) return;
         final state = context.read<ItineraryCubit>().state;
         state.maybeWhen(
-          loaded: (group, _, __, pendingDocs, isNewAssignment) {
+          loaded: (group, _, __, pendingDocs) {
             if (_selectedIndex == -1) {
               final now = DateTime.now();
               final endOfDay = DateTime(
@@ -104,6 +105,37 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _checkFirstAccessPrompt() async {
+    final prefs = await SharedPreferences.getInstance();
+    final show = prefs.getBool('show_first_access_prompt') ?? false;
+    if (!show || !mounted) return;
+    await prefs.remove('show_first_access_prompt');
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Bem-vindo(a)!'),
+        content: const Text(
+          'Para aproveitar ao máximo a sua viagem, complete seu perfil com '
+          'dados pessoais, restrições alimentares e contato de emergência.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Agora não'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.push('/account-data');
+            },
+            child: const Text('Completar perfil'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -113,7 +145,7 @@ class _HomePageState extends State<HomePage> {
           BlocListener<ItineraryCubit, ItineraryState>(
             listener: (context, state) {
               state.maybeWhen(
-                loaded: (group, _, __, pendingDocs, isNewAssignment) {
+                loaded: (group, _, __, pendingDocs) {
                   final now = DateTime.now();
                   final endOfDay = DateTime(
                     group.endDate.year,
@@ -131,27 +163,6 @@ class _HomePageState extends State<HomePage> {
                   } else if (!isActive &&
                       (_selectedIndex == 0 || _selectedIndex == 1)) {
                     setState(() => _selectedIndex = 2);
-                  }
-                  
-                  if (isNewAssignment) {
-                    _isShowingWelcomeModal = true;
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (dialogContext) => WelcomeMissionModal(
-                        group: group,
-                        pendingDocsCount: pendingDocs.length,
-                        onAddDocumentsTap: () {
-                          Navigator.pop(dialogContext);
-                          _isShowingWelcomeModal = false;
-                          context.push('/documents');
-                        },
-                        onContinueTap: () {
-                          Navigator.pop(dialogContext);
-                          _isShowingWelcomeModal = false;
-                        },
-                      ),
-                    );
                   }
                 },
                 error: (_) {
@@ -274,45 +285,36 @@ class _HomePageState extends State<HomePage> {
         BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, state) {
             final hasUnread = state.hasUnread;
-            return BlocBuilder<ProfileCubit, ProfileState>(
-              builder: (context, profileState) {
-                final isComplete = profileState.maybeMap(
-                  loaded: (s) => s.profile.isComplete,
-                  orElse: () => true,
-                );
-                final shouldShowBadge = hasUnread || !isComplete;
 
-                return IconButton(
-                  onPressed: () => context.push('/notifications'),
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Icon(
-                        Icons.notifications_none_rounded,
-                        size: 28,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      if (shouldShowBadge)
-                        Positioned(
-                          right: 2,
-                          top: 2,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.surface,
-                                width: 1.5,
-                              ),
-                            ),
+            return IconButton(
+              onPressed: () => context.push('/notifications'),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    Icons.notifications_none_rounded,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  if (hasUnread)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.surface,
+                            width: 1.5,
                           ),
                         ),
-                    ],
-                  ),
-                );
-              },
+                      ),
+                    ),
+                ],
+              ),
             );
           },
         ),
@@ -522,7 +524,7 @@ class _HomePageState extends State<HomePage> {
     return BlocBuilder<ItineraryCubit, ItineraryState>(
       builder: (context, itineraryState) {
         bool showTripTabs = itineraryState.maybeWhen(
-          loaded: (group, _, __, ___, ____) {
+          loaded: (group, _, __, ___) {
             final now = DateTime.now();
             final endOfDay = DateTime(
               group.endDate.year,

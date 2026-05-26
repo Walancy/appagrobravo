@@ -2,6 +2,7 @@ import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/checklist_item.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/mission_material.dart';
 import 'package:agrobravo/features/itinerary/domain/repositories/itinerary_repository.dart';
@@ -23,20 +24,24 @@ class TravelDataPage extends StatefulWidget {
 class _TravelDataPageState extends State<TravelDataPage> {
   late final ItineraryRepository _repository;
   late Future<Either<Exception, List<MissionMaterialEntity>>> _materialsFuture;
+  late Future<Either<Exception, List<ChecklistItemEntity>>> _checklistFuture;
 
   @override
   void initState() {
     super.initState();
     _repository = GetIt.I<ItineraryRepository>();
     _materialsFuture = _repository.getMissionMaterials(widget.group.id);
+    _checklistFuture = _repository.getChecklist(widget.group.id);
   }
 
-  Future<void> _refreshMaterials() async {
-    final future = _repository.getMissionMaterials(widget.group.id);
+  Future<void> _refresh() async {
+    final matFuture = _repository.getMissionMaterials(widget.group.id);
+    final checkFuture = _repository.getChecklist(widget.group.id);
     setState(() {
-      _materialsFuture = future;
+      _materialsFuture = matFuture;
+      _checklistFuture = checkFuture;
     });
-    await future;
+    await Future.wait([matFuture, checkFuture]);
   }
 
   @override
@@ -63,9 +68,7 @@ class _TravelDataPageState extends State<TravelDataPage> {
           );
 
           return RefreshIndicator(
-            onRefresh: () async {
-              await _refreshMaterials();
-            },
+            onRefresh: _refresh,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
@@ -77,6 +80,47 @@ class _TravelDataPageState extends State<TravelDataPage> {
               children: [
                 _TripSummary(group: widget.group),
                 const SizedBox(height: AppSpacing.lg),
+
+                // Checklist section
+                FutureBuilder<Either<Exception, List<ChecklistItemEntity>>>(
+                  future: _checklistFuture,
+                  builder: (context, checkSnap) {
+                    final checklistResult = checkSnap.data;
+                    final checklist = checklistResult?.fold(
+                          (_) => <ChecklistItemEntity>[],
+                          (items) => items,
+                        ) ??
+                        <ChecklistItemEntity>[];
+                    final isLoadingChecklist =
+                        checkSnap.connectionState == ConnectionState.waiting;
+
+                    if (isLoadingChecklist || checklist.isNotEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Checklist da missão',
+                            style: AppTextStyles.h3.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          if (isLoadingChecklist)
+                            const _MaterialsLoading()
+                          else
+                            _ChecklistSection(
+                              items: checklist,
+                              repository: _repository,
+                            ),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
                 Text(
                   'Documentos da missão',
                   style: AppTextStyles.h3.copyWith(
@@ -310,6 +354,182 @@ class _DateMetric extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Checklist
+// ---------------------------------------------------------------------------
+
+class _ChecklistSection extends StatefulWidget {
+  final List<ChecklistItemEntity> items;
+  final ItineraryRepository repository;
+
+  const _ChecklistSection({required this.items, required this.repository});
+
+  @override
+  State<_ChecklistSection> createState() => _ChecklistSectionState();
+}
+
+class _ChecklistSectionState extends State<_ChecklistSection> {
+  late final List<ChecklistItemEntity> _items;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = widget.items;
+  }
+
+  Future<void> _toggle(ChecklistItemEntity item) async {
+    final newValue = !item.isChecked;
+    setState(() => item.isChecked = newValue);
+
+    final result = await widget.repository.toggleChecklistItem(item.id, newValue);
+    result.fold(
+      (_) {
+        // revert on error
+        if (mounted) setState(() => item.isChecked = !newValue);
+      },
+      (_) {},
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final checked = _items.where((i) => i.isChecked).length;
+    final total = _items.length;
+    final progress = total == 0 ? 0.0 : checked / total;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Progress header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 6,
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  '$checked/$total',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1, thickness: 1),
+
+          // Items
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _items.length,
+            separatorBuilder: (_, __) =>
+                const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+            itemBuilder: (context, index) {
+              final item = _items[index];
+              return InkWell(
+                onTap: () => _toggle(item),
+                borderRadius: index == _items.length - 1
+                    ? const BorderRadius.vertical(
+                        bottom: Radius.circular(AppSpacing.radiusLg),
+                      )
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm + 2,
+                  ),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: item.isChecked
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          border: Border.all(
+                            color: item.isChecked
+                                ? AppColors.primary
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.35),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: item.isChecked
+                            ? const Icon(Icons.check, size: 14, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(
+                          item.titulo,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: item.isChecked
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.45)
+                                : Theme.of(context).colorScheme.onSurface,
+                            decoration: item.isChecked
+                                ? TextDecoration.lineThrough
+                                : null,
+                            decorationColor: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.45),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Materials
+// ---------------------------------------------------------------------------
 
 class _MaterialTile extends StatelessWidget {
   final MissionMaterialEntity material;

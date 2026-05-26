@@ -6,7 +6,6 @@ import '../../domain/entities/itinerary_group.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/repositories/itinerary_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer' as dev;
 
@@ -17,6 +16,8 @@ part 'itinerary_cubit.freezed.dart';
 class ItineraryCubit extends Cubit<ItineraryState> {
   final ItineraryRepository _repository;
   RealtimeChannel? _groupSubscription;
+  RealtimeChannel? _eventsSubscription;
+  String? _currentGroupId;
 
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
@@ -31,8 +32,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     return message.replaceAll('Exception: ', '');
   }
 
-  Future<void> loadItinerary(String groupId, {bool isNewAssignment = false}) async {
+  Future<void> loadItinerary(String groupId) async {
     emit(const ItineraryState.loading());
+    _currentGroupId = groupId;
 
     final groupResult = await _repository.getGroupDetails(groupId);
 
@@ -58,12 +60,53 @@ class ItineraryCubit extends Cubit<ItineraryState> {
               items,
               travelTimes,
               pendingDocs,
-              isNewAssignment: isNewAssignment,
             ));
+
+            // INC-004: subscribe to real-time changes for this group's events
+            _subscribeToEventsChanges(groupId);
           },
         );
       },
     );
+  }
+
+  /// Silently refreshes only the itinerary items (no loading spinner).
+  Future<void> _refreshItemsSilently(String groupId) async {
+    final currentState = state;
+    final itemsResult = await _repository.getItinerary(groupId);
+    itemsResult.fold(
+      (_) {}, // ignore error on background refresh
+      (newItems) {
+        currentState.maybeWhen(
+          loaded: (group, _, travelTimes, pendingDocs) {
+            emit(ItineraryState.loaded(group, newItems, travelTimes, pendingDocs));
+          },
+          orElse: () {},
+        );
+      },
+    );
+  }
+
+  void _subscribeToEventsChanges(String groupId) {
+    _eventsSubscription?.unsubscribe();
+    final supabase = Supabase.instance.client;
+    _eventsSubscription = supabase
+        .channel('public:eventos:$groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'eventos',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'grupo_id',
+            value: groupId,
+          ),
+          callback: (_) {
+            dev.log('Realtime: evento changed in group $groupId. Refreshing...');
+            _refreshItemsSilently(groupId);
+          },
+        )
+        .subscribe();
   }
 
   Future<void> loadUserItinerary() async {
@@ -78,15 +121,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
             const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
           );
         } else {
-          final prefs = await SharedPreferences.getInstance();
-          final lastGroupId = prefs.getString('last_notified_group_id');
-          final isNewAssignment = lastGroupId != null && lastGroupId != groupId;
-
-          if (isNewAssignment || lastGroupId == null) {
-             await prefs.setString('last_notified_group_id', groupId);
-          }
-
-          await loadItinerary(groupId, isNewAssignment: isNewAssignment);
+          await loadItinerary(groupId);
         }
       },
     );
@@ -127,6 +162,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   @override
   Future<void> close() {
     _groupSubscription?.unsubscribe();
+    _eventsSubscription?.unsubscribe();
     return super.close();
   }
 }

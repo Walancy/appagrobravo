@@ -59,6 +59,13 @@ _ItineraryItemDto _$ItineraryItemDtoFromJson(Map<String, dynamic> json) =>
       price: json['preco'] as String?,
       siteUrl: json['site_url'] as String?,
       bookingStatus: json['status'] as String?,
+      transferDate: json['transfer_data'] as String?,
+      transferHora: json['transfer_hora'] as String?,
+      attachments: (json['attachments'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
+      passageiros: json['passageiros'] as List<dynamic>?,
+      placeId: json['place_id'] as String?,
     );
 
 Map<String, dynamic> _$ItineraryItemDtoToJson(_ItineraryItemDto instance) =>
@@ -106,4 +113,9 @@ Map<String, dynamic> _$ItineraryItemDtoToJson(_ItineraryItemDto instance) =>
       'preco': instance.price,
       'site_url': instance.siteUrl,
       'status': instance.bookingStatus,
+      'transfer_data': instance.transferDate,
+      'transfer_hora': instance.transferHora,
+      'attachments': instance.attachments,
+      'passageiros': instance.passageiros,
+      'place_id': instance.placeId,
     };

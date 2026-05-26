@@ -13,6 +13,7 @@ _ItineraryGroupDto _$ItineraryGroupDtoFromJson(Map<String, dynamic> json) =>
       missionName: json['missionName'] as String?,
       startDate: DateTime.parse(json['data_inicio'] as String),
       endDate: DateTime.parse(json['data_fim'] as String),
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$ItineraryGroupDtoToJson(_ItineraryGroupDto instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$ItineraryGroupDtoToJson(_ItineraryGroupDto instance) =>
       'missionName': instance.missionName,
       'data_inicio': instance.startDate.toIso8601String(),
       'data_fim': instance.endDate.toIso8601String(),
+      'status': instance.status,
     };

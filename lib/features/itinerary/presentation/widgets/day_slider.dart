@@ -64,12 +64,12 @@ class _DaySliderState extends State<DaySlider> {
       (d) => Utils.isSameDay(d, widget.selectedDate!),
     );
     if (index != -1) {
-      // 50 is width, 12 is separator
-      double offset = index * (50.0 + 12.0);
+      // 44 is width, 10 is separator
+      double offset = index * (44.0 + 10.0);
 
       if (_scrollController.hasClients) {
         final viewportWidth = _scrollController.position.viewportDimension;
-        final itemCenter = offset + (50.0 / 2);
+        final itemCenter = offset + (44.0 / 2);
         offset = itemCenter - (viewportWidth / 2);
 
         if (offset < _scrollController.position.minScrollExtent) {
@@ -102,15 +102,15 @@ class _DaySliderState extends State<DaySlider> {
     final today = DateTime(now.year, now.month, now.day);
 
     return SizedBox(
-      height: 90,
+      height: 72,
       child: ListView.separated(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
         clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _days.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final date = _days[index];
           final dayDate = DateTime(date.year, date.month, date.day);
@@ -138,10 +138,10 @@ class _DaySliderState extends State<DaySlider> {
             onTap: () => widget.onDateSelected(date),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 50,
+              width: 44,
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
                       ? AppColors.primary
@@ -169,7 +169,7 @@ class _DaySliderState extends State<DaySlider> {
                           : FontWeight.w400,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     date.day.toString(),
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -179,7 +179,7 @@ class _DaySliderState extends State<DaySlider> {
                               alpha: isPast ? 0.4 : 1.0,
                             ),
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
                 ],

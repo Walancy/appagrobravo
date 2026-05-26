@@ -355,7 +355,12 @@ class GenericEventCard extends StatelessWidget {
 
   Future<void> _launchMaps() async {
     Uri? uri;
-    if (item.linkMaps != null && item.linkMaps!.isNotEmpty) {
+    // INC-018: place_id deeplink is most reliable (opens correct venue with reviews)
+    if (item.placeId != null && item.placeId!.isNotEmpty) {
+      uri = Uri.parse(
+        'https://www.google.com/maps/place/?q=place_id:${item.placeId}',
+      );
+    } else if (item.linkMaps != null && item.linkMaps!.isNotEmpty) {
       uri = Uri.tryParse(item.linkMaps!);
     } else if (item.latitude != null && item.longitude != null) {
       uri = Uri.parse(

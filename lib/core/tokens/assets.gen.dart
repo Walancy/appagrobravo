@@ -14,12 +14,20 @@ import 'package:flutter/widgets.dart';
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/adaptive_foreground_icon.png
+  AssetGenImage get adaptiveForegroundIcon =>
+      const AssetGenImage('assets/images/adaptive_foreground_icon.png');
+
   /// File path: assets/images/app_icon.png
   AssetGenImage get appIconPng =>
       const AssetGenImage('assets/images/app_icon.png');
 
   /// File path: assets/images/app_icon.svg
   String get appIconSvg => 'assets/images/app_icon.svg';
+
+  /// File path: assets/images/app_launcher_icon.png
+  AssetGenImage get appLauncherIcon =>
+      const AssetGenImage('assets/images/app_launcher_icon.png');
 
   /// File path: assets/images/apple_logo.svg
   String get appleLogo => 'assets/images/apple_logo.svg';
@@ -46,8 +54,10 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<dynamic> get values => [
+    adaptiveForegroundIcon,
     appIconPng,
     appIconSvg,
+    appLauncherIcon,
     appleLogo,
     background,
     chatPattern,

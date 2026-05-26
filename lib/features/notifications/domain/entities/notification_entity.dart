@@ -12,6 +12,7 @@ enum NotificationType {
   documentRejected,
   documentPending,
   guideAlert,
+  chatMessage,
 }
 
 @freezed
@@ -26,6 +27,8 @@ abstract class NotificationEntity with _$NotificationEntity {
     String? solicitacaoUserId,
     String? docId,
     String? postOwnerId,
+    String? batepapoId,
+    String? grupoId,
     required String message,
     required DateTime createdAt,
     @Default(false) bool isRead,

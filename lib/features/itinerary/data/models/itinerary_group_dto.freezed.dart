@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItineraryGroupDto {
 
- String get id;@JsonKey(name: 'nome') String get name; String? get missionName;@JsonKey(name: 'data_inicio') DateTime get startDate;@JsonKey(name: 'data_fim') DateTime get endDate;
+ String get id;@JsonKey(name: 'nome') String get name; String? get missionName;@JsonKey(name: 'data_inicio') DateTime get startDate;@JsonKey(name: 'data_fim') DateTime get endDate; String? get status;
 /// Create a copy of ItineraryGroupDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ItineraryGroupDtoCopyWith<ItineraryGroupDto> get copyWith => _$ItineraryGroupDt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryGroupDto&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryGroupDto&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate);
+int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate,status);
 
 @override
 String toString() {
-  return 'ItineraryGroupDto(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate)';
+  return 'ItineraryGroupDto(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate, status: $status)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ItineraryGroupDtoCopyWith<$Res>  {
   factory $ItineraryGroupDtoCopyWith(ItineraryGroupDto value, $Res Function(ItineraryGroupDto) _then) = _$ItineraryGroupDtoCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'nome') String name, String? missionName,@JsonKey(name: 'data_inicio') DateTime startDate,@JsonKey(name: 'data_fim') DateTime endDate
+ String id,@JsonKey(name: 'nome') String name, String? missionName,@JsonKey(name: 'data_inicio') DateTime startDate,@JsonKey(name: 'data_fim') DateTime endDate, String? status
 });
 
 
@@ -65,14 +65,15 @@ class _$ItineraryGroupDtoCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryGroupDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,Object? status = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,missionName: freezed == missionName ? _self.missionName : missionName // ignore: cast_nullable_to_non_nullable
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: null == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate,  String? status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItineraryGroupDto() when $default != null:
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate,  String? status)  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryGroupDto():
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'nome')  String name,  String? missionName, @JsonKey(name: 'data_inicio')  DateTime startDate, @JsonKey(name: 'data_fim')  DateTime endDate,  String? status)?  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryGroupDto() when $default != null:
-return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate);case _:
+return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endDate,_that.status);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.name,_that.missionName,_that.startDate,_that.endD
 @JsonSerializable()
 
 class _ItineraryGroupDto extends ItineraryGroupDto {
-  const _ItineraryGroupDto({required this.id, @JsonKey(name: 'nome') required this.name, this.missionName, @JsonKey(name: 'data_inicio') required this.startDate, @JsonKey(name: 'data_fim') required this.endDate}): super._();
+  const _ItineraryGroupDto({required this.id, @JsonKey(name: 'nome') required this.name, this.missionName, @JsonKey(name: 'data_inicio') required this.startDate, @JsonKey(name: 'data_fim') required this.endDate, this.status}): super._();
   factory _ItineraryGroupDto.fromJson(Map<String, dynamic> json) => _$ItineraryGroupDtoFromJson(json);
 
 @override final  String id;
@@ -221,6 +222,7 @@ class _ItineraryGroupDto extends ItineraryGroupDto {
 @override final  String? missionName;
 @override@JsonKey(name: 'data_inicio') final  DateTime startDate;
 @override@JsonKey(name: 'data_fim') final  DateTime endDate;
+@override final  String? status;
 
 /// Create a copy of ItineraryGroupDto
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryGroupDto&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryGroupDto&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.missionName, missionName) || other.missionName == missionName)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate);
+int get hashCode => Object.hash(runtimeType,id,name,missionName,startDate,endDate,status);
 
 @override
 String toString() {
-  return 'ItineraryGroupDto(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate)';
+  return 'ItineraryGroupDto(id: $id, name: $name, missionName: $missionName, startDate: $startDate, endDate: $endDate, status: $status)';
 }
 
 
@@ -255,7 +257,7 @@ abstract mixin class _$ItineraryGroupDtoCopyWith<$Res> implements $ItineraryGrou
   factory _$ItineraryGroupDtoCopyWith(_ItineraryGroupDto value, $Res Function(_ItineraryGroupDto) _then) = __$ItineraryGroupDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'nome') String name, String? missionName,@JsonKey(name: 'data_inicio') DateTime startDate,@JsonKey(name: 'data_fim') DateTime endDate
+ String id,@JsonKey(name: 'nome') String name, String? missionName,@JsonKey(name: 'data_inicio') DateTime startDate,@JsonKey(name: 'data_fim') DateTime endDate, String? status
 });
 
 
@@ -272,14 +274,15 @@ class __$ItineraryGroupDtoCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryGroupDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? missionName = freezed,Object? startDate = null,Object? endDate = null,Object? status = freezed,}) {
   return _then(_ItineraryGroupDto(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,missionName: freezed == missionName ? _self.missionName : missionName // ignore: cast_nullable_to_non_nullable
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: null == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
