@@ -304,15 +304,38 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) return Left(Exception('Usuário não autenticado'));
 
+      // BUG-FIX: user may belong to multiple groups — .maybeSingle() would throw.
+      // Fetch all participations joined with group end date, then pick best.
       final response = await _supabaseClient
           .from('gruposParticipantes')
-          .select('grupo_id')
-          .eq('user_id', userId)
-          .maybeSingle();
+          .select('grupo_id, grupos!inner(data_fim)')
+          .eq('user_id', userId);
+
+      final List<dynamic> rows = response as List<dynamic>;
 
       String? groupId;
-      if (response != null) {
-        groupId = response['grupo_id'] as String?;
+      if (rows.isNotEmpty) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // Sort: active groups (data_fim >= today) first, then by data_fim desc
+        final sorted = List<Map<String, dynamic>>.from(
+          rows.map((r) => r as Map<String, dynamic>),
+        )..sort((a, b) {
+            final aStr = (a['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
+            final bStr = (b['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
+            final aDate = aStr != null ? DateTime.tryParse(aStr) : null;
+            final bDate = bStr != null ? DateTime.tryParse(bStr) : null;
+            final aActive = aDate != null && !aDate.isBefore(today);
+            final bActive = bDate != null && !bDate.isBefore(today);
+            if (aActive && !bActive) return -1;
+            if (!aActive && bActive) return 1;
+            // Both same status → most recent data_fim first
+            if (aDate != null && bDate != null) return bDate.compareTo(aDate);
+            return 0;
+          });
+
+        groupId = sorted.first['grupo_id'] as String?;
       }
 
       await _saveUserGroupIdToCache(groupId);

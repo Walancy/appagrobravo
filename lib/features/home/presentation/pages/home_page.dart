@@ -78,14 +78,7 @@ class _HomePageState extends State<HomePage> {
         state.maybeWhen(
           loaded: (group, _, __, pendingDocs) {
             if (_selectedIndex == -1) {
-              final now = DateTime.now();
-              final endOfDay = DateTime(
-                group.endDate.year,
-                group.endDate.month,
-                group.endDate.day, 23, 59, 59,
-              );
-              final isActive = endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
-              setState(() => _selectedIndex = isActive ? 0 : 2);
+              setState(() => _selectedIndex = 0);
             }
           },
           error: (_) {
@@ -143,23 +136,10 @@ class _HomePageState extends State<HomePage> {
             listener: (context, state) {
               state.maybeWhen(
                 loaded: (group, _, __, pendingDocs) {
-                  final now = DateTime.now();
-                  final endOfDay = DateTime(
-                    group.endDate.year,
-                    group.endDate.month,
-                    group.endDate.day,
-                    23,
-                    59,
-                    59,
-                  );
-                  final isActive =
-                      endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
-
+                  // Always go to itinerary tab on fresh load (index -1 means first load).
+                  // The itinerary/chat tabs are always shown when user has a group.
                   if (_selectedIndex == -1) {
-                    setState(() => _selectedIndex = isActive ? 0 : 2);
-                  } else if (!isActive &&
-                      (_selectedIndex == 0 || _selectedIndex == 1)) {
-                    setState(() => _selectedIndex = 2);
+                    setState(() => _selectedIndex = 0);
                   }
                 },
                 error: (_) {
@@ -520,19 +500,10 @@ class _HomePageState extends State<HomePage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocBuilder<ItineraryCubit, ItineraryState>(
       builder: (context, itineraryState) {
+        // Show itinerary/chat tabs whenever user has a group loaded —
+        // regardless of end date (user may need to view trip history).
         bool showTripTabs = itineraryState.maybeWhen(
-          loaded: (group, _, __, ___) {
-            final now = DateTime.now();
-            final endOfDay = DateTime(
-              group.endDate.year,
-              group.endDate.month,
-              group.endDate.day,
-              23,
-              59,
-              59,
-            );
-            return endOfDay.isAfter(now) || endOfDay.isAtSameMomentAs(now);
-          },
+          loaded: (_, __, ___, ____) => true,
           orElse: () => false,
         );
 
