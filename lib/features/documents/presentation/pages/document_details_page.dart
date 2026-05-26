@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -29,15 +31,19 @@ class DocumentDetailsPage extends StatefulWidget {
 
 class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   final _numberController = TextEditingController();
+  final _nameController = TextEditingController();
   DateTime? _selectedDate;
   File? _selectedFile;
   bool _isUploading = false;
+  bool _isProcessingOcr = false;
+  String? _ocrError;
 
   @override
   void initState() {
     super.initState();
     if (widget.currentDocument != null) {
       _numberController.text = widget.currentDocument!.documentNumber ?? '';
+      _nameController.text = widget.currentDocument!.title ?? '';
       _selectedDate = widget.currentDocument!.expiryDate;
     }
   }
@@ -45,26 +51,270 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   @override
   void dispose() {
     _numberController.dispose();
+    _nameController.dispose();
     super.dispose();
+  }
+
+  void _openImagePreview() {
+    final hasLocalImage = _selectedFile != null && !_selectedFile!.path.toLowerCase().endsWith('.pdf');
+    final hasRemoteImage = widget.currentDocument?.imageUrl != null &&
+        !widget.currentDocument!.imageUrl!.toLowerCase().contains('.pdf') &&
+        !widget.currentDocument!.imageUrl!.toLowerCase().contains('/pdf');
+
+    if (!hasLocalImage && !hasRemoteImage) return;
+
+    final ImageProvider imageProvider;
+    if (hasLocalImage) {
+      imageProvider = FileImage(_selectedFile!);
+    } else {
+      imageProvider = NetworkImage(widget.currentDocument!.imageUrl!);
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenImagePage(
+          imageProvider: imageProvider,
+          title: widget.type.label,
+        ),
+      ),
+    );
+  }
+
+  void _showDatePickerBottomSheet() {
+    DateTime tempDate = _selectedDate ?? DateTime.now().add(const Duration(days: 365));
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context).dividerColor.withOpacity(0.1),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Cancelar',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Data de Validade',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDate = tempDate;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Confirmar',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 220,
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: tempDate,
+                    minimumDate: DateTime.now().subtract(const Duration(days: 3650)),
+                    maximumDate: DateTime.now().add(const Duration(days: 3650)),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempDate = newDate;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  DateTime? _parseDateFromOcr(String dateStr) {
+    try {
+      final parts = dateStr.split('/');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> _processDocumentOcr(File file) async {
+    final isImage = ['.jpg', '.jpeg', '.png', '.webp'].any(file.path.toLowerCase().endsWith);
+    final supportsOcr = widget.type == DocumentType.passaporte || widget.type == DocumentType.visto;
+
+    if (!isImage || !supportsOcr) {
+      setState(() {
+        _ocrError = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isProcessingOcr = true;
+      _ocrError = null;
+    });
+
+    final cubit = widget.cubit ?? getIt<DocumentsCubit>();
+    final result = await cubit.parseDocument(type: widget.type, file: file);
+
+    if (!mounted) return;
+
+    result.fold(
+      (error) {
+        setState(() {
+          _ocrError = error.toString();
+          _isProcessingOcr = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Falha ao extrair dados por IA: $error')),
+        );
+      },
+      (data) {
+        setState(() {
+          _isProcessingOcr = false;
+        });
+
+        final expectedKind = widget.type == DocumentType.passaporte ? 'passport' : 'visa';
+        final detectedKind = data['document_kind'];
+
+        if (detectedKind != null && detectedKind != expectedKind) {
+          final detectedLabel = detectedKind == 'passport' ? 'Passaporte' : 'Visto';
+          final selectedLabel = widget.type.label;
+          setState(() {
+            _ocrError = 'O documento anexado é um $detectedLabel, mas você selecionou "$selectedLabel". Envie o documento correto.';
+            _selectedFile = null; // Reseta o arquivo inválido
+          });
+          return;
+        }
+
+        // Se o tipo coincidir, preenche os dados
+        if (widget.type == DocumentType.passaporte) {
+          final passportNumber = data['passport_number'];
+          if (passportNumber != null) {
+            _numberController.text = passportNumber.toString();
+          }
+        } else if (widget.type == DocumentType.visto) {
+          final visaNumber = data['visa_number'];
+          if (visaNumber != null) {
+            _numberController.text = visaNumber.toString();
+          }
+        }
+
+        final givenName = data['given_name'];
+        final surname = data['surname'];
+        String? fullName;
+        if (givenName != null || surname != null) {
+          final parts = <String>[];
+          if (givenName != null && givenName.toString().trim().isNotEmpty) {
+            parts.add(givenName.toString().trim());
+          }
+          if (surname != null && surname.toString().trim().isNotEmpty) {
+            parts.add(surname.toString().trim());
+          }
+          fullName = parts.join(' ');
+        }
+        if (fullName != null && fullName.isNotEmpty) {
+          _nameController.text = fullName.toUpperCase();
+        }
+
+        final expirationDateStr = data['expiration_date'];
+        if (expirationDateStr != null && expirationDateStr is String) {
+          final expDate = _parseDateFromOcr(expirationDateStr);
+          if (expDate != null) {
+            setState(() {
+              _selectedDate = expDate;
+            });
+          }
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dados extraídos por Inteligência Artificial!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final source = await showModalBottomSheet<ImageSource>(
+    final resultSource = await showModalBottomSheet<dynamic>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => ImageSourceBottomSheet(
         title: _selectedFile != null || widget.currentDocument?.imageUrl != null
-            ? 'Alterar foto do documento'
-            : 'Tirar foto do documento',
+            ? 'Alterar arquivo do documento'
+            : 'Enviar documento',
+        supportFiles: true,
       ),
     );
 
-    if (source != null) {
-      final image = await picker.pickImage(source: source);
-      if (image != null) {
-        setState(() => _selectedFile = File(image.path));
+    if (resultSource == null) return;
+
+    File? file;
+
+    if (resultSource == 'file') {
+      final pickedResult = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
+      );
+      if (pickedResult != null && pickedResult.files.single.path != null) {
+        file = File(pickedResult.files.single.path!);
       }
+    } else if (resultSource is ImageSource) {
+      final image = await picker.pickImage(source: resultSource);
+      if (image != null) {
+        file = File(image.path);
+      }
+    }
+
+    if (file != null) {
+      setState(() {
+        _selectedFile = file;
+        _ocrError = null;
+      });
+      await _processDocumentOcr(file);
     }
   }
 
@@ -93,6 +343,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
           file: _selectedFile!,
           documentNumber: _numberController.text,
           expiryDate: _selectedDate,
+          documentName: _nameController.text,
         );
       } else if (widget.currentDocument != null) {
         // Only metadata update support? The repository current impl expects a file.
@@ -128,6 +379,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isPdf = _selectedFile != null && _selectedFile!.path.toLowerCase().endsWith('.pdf');
     return Scaffold(
       appBar: AppHeader(mode: HeaderMode.back, title: widget.type.label),
       body: SingleChildScrollView(
@@ -138,14 +390,44 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
             _buildStatusHeader(),
             const SizedBox(height: AppSpacing.lg),
 
+            if (_ocrError != null) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  border: Border.all(color: Colors.red[200]!),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.red[800]),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        _ocrError!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.red[900],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+
             Text(
-              'Imagem do Documento',
+              isPdf ? 'Arquivo do Documento (PDF)' : 'Imagem do Documento',
               style: AppTextStyles.bodyLarge.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildImagePreview(),
+            GestureDetector(
+              onTap: _openImagePreview,
+              child: _buildImagePreview(),
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextButton.icon(
               onPressed: _pickImage,
@@ -153,8 +435,28 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               label: Text(
                 _selectedFile != null ||
                         widget.currentDocument?.imageUrl != null
-                    ? 'Alterar Foto'
-                    : 'Tirar Foto',
+                    ? 'Alterar Arquivo'
+                    : 'Escolher Arquivo / Foto',
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Nome no Documento',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'Ex: NELSON VIEIRA',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
 
@@ -187,17 +489,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
             ),
             const SizedBox(height: AppSpacing.sm),
             InkWell(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate:
-                      _selectedDate ??
-                      DateTime.now().add(const Duration(days: 365)),
-                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDate: DateTime.now().add(const Duration(days: 3650)),
-                );
-                if (date != null) setState(() => _selectedDate = date);
-              },
+              onTap: _showDatePickerBottomSheet,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -345,6 +637,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   }
 
   Widget _buildImagePreview() {
+    final isPdf = _selectedFile != null && _selectedFile!.path.toLowerCase().endsWith('.pdf');
     return Container(
       width: double.infinity,
       height: 220,
@@ -357,36 +650,239 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: _selectedFile != null
-            ? Image.file(_selectedFile!, fit: BoxFit.cover)
-            : (widget.currentDocument?.imageUrl != null
-                  ? Image.network(
-                      widget.currentDocument!.imageUrl!,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(child: CircularProgressIndicator());
-                      },
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.broken_image_outlined, size: 50),
-                    )
-                  : const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_search,
-                            size: 48,
-                            color: AppColors.textSecondary,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: _selectedFile != null
+                  ? (isPdf
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.picture_as_pdf,
+                                size: 56,
+                                color: Colors.redAccent,
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  _selectedFile!.path.split('/').last,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Nenhuma imagem enviada',
-                            style: TextStyle(color: AppColors.textSecondary),
+                        )
+                      : Image.file(_selectedFile!, fit: BoxFit.cover))
+                  : (widget.currentDocument?.imageUrl != null
+                      ? Image.network(
+                          widget.currentDocument!.imageUrl!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(child: CircularProgressIndicator());
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            final urlLower = widget.currentDocument!.imageUrl!.toLowerCase();
+                            if (urlLower.contains('.pdf') || urlLower.contains('/pdf')) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.picture_as_pdf,
+                                      size: 56,
+                                      color: Colors.redAccent,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      widget.currentDocument!.title ?? 'Documento PDF',
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return const Icon(Icons.broken_image_outlined, size: 50);
+                          },
+                        )
+                      : const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_search,
+                                size: 48,
+                                color: AppColors.textSecondary,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Nenhum documento enviado',
+                                style: TextStyle(color: AppColors.textSecondary),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )),
+                        )),
+            ),
+            if (_isProcessingOcr)
+              const Positioned.fill(
+                child: OcrScanningOverlay(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OcrScanningOverlay extends StatefulWidget {
+  const OcrScanningOverlay({super.key});
+
+  @override
+  State<OcrScanningOverlay> createState() => _OcrScanningOverlayState();
+}
+
+class _OcrScanningOverlayState extends State<OcrScanningOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          color: Colors.black.withOpacity(0.4),
+        ),
+        AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return Positioned(
+              top: 220 * _animation.value,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.cyanAccent.withOpacity(0.8),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                  gradient: const LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.cyanAccent,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  shape: BoxShape.circle,
+                ),
+                child: const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.cyanAccent,
+                    strokeWidth: 2.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'IA extraindo dados...',
+                  style: TextStyle(
+                    color: Colors.cyanAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class FullScreenImagePage extends StatelessWidget {
+  final ImageProvider imageProvider;
+  final String title;
+
+  const FullScreenImagePage({
+    super.key,
+    required this.imageProvider,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          child: Image(
+            image: imageProvider,
+            fit: BoxFit.contain,
+          ),
+        ),
       ),
     );
   }

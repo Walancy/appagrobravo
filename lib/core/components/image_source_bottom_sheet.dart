@@ -6,8 +6,13 @@ import 'package:image_picker/image_picker.dart';
 
 class ImageSourceBottomSheet extends StatelessWidget {
   final String title;
+  final bool supportFiles;
 
-  const ImageSourceBottomSheet({super.key, this.title = 'Selecionar imagem'});
+  const ImageSourceBottomSheet({
+    super.key,
+    this.title = 'Selecionar imagem',
+    this.supportFiles = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +62,20 @@ class ImageSourceBottomSheet extends StatelessWidget {
                 icon: Icons.image_outlined,
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
-              const SizedBox(width: AppSpacing.xl),
+              const SizedBox(width: AppSpacing.lg),
               _buildOption(
                 label: 'Câmera',
                 icon: Icons.camera_alt_outlined,
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
+              if (supportFiles) ...[
+                const SizedBox(width: AppSpacing.lg),
+                _buildOption(
+                  label: 'Arquivo',
+                  icon: Icons.insert_drive_file_outlined,
+                  onTap: () => Navigator.pop(context, 'file'),
+                ),
+              ],
             ],
           ),
 

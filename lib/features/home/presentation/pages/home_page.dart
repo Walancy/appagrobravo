@@ -571,7 +571,7 @@ class _HomePageState extends State<HomePage> {
     return BlocBuilder<ItineraryCubit, ItineraryState>(
       builder: (context, itineraryState) {
         bool showTripTabs = itineraryState.maybeWhen(
-          loaded: (group, _, __, ___) {
+          loaded: (group, _, __, ___, ____) {
             final now = DateTime.now();
             final endOfDay = DateTime(
               group.endDate.year,

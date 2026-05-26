@@ -39,7 +39,7 @@ class ItineraryTab extends StatelessWidget {
                   child: Text('Erro: $msg', textAlign: TextAlign.center),
                 ),
               ),
-              loaded: (group, items, travelTimes, pendingDocs) {
+              loaded: (group, items, travelTimes, pendingDocs, _) {
                 return ItineraryContent(
                   group: group,
                   items: items,

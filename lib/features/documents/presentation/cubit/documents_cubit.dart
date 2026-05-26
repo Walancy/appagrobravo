@@ -71,6 +71,7 @@ class DocumentsCubit extends Cubit<DocumentsState> {
     required File file,
     String? documentNumber,
     DateTime? expiryDate,
+    String? documentName,
   }) async {
     final result = await _repository.uploadDocument(
       id: id,
@@ -78,6 +79,7 @@ class DocumentsCubit extends Cubit<DocumentsState> {
       file: file,
       documentNumber: documentNumber,
       expiryDate: expiryDate,
+      documentName: documentName,
     );
 
     result.fold(
@@ -89,6 +91,16 @@ class DocumentsCubit extends Cubit<DocumentsState> {
   void dismissAlert() {
     state.mapOrNull(
       loaded: (state) => emit(state.copyWith(isAlertDismissed: true)),
+    );
+  }
+
+  Future<Either<Exception, Map<String, dynamic>>> parseDocument({
+    required DocumentType type,
+    required File file,
+  }) async {
+    return await _repository.parseDocument(
+      type: type,
+      file: file,
     );
   }
 }

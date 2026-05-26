@@ -12,17 +12,11 @@ part of 'itinerary_cubit.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$ItineraryState implements DiagnosticableTreeMixin {
+mixin _$ItineraryState {
 
 
 
 
-@override
-void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
-    ..add(DiagnosticsProperty('type', 'ItineraryState'))
-    ;
-}
 
 @override
 bool operator ==(Object other) {
@@ -34,7 +28,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+String toString() {
   return 'ItineraryState()';
 }
 
@@ -198,7 +192,7 @@ return error(_that.message);case _:
 /// @nodoc
 
 
-class _Initial with DiagnosticableTreeMixin implements ItineraryState {
+class _Initial implements ItineraryState {
   const _Initial();
   
 
@@ -206,12 +200,6 @@ class _Initial with DiagnosticableTreeMixin implements ItineraryState {
 
 
 
-@override
-void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
-    ..add(DiagnosticsProperty('type', 'ItineraryState.initial'))
-    ;
-}
 
 @override
 bool operator ==(Object other) {
@@ -223,7 +211,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+String toString() {
   return 'ItineraryState.initial()';
 }
 
@@ -236,7 +224,7 @@ String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
 /// @nodoc
 
 
-class _Loading with DiagnosticableTreeMixin implements ItineraryState {
+class _Loading implements ItineraryState {
   const _Loading();
   
 
@@ -244,12 +232,6 @@ class _Loading with DiagnosticableTreeMixin implements ItineraryState {
 
 
 
-@override
-void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
-    ..add(DiagnosticsProperty('type', 'ItineraryState.loading'))
-    ;
-}
 
 @override
 bool operator ==(Object other) {
@@ -261,7 +243,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+String toString() {
   return 'ItineraryState.loading()';
 }
 
@@ -274,7 +256,7 @@ String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
 /// @nodoc
 
 
-class _Loaded with DiagnosticableTreeMixin implements ItineraryState {
+class _Loaded implements ItineraryState {
   const _Loaded(this.group, final  List<ItineraryItemEntity> items, final  List<Map<String, dynamic>> travelTimes, final  List<String> pendingDocs, {this.isNewAssignment = false}): _items = items,_travelTimes = travelTimes,_pendingDocs = pendingDocs;
   
 
@@ -309,12 +291,6 @@ class _Loaded with DiagnosticableTreeMixin implements ItineraryState {
 _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
 
 
-@override
-void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
-    ..add(DiagnosticsProperty('type', 'ItineraryState.loaded'))
-    ..add(DiagnosticsProperty('group', group))..add(DiagnosticsProperty('items', items))..add(DiagnosticsProperty('travelTimes', travelTimes))..add(DiagnosticsProperty('pendingDocs', pendingDocs))..add(DiagnosticsProperty('isNewAssignment', isNewAssignment));
-}
 
 @override
 bool operator ==(Object other) {
@@ -326,7 +302,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,group,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_travelTimes),const DeepCollectionEquality().hash(_pendingDocs),isNewAssignment);
 
 @override
-String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+String toString() {
   return 'ItineraryState.loaded(group: $group, items: $items, travelTimes: $travelTimes, pendingDocs: $pendingDocs, isNewAssignment: $isNewAssignment)';
 }
 
@@ -381,7 +357,7 @@ $ItineraryGroupEntityCopyWith<$Res> get group {
 /// @nodoc
 
 
-class _Error with DiagnosticableTreeMixin implements ItineraryState {
+class _Error implements ItineraryState {
   const _Error(this.message);
   
 
@@ -394,12 +370,6 @@ class _Error with DiagnosticableTreeMixin implements ItineraryState {
 _$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$identity);
 
 
-@override
-void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
-    ..add(DiagnosticsProperty('type', 'ItineraryState.error'))
-    ..add(DiagnosticsProperty('message', message));
-}
 
 @override
 bool operator ==(Object other) {
@@ -411,7 +381,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,message);
 
 @override
-String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+String toString() {
   return 'ItineraryState.error(message: $message)';
 }
 

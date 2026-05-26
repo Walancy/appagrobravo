@@ -11,5 +11,10 @@ abstract class DocumentsRepository {
     required File file,
     String? documentNumber,
     DateTime? expiryDate,
+    String? documentName,
+  });
+  Future<Either<Exception, Map<String, dynamic>>> parseDocument({
+    required DocumentType type,
+    required File file,
   });
 }

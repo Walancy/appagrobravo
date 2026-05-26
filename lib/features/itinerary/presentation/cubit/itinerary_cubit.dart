@@ -8,7 +8,7 @@ import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/repositories/itinerary_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:developer' as dev;
 
 part 'itinerary_state.dart';
 part 'itinerary_cubit.freezed.dart';
@@ -117,7 +117,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
             value: userId,
           ),
           callback: (payload) {
-            debugPrint('Group change detected for user. Reloading itinerary...');
+            dev.log('Group change detected for user. Reloading itinerary...');
             loadUserItinerary();
           },
         )

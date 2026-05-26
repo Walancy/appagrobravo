@@ -40,7 +40,7 @@ class ItineraryPage extends StatelessWidget {
             return state.maybeWhen(
               loading: () => const ItineraryShimmer(),
               error: (msg) => Center(child: Text('Erro: $msg')),
-              loaded: (group, items, travelTimes, pendingDocs) {
+              loaded: (group, items, travelTimes, pendingDocs, _) {
                 final isEnded = group.endDate.isBefore(DateTime.now());
                 final displayPendingDocs = isEnded ? <String>[] : pendingDocs;
 

@@ -912,7 +912,7 @@ class FeedRepositoryImpl implements FeedRepository {
             .from('notificacoes')
             .select('id')
             .eq('user_id', userId)
-            .eq('tipo', 'missionUpdate')
+            .eq('assunto', 'missionUpdate')
             .eq('grupo_id', groupResponse['grupo_id'])
             .limit(1)
             .maybeSingle();
@@ -921,7 +921,6 @@ class FeedRepositoryImpl implements FeedRepository {
           await _supabaseClient.from('notificacoes').insert({
             'user_id': userId,
             'assunto': 'missionUpdate',
-            'tipo': 'missionUpdate', // Keeping for DB compatibility
             'grupo_id': groupResponse['grupo_id'],
             'missao_id': missionData['id'],
             'titulo': 'Nova Missão',
