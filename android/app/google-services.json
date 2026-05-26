@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "680098249535",
+    "project_id": "agrobravo-enterprise",
+    "storage_bucket": "agrobravo-enterprise.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680098249535:android:9b2df7fe29dcab2ad2318a",
+        "android_client_info": {
+          "package_name": "com.agrobravo.agrobravoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680098249535-fnr8odsclptv0hmpdlr3v1ipg0dkf32c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZPom5-_0FHNAUi6bSaZCl26nd9pKF41c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680098249535-fnr8odsclptv0hmpdlr3v1ipg0dkf32c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "680098249535-9no4o6m6q0ifs8vnbvii7r9ibtdivpll.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.agrobravo.agrobravoapp",
+                "app_store_id": "6748480940"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

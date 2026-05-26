@@ -167,16 +167,33 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> loginWithGoogle() async {
     emit(const AuthState.loading());
     final result = await _authRepository.signInWithGoogle();
-    result.fold((error) => emit(AuthState.error(error.toString())), (_) {
-      // Since it's OAuth, the browser will redirect.
-      // We stay in loading state until the app is resumed and Supabase triggers auth state change.
-    });
+    await result.fold(
+      (error) async => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (_) async {
+        // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
+        final userOption = await _authRepository.getCurrentUser();
+        userOption.fold(
+          () => emit(const AuthState.error('Usuário não encontrado após login com Google.')),
+          (user) => emit(AuthState.authenticated(user)),
+        );
+      },
+    );
   }
 
   Future<void> loginWithApple() async {
     emit(const AuthState.loading());
     final result = await _authRepository.signInWithApple();
-    result.fold((error) => emit(AuthState.error(error.toString())), (_) {});
+    await result.fold(
+      (error) async => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (_) async {
+        // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
+        final userOption = await _authRepository.getCurrentUser();
+        userOption.fold(
+          () => emit(const AuthState.error('Usuário não encontrado após login com Apple.')),
+          (user) => emit(AuthState.authenticated(user)),
+        );
+      },
+    );
   }
 
   Future<void> logout() async {

@@ -583,9 +583,9 @@ class FeedRepositoryImpl implements FeedRepository {
           .from('users')
           .select('tipouser')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
-      final roles = List<String>.from(userProfile['tipouser'] ?? []);
+      final roles = List<String>.from(userProfile?['tipouser'] ?? []);
       if (roles.contains('MASTER') || roles.contains('COLABORADOR')) {
         await _saveCanUserPostToCache(true);
         return const Right(true);

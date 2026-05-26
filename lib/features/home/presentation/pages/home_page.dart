@@ -205,6 +205,7 @@ class _HomePageState extends State<HomePage> {
                   }
                 },
                 error: (_) {
+                  // Sem missão ou erro: destravar o loading e ir para Comunidade
                   if (_selectedIndex == -1 ||
                       _selectedIndex == 0 ||
                       _selectedIndex == 1) {

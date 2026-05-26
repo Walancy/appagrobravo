@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 3.0.0+44
 
 environment:
   sdk: ^3.10.8
@@ -42,6 +42,15 @@ dependencies:
   json_annotation: ^4.10.0
   flutter_svg: ^2.2.3
   supabase_flutter: ^2.12.0
+
+  # Firebase — push notifications e autenticação
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.2.7
+
+  # Login social
+  google_sign_in: ^6.3.0
+  sign_in_with_apple: ^7.0.1
+  crypto: ^3.0.6
 
   dartz: ^0.10.1
   flutter_bloc: ^9.1.1
@@ -79,14 +88,13 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true
   ios: true
-  image_path: "assets/images/app_icon.png"
-  remove_alpha_ios: true # Ensures no transparency for iOS.
-  min_sdk_android: 21 # Support older android versions.
-  adaptive_icon_background: "#FFFFFF" # Use a solid background for adaptive icons.
-  adaptive_icon_foreground: "assets/images/app_icon.png"
-  adaptive_icon_foreground_inset: 20 # Adds padding to fix "zoomed" effect on Android.
+  web:
+    generate: true
+  image_path: "assets/images/app_launcher_icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/adaptive_foreground_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

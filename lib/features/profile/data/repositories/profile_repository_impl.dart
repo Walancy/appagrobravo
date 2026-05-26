@@ -119,7 +119,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
             'id, nome, foto, cargo, observacoes, capa_perfil, email, telefone, restricoes_alimentares, restricoes_medicas, empresa, cpf, ssn, cep, estado, cidade, rua, numero, bairro, complemento, datanascimento, data_nascimento, nacionalidade, n_passaporte, pais, nome_cracha, contato_emergencia',
           )
           .eq('id', userId)
-          .single();
+          .maybeSingle();
+
+      // Se não existe registro em public.users ainda (ex: login social recém criado),
+      // retorna erro para acionar cache ou perfil mínimo
+      if (userResponse == null) {
+        final cached = await _getProfileFromCache(userId);
+        if (cached != null) return Right(cached);
+        return Left(Exception('Perfil ainda não criado em public.users.'));
+      }
 
       // 2. Fetch Posts Count
       final postsResponse = await _supabaseClient

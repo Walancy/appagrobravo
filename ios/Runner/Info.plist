@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Agrobravo</string>
+	<string>AgroBravo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,17 +13,59 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>agrobravo</string>
+	<string>AgroBravo</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>pt</string>
+		<string>en</string>
+	</array>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.680098249535-9no4o6m6q0ifs8vnbvii7r9ibtdivpll</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>agrobravo.com</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>agrobravo</string>
+			</array>
+		</dict>
+	</array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Precisamos da sua localização para fornecer funcionalidades baseadas em geolocalização, como mapas e identificação de locais próximos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Precisamos da sua localização para fornecer funcionalidades baseadas em geolocalização, como mapas e identificação de locais próximos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Usamos a câmera para permitir que você tire uma foto de perfil ou fotografe documentos como passaporte, visto e seguro viagem para upload e verificação.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Usamos a galeria para permitir que você selecione uma imagem para sua foto de perfil ou envie documentos como passaporte, visto e seguro viagem já salvos no dispositivo.</string>
+	<key>PermissionGroupNotification</key>
+	<string>Permita para ser avisado e alterações e acoes dentro do aplicativo.</string>
+	<!-- Start of FirebaseAppDelegateProxy -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<!-- End of FirebaseAppDelegateProxy -->
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,9 +83,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIStatusBarHidden</key>
+	<false/>
 </dict>
 </plist>

@@ -8,6 +8,9 @@ import 'package:agrobravo/features/auth/data/models/user_model.dart';
 import 'dart:developer';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
@@ -200,25 +203,53 @@ class AuthRepositoryImpl implements AuthRepository {
     if (user == null) return none();
 
     try {
+      // maybeSingle() retorna null em vez de lançar exceção se não encontrar
       final userProfile = await _supabaseClient
           .from('users')
           .select()
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-      final userModel = UserModel.fromJson(userProfile);
-      await _saveUserToPreferences(userModel);
-      return some(userModel.toEntity());
+      if (userProfile != null) {
+        final userModel = UserModel.fromJson(userProfile);
+        await _saveUserToPreferences(userModel);
+        return some(userModel.toEntity());
+      }
+
+      // Perfil ainda não existe em public.users (login social recém-criado).
+      // Constrói entidade mínima com dados do auth.users para não deslogar.
+      log('public.users sem registro para ${user.id}. Usando dados do auth.users.');
+      final fallbackName = user.userMetadata?['full_name'] as String? ??
+          user.userMetadata?['name'] as String? ??
+          user.email?.split('@').first ??
+          'Usuário';
+
+      final fallbackModel = UserModel(
+        id: user.id,
+        email: user.email ?? '',
+        nome: fallbackName,
+        foto: user.userMetadata?['avatar_url'] as String?,
+        roles: ['USER_APP'],
+      );
+      return some(fallbackModel.toEntity());
     } catch (e) {
       log('Erro ao recuperar usuário atual: $e. Tentando cache offline.');
       final cachedUser = await _getUserFromPreferences();
       if (cachedUser != null && cachedUser.id == user.id) {
         return some(cachedUser.toEntity());
       }
-      // If we are offline and have no cache, we currently force logout/none.
-      // Alternatively, we could construct a basic UserEntity from Supabase User metadata if available,
-      // but complete functional offline usage likely requires the profile.
-      return none();
+      // Sem cache e sem conexão — constrói mínimo para não deslogar
+      final fallbackName = user.userMetadata?['full_name'] as String? ??
+          user.email?.split('@').first ??
+          'Usuário';
+      final fallbackModel = UserModel(
+        id: user.id,
+        email: user.email ?? '',
+        nome: fallbackName,
+        foto: user.userMetadata?['avatar_url'] as String?,
+        roles: ['USER_APP'],
+      );
+      return some(fallbackModel.toEntity());
     }
   }
 
@@ -267,17 +298,96 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  /// Faz upsert em public.users após autenticação social.
+  /// [authUser] é o usuário retornado pelo Supabase após signInWithIdToken.
+  /// [nome] pode ser nulo — neste caso usa o email como fallback.
+  /// [foto] e [email] vêm do provider.
+  Future<void> _upsertPublicUser({
+    required String id,
+    required String nome,
+    String? email,
+    String? foto,
+  }) async {
+    try {
+      final now = DateTime.now().toUtc().toIso8601String();
+      await _supabaseClient.from('users').upsert(
+        {
+          'id': id,
+          'nome': nome.isNotEmpty ? nome : (email ?? 'Usuário'),
+          'email': email,
+          'foto': foto,
+          'tipouser': ['USER_APP'],
+          'primeiroacesso': true,
+          'created_at': now,
+        },
+        onConflict: 'id',
+        ignoreDuplicates: false, // atualiza se já existe
+      );
+      log('public.users upsert OK para $id');
+    } catch (e) {
+      // Não bloqueia o login — o perfil pode ser completado depois
+      log('Aviso: falha no upsert de public.users: $e');
+    }
+  }
+
   @override
   Future<Either<Exception, void>> signInWithGoogle() async {
     try {
-      await _supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: kIsWeb ? null : 'io.supabase.agrobravo://login-callback/',
+      if (kIsWeb) {
+        await _supabaseClient.auth.signInWithOAuth(OAuthProvider.google);
+        return const Right(null);
+      }
+
+      final googleSignIn = GoogleSignIn(
+        scopes: ['profile', 'email'],
+        clientId: defaultTargetPlatform == TargetPlatform.iOS
+            ? '680098249535-9no4o6m6q0ifs8vnbvii7r9ibtdivpll.apps.googleusercontent.com'
+            : null,
+        serverClientId:
+            '680098249535-fnr8odsclptv0hmpdlr3v1ipg0dkf32c.apps.googleusercontent.com',
       );
+
+      await googleSignIn.signOut().catchError((_) => null);
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return Left(Exception('Login com Google cancelado pelo usuário.'));
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      final idToken = googleAuth.idToken;
+
+      if (accessToken == null) throw Exception('No Access Token found.');
+      if (idToken == null) throw Exception('No ID Token found.');
+
+      final authResponse = await _supabaseClient.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      final authUser = authResponse.user;
+      if (authUser != null) {
+        // Google sempre retorna nome e foto — salva/atualiza public.users
+        final nome = googleUser.displayName ??
+            authUser.userMetadata?['full_name'] as String? ??
+            googleUser.email.split('@').first;
+        final foto = googleUser.photoUrl ??
+            authUser.userMetadata?['avatar_url'] as String?;
+
+        await _upsertPublicUser(
+          id: authUser.id,
+          nome: nome,
+          email: googleUser.email,
+          foto: foto,
+        );
+      }
+
       return const Right(null);
     } on AuthException catch (e) {
       return Left(Exception(e.message));
     } catch (e) {
+      log('Erro ao fazer login com Google: $e');
       return Left(Exception('Erro ao fazer login com Google.'));
     }
   }
@@ -285,13 +395,74 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Exception, void>> signInWithApple() async {
     try {
-      await _supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: kIsWeb ? null : 'io.supabase.agrobravo://login-callback/',
+      if (kIsWeb) {
+        await _supabaseClient.auth.signInWithOAuth(
+          OAuthProvider.apple,
+          authScreenLaunchMode: LaunchMode.platformDefault,
+        );
+        return const Right(null);
+      }
+
+      final rawNonce = _supabaseClient.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
       );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        return Left(Exception('Não foi possível obter o token da Apple.'));
+      }
+
+      final authResponse = await _supabaseClient.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+
+      final authUser = authResponse.user;
+      if (authUser != null) {
+        // CRÍTICO: givenName e familyName da Apple chegam APENAS no primeiro login.
+        // Nos logins seguintes são null — por isso salvamos agora.
+        final firstName = credential.givenName;
+        final lastName = credential.familyName;
+
+        // Tenta construir o nome; caso seja relogin (null), usa metadata salvo anteriormente
+        String nome;
+        if (firstName != null || lastName != null) {
+          nome = [firstName, lastName]
+              .where((s) => s != null && s.isNotEmpty)
+              .join(' ');
+        } else {
+          // Relogin: tenta pegar nome do metadata do auth.users (pode ter sido salvo antes)
+          nome = authUser.userMetadata?['full_name'] as String? ??
+              authUser.userMetadata?['name'] as String? ??
+              credential.email?.split('@').first ??
+              authUser.email?.split('@').first ??
+              'Usuário Apple';
+        }
+
+        final email = credential.email ?? authUser.email;
+
+        await _upsertPublicUser(
+          id: authUser.id,
+          nome: nome,
+          email: email,
+          foto: null, // Apple não fornece foto
+        );
+      }
+
       return const Right(null);
     } on AuthException catch (e) {
       return Left(Exception(e.message));
+    } catch (e) {
+      log('Erro ao fazer login com Apple: $e');
+      return Left(Exception('Erro ao fazer login com Apple.'));
     }
   }
 
