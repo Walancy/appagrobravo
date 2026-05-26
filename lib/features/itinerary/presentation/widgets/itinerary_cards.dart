@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/tokens/app_colors.dart';
-import '../../../../core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -472,21 +472,22 @@ class FlightCard extends StatelessWidget {
         ? subtitle
         : null;
 
-    return Container(
-      padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF1E1E1E)
-            : const Color(0xFFF2F4F7),
+    return Material(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF1E1E1E)
+          : const Color(0xFFF2F4F7),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
+        side: BorderSide(
           color: isDelayed
               ? Colors.orange.withOpacity(0.4)
               : Theme.of(context).dividerColor.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 8),
+        child: Column(
         children: [
           // Header
           Row(
@@ -751,6 +752,7 @@ class FlightCard extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }

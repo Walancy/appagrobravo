@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dartz/dartz.dart';
@@ -6,7 +8,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:agrobravo/features/chat/domain/entities/message_entity.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: ChatRepository)
@@ -24,6 +25,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'name': g.name,
         'role': g.role,
         'avatarUrl': g.avatarUrl,
+        'unreadCount': g.unreadCount,
       };
 
       Map<String, dynamic> chatToJson(ChatEntity c) => {
@@ -34,6 +36,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'startDate': c.startDate?.toIso8601String(),
         'endDate': c.endDate?.toIso8601String(),
         'memberCount': c.memberCount,
+        'unreadCount': c.unreadCount,
       };
 
       final json = {
@@ -66,6 +69,7 @@ class ChatRepositoryImpl implements ChatRepository {
           name: map['name'],
           role: map['role'],
           avatarUrl: map['avatarUrl'],
+          unreadCount: map['unreadCount'] ?? 0,
         );
 
         ChatEntity chatFromJson(Map<String, dynamic> map) => ChatEntity(
@@ -80,6 +84,7 @@ class ChatRepositoryImpl implements ChatRepository {
               ? DateTime.parse(map['endDate'])
               : null,
           memberCount: map['memberCount'] ?? 0,
+          unreadCount: map['unreadCount'] ?? 0,
         );
 
         final current = json['currentMission'] != null
@@ -284,36 +289,80 @@ class ChatRepositoryImpl implements ChatRepository {
         }
       }
 
-      // 6. Fetch Last Messages for each chat
+      // 6. Fetch Last Messages + Unread Counts for each chat
       Map<String, String> lastMessages = {};
       Map<String, DateTime> lastMessageTimes = {};
+      Map<String, int> unreadCounts = {};
 
       final allChatEntities = [if (current != null) current, ...history];
       final allGuideEntities = guides;
 
-      // Helper to fetch last msg
       Future<void> fetchLastMsg(String identifier, bool isGroup) async {
         try {
           final chatId = await _resolveChatId(identifier, isGroup);
           if (chatId == null) return;
 
+          // Fetch last message with sender info
           final response = await _supabaseClient
               .from('mensagens')
-              .select('mensagem, created_at')
+              .select('mensagem, created_at, user_id')
               .eq('batepapo_id', chatId)
               .order('created_at', ascending: false)
               .limit(1)
               .maybeSingle();
 
           if (response != null) {
-            lastMessages[identifier] =
-                response['mensagem'] as String? ?? 'Imagem/Arquivo';
+            final senderId = response['user_id'] as String?;
+            final rawText = response['mensagem'] as String? ?? '';
+            final isMe = senderId == userId;
+
+            String senderLabel;
+            if (isMe) {
+              senderLabel = 'Você';
+            } else if (senderId != null) {
+              try {
+                final userResp = await _supabaseClient
+                    .from('users')
+                    .select('nome')
+                    .eq('id', senderId)
+                    .maybeSingle();
+                final fullName = userResp?['nome'] as String? ?? '';
+                // First name only for brevity
+                senderLabel = fullName.isNotEmpty
+                    ? fullName.split(' ').first
+                    : 'Alguém';
+              } catch (_) {
+                senderLabel = 'Alguém';
+              }
+            } else {
+              senderLabel = '';
+            }
+
+            final prefix = senderLabel.isNotEmpty ? '$senderLabel: ' : '';
+            final preview = rawText.isNotEmpty
+                ? '$prefix$rawText'
+                : '${prefix}📷 Foto';
+
+            lastMessages[identifier] = preview;
             if (response['created_at'] != null) {
-              lastMessageTimes[identifier] = DateTime.parse(
-                response['created_at'],
-              );
+              lastMessageTimes[identifier] =
+                  DateTime.parse(response['created_at']).toLocal();
             }
           }
+
+          // Count unread messages since last time the user opened this chat
+          final prefs = await SharedPreferences.getInstance();
+          final lastReadStr = prefs.getString('last_read_$identifier');
+          final unreadQuery = _supabaseClient
+              .from('mensagens')
+              .select('id')
+              .eq('batepapo_id', chatId)
+              .neq('user_id', userId);
+
+          final unreadResp = lastReadStr != null
+              ? await unreadQuery.gt('created_at', lastReadStr)
+              : await unreadQuery;
+          unreadCounts[identifier] = (unreadResp as List).length;
         } catch (_) {}
       }
 
@@ -321,6 +370,15 @@ class ChatRepositoryImpl implements ChatRepository {
         ...allChatEntities.map((c) => fetchLastMsg(c.id, true)),
         ...allGuideEntities.map((g) => fetchLastMsg(g.id, false)),
       ]);
+
+      // Apply unread counts to chat and guide entities
+      current = current?.copyWith(unreadCount: unreadCounts[current!.id] ?? 0);
+      history = history
+          .map((c) => c.copyWith(unreadCount: unreadCounts[c.id] ?? 0))
+          .toList();
+      guides = guides
+          .map((g) => g.copyWith(unreadCount: unreadCounts[g.id] ?? 0))
+          .toList();
 
       final chatData = ChatData(
         currentMission: current,
@@ -339,6 +397,61 @@ class ChatRepositoryImpl implements ChatRepository {
       }
       return Left(Exception('Erro ao carregar chat: $e'));
     }
+  }
+
+  @override
+  Stream<Either<Exception, ChatData>> watchChatData() {
+    late StreamController<Either<Exception, ChatData>> controller;
+    RealtimeChannel? messagesSubscription;
+    Timer? reloadDebounce;
+    var isReloading = false;
+    var pendingReload = false;
+
+    Future<void> emitLatest() async {
+      if (controller.isClosed) return;
+      if (isReloading) {
+        pendingReload = true;
+        return;
+      }
+
+      isReloading = true;
+      final result = await getChatData();
+      if (!controller.isClosed) {
+        controller.add(result);
+      }
+      isReloading = false;
+
+      if (pendingReload) {
+        pendingReload = false;
+        await emitLatest();
+      }
+    }
+
+    void scheduleReload() {
+      reloadDebounce?.cancel();
+      reloadDebounce = Timer(const Duration(milliseconds: 350), emitLatest);
+    }
+
+    controller = StreamController<Either<Exception, ChatData>>(
+      onListen: () {
+        emitLatest();
+        messagesSubscription = _supabaseClient
+            .channel('public:mensagens:chat-list')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'mensagens',
+              callback: (_) => scheduleReload(),
+            )
+            .subscribe();
+      },
+      onCancel: () {
+        reloadDebounce?.cancel();
+        messagesSubscription?.unsubscribe();
+      },
+    );
+
+    return controller.stream;
   }
 
   Future<void> _saveMessagesToCache(
@@ -417,110 +530,150 @@ class ChatRepositoryImpl implements ChatRepository {
   Stream<List<MessageEntity>> getMessages(
     String chatId, {
     bool isGroup = true,
-  }) async* {
+  }) {
     final cacheKey = isGroup ? 'group_$chatId' : 'dm_$chatId';
 
-    // 1. Yield details from cache immediately
-    final cachedMsgs = await _getMessagesFromCache(cacheKey);
-    if (cachedMsgs.isNotEmpty) {
-      yield cachedMsgs;
-    }
+    RealtimeChannel? messagesSubscription;
+    late StreamController<List<MessageEntity>> controller;
+    Timer? reloadDebounce;
 
-    // 2. Try online
-    String? realChatId;
-    try {
-      realChatId = await _resolveChatId(chatId, isGroup);
-    } catch (e) {
-      // If offline, _resolveChatId fails. We stop here if we couldn't resolve ID.
-      // If we yielded cached data, the user at least sees that.
-      return;
-    }
+    controller = StreamController<List<MessageEntity>>(
+      onCancel: () {
+        reloadDebounce?.cancel();
+        messagesSubscription?.unsubscribe();
+      },
+    );
 
-    if (realChatId == null) {
-      if (cachedMsgs.isEmpty) yield [];
-      return;
-    }
+    Future<void> _setup() async {
+      // 1. Emit cache immediately for instant display
+      try {
+        final cached = await _getMessagesFromCache(cacheKey);
+        if (!controller.isClosed && cached.isNotEmpty) controller.add(cached);
+      } catch (_) {}
 
-    try {
-      yield* _supabaseClient
-          .from('mensagens')
-          .stream(primaryKey: ['id'])
-          .eq('batepapo_id', realChatId)
-          .order('created_at', ascending: true)
-          .asyncMap((data) async {
-            final messages = <MessageEntity>[];
-            final currentUser = _supabaseClient.auth.currentUser;
+      // 2. Resolve the actual batepapo_id
+      String? chatRoomId;
+      try {
+        chatRoomId = await _resolveChatId(chatId, isGroup);
+      } catch (_) {
+        return;
+      }
+      if (chatRoomId == null || controller.isClosed) return;
 
-            // Collect unique user IDs from messages to fetch them in batch (optimization)
-            final userIds = data.map((e) => e['user_id'] as String).toSet();
-            Map<String, Map<String, dynamic>> userMap = {};
+      final currentUser = _supabaseClient.auth.currentUser;
+      final Map<String, Map<String, dynamic>> userCache = {};
 
-            if (userIds.isNotEmpty) {
-              try {
-                final usersResponse = await _supabaseClient
-                    .from('users')
-                    .select('id, nome, foto, cargo')
-                    .inFilter('id', userIds.toList());
+      Future<List<MessageEntity>> processRows(List<dynamic> rows) async {
+        final userIds = rows.map((e) => e['user_id'] as String).toSet();
+        final uncached =
+            userIds.where((id) => !userCache.containsKey(id)).toList();
 
-                for (var u in usersResponse as List) {
-                  userMap[u['id']] = u as Map<String, dynamic>;
-                }
-              } catch (e) {
-                // Offline or error fetching users
-              }
+        if (uncached.isNotEmpty) {
+          try {
+            final resp = await _supabaseClient
+                .from('users')
+                .select('id, nome, foto, cargo')
+                .inFilter('id', uncached);
+            for (final u in resp as List) {
+              userCache[u['id'] as String] = u as Map<String, dynamic>;
             }
+          } catch (_) {}
+        }
 
-            for (final msg in data) {
-              final userId = msg['user_id'] as String;
-              final userData = userMap[userId];
+        final messages = <MessageEntity>[];
+        for (final msg in rows) {
+          try {
+            final uid = msg['user_id'] as String;
+            final userData = userCache[uid];
+            final isMe = currentUser?.id == uid;
+            final role = userData?['cargo'] as String?;
+            final isGuide = role?.toLowerCase().contains('guia') ?? false;
 
-              final isMe = currentUser?.id == userId;
-              final role = userData?['cargo'] as String?;
-              final isGuide = role?.toLowerCase().contains('guia') ?? false;
+            messages.add(
+              MessageEntity(
+                id: msg['id'] as String,
+                text: (msg['mensagem'] as String?) ?? '',
+                timestamp:
+                    DateTime.parse(msg['created_at'] as String).toLocal(),
+                type: isMe
+                    ? MessageType.me
+                    : (isGuide ? MessageType.guide : MessageType.other),
+                userName: userData?['nome'] as String?,
+                userAvatarUrl: userData?['foto'] as String?,
+                guideRole: role,
+                attachmentUrl: msg['imagem'] as String?,
+                repliedToMessage: msg['id_mensagem_respondida'] != null
+                    ? messages.firstWhere(
+                        (m) => m.id == msg['id_mensagem_respondida'],
+                        orElse: () => MessageEntity(
+                          id: 'deleted',
+                          text: 'Mensagem não encontrada',
+                          timestamp: DateTime.fromMicrosecondsSinceEpoch(0),
+                          type: MessageType.other,
+                          isEdited: false,
+                          isDeleted: true,
+                        ),
+                      )
+                    : null,
+                isEdited: (msg['editado'] as bool?) ?? false,
+                isDeleted: (msg['deletado'] as bool?) ?? false,
+              ),
+            );
+          } catch (_) {}
+        }
 
-              MessageType type = isMe
-                  ? MessageType.me
-                  : (isGuide ? MessageType.guide : MessageType.other);
+        _saveMessagesToCache(cacheKey, messages);
+        return messages;
+      }
 
-              messages.add(
-                MessageEntity(
-                  id: msg['id'],
-                  text: msg['mensagem'] ?? '',
-                  timestamp: DateTime.parse(msg['created_at']),
-                  type: type,
-                  userName: userData?['nome'],
-                  userAvatarUrl: userData?['foto'],
-                  guideRole: role,
-                  attachmentUrl: msg['imagem'],
-                  repliedToMessage: msg['id_mensagem_respondida'] != null
-                      ? messages.firstWhere(
-                          (m) => m.id == msg['id_mensagem_respondida'],
-                          orElse: () => MessageEntity(
-                            id: 'deleted',
-                            text: 'Mensagem não encontrada',
-                            timestamp: DateTime.fromMicrosecondsSinceEpoch(0),
-                            type: MessageType.other,
-                            isEdited: false,
-                            isDeleted: true,
-                          ),
-                        )
-                      : null,
-                  isEdited: msg['editado'] ?? false,
-                  isDeleted: msg['deletado'] ?? false,
-                ),
-              );
-            }
+      Future<void> reloadMessages() async {
+        if (controller.isClosed || chatRoomId == null) return;
 
-            // Side-effect: Update cache
-            _saveMessagesToCache(cacheKey, messages);
+        try {
+          final rows = await _supabaseClient
+              .from('mensagens')
+              .select(
+                'id, mensagem, created_at, user_id, imagem, '
+                'id_mensagem_respondida, editado, deletado',
+              )
+              .eq('batepapo_id', chatRoomId!)
+              .order('created_at', ascending: true);
 
-            return messages;
-          });
-    } catch (e) {
-      // If stream fails (shouldn't throw easily as Supabase handles reconnects, but if initial conn fails...),
-      // We rely on the initial yield.
-      print('Error in stream: $e');
+          final messages = await processRows(rows as List);
+          if (!controller.isClosed) controller.add(messages);
+        } catch (error) {
+          if (!controller.isClosed) controller.addError(error);
+        }
+      }
+
+      void scheduleReload() {
+        reloadDebounce?.cancel();
+        reloadDebounce = Timer(
+          const Duration(milliseconds: 150),
+          reloadMessages,
+        );
+      }
+
+      await reloadMessages();
+
+      messagesSubscription = _supabaseClient
+          .channel('public:mensagens:$chatRoomId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'mensagens',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'batepapo_id',
+              value: chatRoomId,
+            ),
+            callback: (_) => scheduleReload(),
+          )
+          .subscribe();
     }
+
+    _setup();
+    return controller.stream;
   }
 
   @override
@@ -579,8 +732,19 @@ class ChatRepositoryImpl implements ChatRepository {
       'mensagem': text,
       'imagem': imageUrl,
       'id_mensagem_respondida': replyToId,
-      'created_at': DateTime.now().toIso8601String(),
+      // 'created_at' omitted — Supabase sets UTC now() by default
     });
+  }
+
+  @override
+  Future<void> markChatAsRead(String chatId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'last_read_$chatId',
+        DateTime.now().toUtc().toIso8601String(),
+      );
+    } catch (_) {}
   }
 
   Future<void> _saveGroupDetailsToCache(

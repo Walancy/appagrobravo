@@ -26,17 +26,13 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
-import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
-import 'package:agrobravo/features/home/presentation/widgets/mission_alert_dialog.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/emergency_modal.dart';
 import 'package:agrobravo/core/components/feed_shimmer.dart';
 import 'package:agrobravo/features/home/presentation/pages/community_tab.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
-import 'package:agrobravo/features/profile/presentation/widgets/profile_nag_modal.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 import 'package:agrobravo/features/home/presentation/widgets/welcome_mission_modal.dart';
-import 'package:agrobravo/features/documents/presentation/widgets/documents_nag_modal.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
 import 'dart:async';
 
@@ -49,8 +45,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = -1;
-  static bool _hasShownIncompleteProfileModal = false;
-  static bool _hasShownPendingDocumentsModal = false;
   static bool _isShowingWelcomeModal = false;
   @override
   void initState() {
@@ -110,84 +104,12 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _showMissionAlert(BuildContext context, MissionEntity mission) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => MissionAlertDialog(
-        mission: mission,
-        onDocumentsTap: () {
-          Navigator.pop(dialogContext);
-          context.push('/documents');
-        },
-      ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<FeedCubit>().acknowledgeMissionAlert(
-          mission.id,
-          permanently: true,
-        );
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => getIt<FeedCubit>()..loadFeed(),
       child: MultiBlocListener(
         listeners: [
-          BlocListener<FeedCubit, FeedState>(
-            listener: (context, state) {
-              state.maybeMap(
-                loaded: (s) {
-                  if (s.missionToAlert != null) {
-                    _showMissionAlert(context, s.missionToAlert!);
-                  }
-                },
-                orElse: () {},
-              );
-            },
-          ),
-          BlocListener<ProfileCubit, ProfileState>(
-            listener: (context, state) {
-              state.maybeMap(
-                loaded: (s) {
-                  if (!s.profile.isComplete && !_hasShownIncompleteProfileModal && !_isShowingWelcomeModal) {
-                    _hasShownIncompleteProfileModal = true;
-                    Future.delayed(const Duration(seconds: 2), () {
-                      if (context.mounted && !_isShowingWelcomeModal) {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => const ProfileNagModal(),
-                        );
-                      }
-                    });
-                  }
-                },
-                orElse: () {},
-              );
-            },
-          ),
-          BlocListener<DocumentsCubit, DocumentsState>(
-            listener: (context, state) {
-              if (state.hasPendingAction && !_hasShownPendingDocumentsModal && !_isShowingWelcomeModal) {
-                _hasShownPendingDocumentsModal = true;
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (context.mounted && !_isShowingWelcomeModal) {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const DocumentsNagModal(),
-                    );
-                  }
-                });
-              }
-            },
-          ),
           BlocListener<ItineraryCubit, ItineraryState>(
             listener: (context, state) {
               state.maybeWhen(

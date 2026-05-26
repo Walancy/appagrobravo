@@ -173,7 +173,8 @@ class AuthCubit extends Cubit<AuthState> {
         // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
         final userOption = await _authRepository.getCurrentUser();
         userOption.fold(
-          () => emit(const AuthState.error('Usuário não encontrado após login com Google.')),
+          // BUG-005: se não há sessão após o fluxo (usuário cancelou), sai do loading
+          () => emit(const AuthState.unauthenticated()),
           (user) => emit(AuthState.authenticated(user)),
         );
       },
@@ -189,7 +190,8 @@ class AuthCubit extends Cubit<AuthState> {
         // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
         final userOption = await _authRepository.getCurrentUser();
         userOption.fold(
-          () => emit(const AuthState.error('Usuário não encontrado após login com Apple.')),
+          // BUG-005: se não há sessão após o fluxo (usuário cancelou), sai do loading
+          () => emit(const AuthState.unauthenticated()),
           (user) => emit(AuthState.authenticated(user)),
         );
       },

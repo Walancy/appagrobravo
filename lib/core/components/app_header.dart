@@ -36,9 +36,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildHeaderBackground(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Dynamic height: status bar height (when used as appBar) + fixed content area
+    final topPad = MediaQuery.of(context).padding.top;
+    const contentH = 60.0;
+    final totalH = topPad + contentH;
 
     final inner = Container(
-      height: 90,
+      height: totalH,
       width: double.infinity,
       decoration: BoxDecoration(
         color: isDark
@@ -142,7 +146,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(90); // Constant base size
+  Size get preferredSize => const Size.fromHeight(60); // Content area below status bar
 }
 
 class HeaderSpacer extends StatelessWidget {
@@ -150,6 +154,9 @@ class HeaderSpacer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(height: 90);
+    // When extendBodyBehindAppBar: true, Flutter already sets MediaQuery.padding.top
+    // to (statusBarHeight + appBar.preferredSize.height) for the body subtree.
+    // So we just use padding.top directly — no need to add anything.
+    return SizedBox(height: MediaQuery.of(context).padding.top);
   }
 }

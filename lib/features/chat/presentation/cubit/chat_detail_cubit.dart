@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:bloc/bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -25,11 +26,15 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
     _isGroup = isGroup;
     emit(const ChatDetailState.loading());
 
+    // Mark as read so unread badge resets on next chat list load
+    unawaited(_repository.markChatAsRead(chatId));
+
     _messagesSubscription?.cancel();
     _messagesSubscription = _repository
         .getMessages(chatId, isGroup: isGroup)
         .listen(
           (messages) {
+            unawaited(_repository.markChatAsRead(chatId));
             emit(ChatDetailState.loaded(messages));
           },
           onError: (error) {

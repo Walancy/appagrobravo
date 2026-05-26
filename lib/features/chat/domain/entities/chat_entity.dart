@@ -24,6 +24,7 @@ abstract class GuideEntity with _$GuideEntity {
     required String name,
     required String role,
     String? avatarUrl,
+    @Default(0) int unreadCount,
   }) = _GuideEntity;
 }
 

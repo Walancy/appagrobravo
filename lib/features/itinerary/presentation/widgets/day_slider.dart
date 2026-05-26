@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/tokens/app_colors.dart';
-import '../../../../core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
 
 class DaySlider extends StatefulWidget {
   final DateTime startDate;
@@ -39,6 +39,13 @@ class _DaySliderState extends State<DaySlider> {
   @override
   void didUpdateWidget(DaySlider oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // BUG-012: recalculate _days when group dates change (e.g. after pull-to-refresh)
+    if (widget.startDate != oldWidget.startDate ||
+        widget.endDate != oldWidget.endDate) {
+      setState(() {
+        _days = _getDaysInBetween(widget.startDate, widget.endDate);
+      });
+    }
     if (widget.selectedDate != oldWidget.selectedDate) {
       _scrollToSelected();
     }

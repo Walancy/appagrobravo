@@ -116,7 +116,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final userResponse = await _supabaseClient
           .from('users')
           .select(
-            'id, nome, foto, cargo, observacoes, capa_perfil, email, telefone, restricoes_alimentares, restricoes_medicas, empresa, cpf, ssn, cep, estado, cidade, rua, numero, bairro, complemento, datanascimento, data_nascimento, nacionalidade, n_passaporte, pais, nome_cracha, contato_emergencia',
+            'id, nome, foto, cargo, observacoes, capa_perfil, email, telefone, restricoes_alimentares, restricoes_medicas, empresa, cpf, ssn, cep, estado, cidade, rua, numero, bairro, complemento, datanascimento, data_nascimento, nacionalidade, n_passaporte, pais, nome_cracha, contato_emergencia, nome_contato_emergencia, grau_parentesco_emergencia',
           )
           .eq('id', userId)
           .maybeSingle();

@@ -18,7 +18,7 @@ class ChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<ChatCubit>()..loadChatData(),
+      create: (context) => getIt<ChatCubit>()..watchChatData(),
       child: BlocBuilder<ChatCubit, ChatState>(
         builder: (context, state) {
           return Scaffold(
@@ -31,7 +31,8 @@ class ChatPage extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   children: [
                     const HeaderSpacer(),
-                    _buildHistoryTile(context, data),
+                    if (data.history.isNotEmpty)
+                      _buildHistoryTile(context, data),
                     if (data.currentMission != null) ...[
                       _buildSectionLabel(context, 'MISSÃO ATUAL'),
                       _ChatListItem(
@@ -39,8 +40,22 @@ class ChatPage extends StatelessWidget {
                         isCurrent: true,
                         lastMessage: data.lastMessages[data.currentMission!.id],
                         lastMessageTime: data.lastMessageTimes[data.currentMission!.id],
+                        onReturn: () => context.read<ChatCubit>().loadChatData(),
                       ),
-                    ] else
+                    ],
+                    if (data.guides.isNotEmpty) ...[
+                      _buildSectionLabel(context, 'GUIAS'),
+                      ...data.guides.map(
+                        (g) => _ChatListItem(
+                          guide: g,
+                          isCurrent: true,
+                          lastMessage: data.lastMessages[g.id],
+                          lastMessageTime: data.lastMessageTimes[g.id],
+                          onReturn: () => context.read<ChatCubit>().loadChatData(),
+                        ),
+                      ),
+                    ],
+                    if (data.currentMission == null && data.guides.isEmpty)
                       _buildEmptyState(context),
                     const SizedBox(height: 80),
                   ],
@@ -83,7 +98,6 @@ class ChatPage extends StatelessWidget {
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     _HistoryPage(
                       historyChats: data.history,
-                      guideChats: data.guides,
                       lastMessages: data.lastMessages,
                       lastMessageTimes: data.lastMessageTimes,
                     ),
@@ -184,13 +198,11 @@ class ChatPage extends StatelessWidget {
 
 class _HistoryPage extends StatelessWidget {
   final List<ChatEntity> historyChats;
-  final List<GuideEntity> guideChats;
   final Map<String, String> lastMessages;
   final Map<String, DateTime> lastMessageTimes;
 
   const _HistoryPage({
     required this.historyChats,
-    required this.guideChats,
     required this.lastMessages,
     required this.lastMessageTimes,
   });
@@ -209,17 +221,6 @@ class _HistoryPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.only(top: 8, bottom: 80),
               children: [
-                if (guideChats.isNotEmpty) ...[
-                  _buildSectionLabel(context, 'GUIAS'),
-                  ...guideChats.map(
-                    (g) => _ChatListItem(
-                      guide: g,
-                      isCurrent: true,
-                      lastMessage: lastMessages[g.id],
-                      lastMessageTime: lastMessageTimes[g.id],
-                    ),
-                  ),
-                ],
                 if (historyChats.isNotEmpty) ...[
                   _buildSectionLabel(context, 'ANTERIORES'),
                   ...historyChats.map(
@@ -231,7 +232,7 @@ class _HistoryPage extends StatelessWidget {
                     ),
                   ),
                 ],
-                if (guideChats.isEmpty && historyChats.isEmpty)
+                if (historyChats.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(40),
                     child: Center(
@@ -276,6 +277,7 @@ class _ChatListItem extends StatelessWidget {
   final bool isCurrent;
   final String? lastMessage;
   final DateTime? lastMessageTime;
+  final VoidCallback? onReturn;
 
   const _ChatListItem({
     this.chat,
@@ -283,6 +285,7 @@ class _ChatListItem extends StatelessWidget {
     required this.isCurrent,
     this.lastMessage,
     this.lastMessageTime,
+    this.onReturn,
   });
 
   String _formatTime(DateTime date) {
@@ -303,7 +306,7 @@ class _ChatListItem extends StatelessWidget {
     final subtitle = lastMessage ?? chat?.subtitle ?? guide?.role ?? '';
     final imageUrl = chat?.imageUrl ?? guide?.avatarUrl;
     final time = lastMessageTime != null ? _formatTime(lastMessageTime!) : '';
-    final unreadCount = chat?.unreadCount ?? 0;
+    final unreadCount = chat?.unreadCount ?? guide?.unreadCount ?? 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
@@ -377,26 +380,27 @@ class _ChatListItem extends StatelessWidget {
           ],
         ],
       ),
-      onTap: () {
+      onTap: () async {
         if (chat != null) {
-          Navigator.push(
+          await Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => ChatDetailPage(chat: chat!),
+              pageBuilder: (_, _, _) => ChatDetailPage(chat: chat!),
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
             ),
           );
         } else if (guide != null) {
-          Navigator.push(
+          await Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => IndividualChatPage(guide: guide!),
+              pageBuilder: (_, _, _) => IndividualChatPage(guide: guide!),
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
             ),
           );
         }
+        onReturn?.call();
       },
     );
   }

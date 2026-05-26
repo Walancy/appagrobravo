@@ -424,9 +424,10 @@ class FeedRepositoryImpl implements FeedRepository {
       final user = response['users'] as Map<String, dynamic>?;
       final missao = response['missoes'] as Map<String, dynamic>?;
 
-      final likesCount = 0;
-      final commentsCount = 0;
-      final isLiked = false;
+      // BUG-017: use const for literal values (prefer_const_declarations lint)
+      const likesCount = 0;
+      const commentsCount = 0;
+      const isLiked = false;
 
       final model = PostModel.fromJson(response).copyWith(
         userName: user?['nome'],
@@ -907,18 +908,11 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // 3. Ensure a notification record exists for this mission addition
+      // BUG-007: replaced non-atomic check-then-insert with upsert to eliminate
+      // race condition that could create duplicate notifications.
       try {
-        final existingNotification = await _supabaseClient
-            .from('notificacoes')
-            .select('id')
-            .eq('user_id', userId)
-            .eq('assunto', 'missionUpdate')
-            .eq('grupo_id', groupResponse['grupo_id'])
-            .limit(1)
-            .maybeSingle();
-
-        if (existingNotification == null) {
-          await _supabaseClient.from('notificacoes').insert({
+        await _supabaseClient.from('notificacoes').upsert(
+          {
             'user_id': userId,
             'assunto': 'missionUpdate',
             'grupo_id': groupResponse['grupo_id'],
@@ -926,8 +920,9 @@ class FeedRepositoryImpl implements FeedRepository {
             'titulo': 'Nova Missão',
             'mensagem': 'Você foi adicionado à missão ${missionData['nome']}!',
             'lido': false,
-          });
-        }
+          },
+          ignoreDuplicates: true,
+        );
       } catch (e) {
         debugPrint('Erro ao criar notificação de missão: $e');
       }

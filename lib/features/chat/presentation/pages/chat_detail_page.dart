@@ -11,6 +11,7 @@ import 'package:agrobravo/features/chat/presentation/cubit/chat_detail_state.dar
 import 'package:agrobravo/features/chat/presentation/pages/group_info_page.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
+import 'package:agrobravo/features/chat/presentation/widgets/image_preview_page.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:intl/intl.dart';
 
@@ -88,9 +89,26 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
-      final image = await picker.pickImage(source: source);
+      final image = await picker.pickImage(source: source, imageQuality: 85);
       if (image != null && mounted) {
-        context.read<ChatDetailCubit>().sendMessage('', image: image);
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => ImagePreviewPage(
+              image: image,
+              onSend: (img, caption) {
+                context.read<ChatDetailCubit>().sendMessage(
+                  caption,
+                  image: img,
+                  replyToId: _replyingToMessage?.id,
+                );
+                if (_replyingToMessage != null) {
+                  setState(() => _replyingToMessage = null);
+                }
+              },
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -135,16 +153,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             ),
           );
         },
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.notifications_none_rounded,
-              size: 28,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [

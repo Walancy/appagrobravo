@@ -15,7 +15,7 @@ class ChatShimmer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 100),
+          SizedBox(height: MediaQuery.of(context).padding.top), // Header spacer
 
           // History tile
           Padding(

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/itinerary_item.dart';
-import '../../../../core/tokens/app_colors.dart';
-import 'itinerary_cards.dart';
-import '../cubit/itinerary_cubit.dart';
-
-import 'itinerary_filter_modal.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_cards.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filter_modal.dart';
 
 class ItineraryList extends StatelessWidget {
   final List<ItineraryItemEntity> items;

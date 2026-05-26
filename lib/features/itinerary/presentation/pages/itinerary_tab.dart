@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../core/tokens/app_colors.dart';
-import '../../domain/entities/itinerary_group.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
-import '../../../../core/tokens/app_text_styles.dart';
-import '../cubit/itinerary_cubit.dart';
-import '../widgets/day_slider.dart';
-import '../widgets/itinerary_list.dart';
-import '../widgets/itinerary_filter_modal.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/day_slider.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_list.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filter_modal.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
-import '../widgets/mission_header_card.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/mission_header_card.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
@@ -40,7 +40,8 @@ class ItineraryTab extends StatelessWidget {
                 ),
               ),
               loaded: (group, items, travelTimes, pendingDocs, _) {
-                return ItineraryContent(
+                // BUG-013: use private _ItineraryContent to enforce BlocProvider requirement
+                return _ItineraryContent(
                   group: group,
                   items: items,
                   travelTimes: travelTimes,
@@ -55,12 +56,14 @@ class ItineraryTab extends StatelessWidget {
   }
 }
 
-class ItineraryContent extends StatefulWidget {
+// BUG-013: private widget — must only be instantiated inside ItineraryTab
+// which provides the required BlocProvider<ItineraryCubit>.
+class _ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
 
-  const ItineraryContent({
+  const _ItineraryContent({
     super.key,
     required this.group,
     required this.items,
@@ -68,18 +71,18 @@ class ItineraryContent extends StatefulWidget {
   });
 
   @override
-  State<ItineraryContent> createState() => _ItineraryContentState();
+  State<_ItineraryContent> createState() => _ItineraryContentState();
 }
 
-class _ItineraryContentState extends State<ItineraryContent> {
+class _ItineraryContentState extends State<_ItineraryContent> {
   DateTime? _selectedDate;
   ItineraryFilters _filters = const ItineraryFilters();
 
   @override
   void initState() {
     super.initState();
-    // Default to first day if valid range
-    // Default to current date if valid range
+    // BUG-018: removed duplicate/contradicting comment. Default to today if in range,
+    // otherwise default to the group start date.
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     if (widget.group.startDate.year > 0) {
@@ -275,8 +278,6 @@ class _ItineraryContentState extends State<ItineraryContent> {
       ),
     );
   }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
+  // BUG-010: removed dead method _isSameDay — was never called in this class.
+  // Use Utils.isSameDay from day_slider.dart if needed.
 }

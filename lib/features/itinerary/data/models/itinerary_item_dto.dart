@@ -117,13 +117,8 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
         break;
       case 'EVENTO':
       default:
-        if (typeString.toUpperCase() == 'FLIGHT') {
-          type = ItineraryType.flight;
-        } else if (typeString.toUpperCase() == 'RETURN') {
-          type = ItineraryType.returnType;
-        } else {
-          type = ItineraryType.other;
-        }
+        // BUG-011: removed unreachable FLIGHT/RETURN checks — they have explicit cases above.
+        type = ItineraryType.other;
     }
 
     DateTime? start;

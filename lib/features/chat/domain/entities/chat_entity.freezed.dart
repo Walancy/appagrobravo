@@ -292,7 +292,7 @@ as int,
 /// @nodoc
 mixin _$GuideEntity {
 
- String get id; String get name; String get role; String? get avatarUrl;
+ String get id; String get name; String get role; String? get avatarUrl; int get unreadCount;
 /// Create a copy of GuideEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,16 +303,16 @@ $GuideEntityCopyWith<GuideEntity> get copyWith => _$GuideEntityCopyWithImpl<Guid
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GuideEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GuideEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.unreadCount, unreadCount) || other.unreadCount == unreadCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,avatarUrl);
+int get hashCode => Object.hash(runtimeType,id,name,role,avatarUrl,unreadCount);
 
 @override
 String toString() {
-  return 'GuideEntity(id: $id, name: $name, role: $role, avatarUrl: $avatarUrl)';
+  return 'GuideEntity(id: $id, name: $name, role: $role, avatarUrl: $avatarUrl, unreadCount: $unreadCount)';
 }
 
 
@@ -323,7 +323,7 @@ abstract mixin class $GuideEntityCopyWith<$Res>  {
   factory $GuideEntityCopyWith(GuideEntity value, $Res Function(GuideEntity) _then) = _$GuideEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String role, String? avatarUrl
+ String id, String name, String role, String? avatarUrl, int unreadCount
 });
 
 
@@ -340,13 +340,14 @@ class _$GuideEntityCopyWithImpl<$Res>
 
 /// Create a copy of GuideEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? avatarUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? role = null,Object? avatarUrl = freezed,Object? unreadCount = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,unreadCount: null == unreadCount ? _self.unreadCount : unreadCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -431,10 +432,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String role,  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String role,  String? avatarUrl,  int unreadCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GuideEntity() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.avatarUrl,_that.unreadCount);case _:
   return orElse();
 
 }
@@ -452,10 +453,10 @@ return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String role,  String? avatarUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String role,  String? avatarUrl,  int unreadCount)  $default,) {final _that = this;
 switch (_that) {
 case _GuideEntity():
-return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.avatarUrl,_that.unreadCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -472,10 +473,10 @@ return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String role,  String? avatarUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String role,  String? avatarUrl,  int unreadCount)?  $default,) {final _that = this;
 switch (_that) {
 case _GuideEntity() when $default != null:
-return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
+return $default(_that.id,_that.name,_that.role,_that.avatarUrl,_that.unreadCount);case _:
   return null;
 
 }
@@ -487,13 +488,14 @@ return $default(_that.id,_that.name,_that.role,_that.avatarUrl);case _:
 
 
 class _GuideEntity implements GuideEntity {
-  const _GuideEntity({required this.id, required this.name, required this.role, this.avatarUrl});
-  
+  const _GuideEntity({required this.id, required this.name, required this.role, this.avatarUrl, this.unreadCount = 0});
+
 
 @override final  String id;
 @override final  String name;
 @override final  String role;
 @override final  String? avatarUrl;
+@override@JsonKey() final  int unreadCount;
 
 /// Create a copy of GuideEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -505,16 +507,16 @@ _$GuideEntityCopyWith<_GuideEntity> get copyWith => __$GuideEntityCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GuideEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GuideEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.role, role) || other.role == role)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.unreadCount, unreadCount) || other.unreadCount == unreadCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,role,avatarUrl);
+int get hashCode => Object.hash(runtimeType,id,name,role,avatarUrl,unreadCount);
 
 @override
 String toString() {
-  return 'GuideEntity(id: $id, name: $name, role: $role, avatarUrl: $avatarUrl)';
+  return 'GuideEntity(id: $id, name: $name, role: $role, avatarUrl: $avatarUrl, unreadCount: $unreadCount)';
 }
 
 
@@ -525,7 +527,7 @@ abstract mixin class _$GuideEntityCopyWith<$Res> implements $GuideEntityCopyWith
   factory _$GuideEntityCopyWith(_GuideEntity value, $Res Function(_GuideEntity) _then) = __$GuideEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String role, String? avatarUrl
+ String id, String name, String role, String? avatarUrl, int unreadCount
 });
 
 
@@ -542,13 +544,14 @@ class __$GuideEntityCopyWithImpl<$Res>
 
 /// Create a copy of GuideEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? avatarUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? role = null,Object? avatarUrl = freezed,Object? unreadCount = null,}) {
   return _then(_GuideEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,unreadCount: null == unreadCount ? _self.unreadCount : unreadCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

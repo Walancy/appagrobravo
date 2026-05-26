@@ -10,6 +10,7 @@ import 'package:agrobravo/features/chat/presentation/cubit/chat_detail_cubit.dar
 import 'package:agrobravo/features/chat/presentation/cubit/chat_detail_state.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
+import 'package:agrobravo/features/chat/presentation/widgets/image_preview_page.dart';
 import 'package:agrobravo/core/di/injection.dart';
 
 class IndividualChatPage extends StatelessWidget {
@@ -85,9 +86,19 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
-      final image = await picker.pickImage(source: source);
+      final image = await picker.pickImage(source: source, imageQuality: 85);
       if (image != null && mounted) {
-        context.read<ChatDetailCubit>().sendMessage('', image: image);
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => ImagePreviewPage(
+              image: image,
+              onSend: (img, caption) {
+                context.read<ChatDetailCubit>().sendMessage(caption, image: img);
+              },
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/tokens/app_colors.dart';
-import '../../../../core/tokens/app_text_styles.dart';
-import '../../domain/entities/itinerary_item.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
 
 class ItineraryFilters {
   final Set<ItineraryType> types;
@@ -132,7 +132,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       side: BorderSide(
                         color: isSelected
                             ? AppColors.primary
-                            : Theme.of(context).dividerColor.withOpacity(0.1),
+                            : Theme.of(context).dividerColor.withValues(alpha: 0.1),
                       ),
                     ),
                     showCheckmark: false,
@@ -279,6 +279,20 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
+                    // BUG-004: Validate that endTime is not before startTime
+                    if (_selectedStartTime != null && _selectedEndTime != null) {
+                      final startMin = _selectedStartTime!.hour * 60 + _selectedStartTime!.minute;
+                      final endMin = _selectedEndTime!.hour * 60 + _selectedEndTime!.minute;
+                      if (endMin <= startMin) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Hora fim deve ser posterior à hora início.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
+                    }
                     Navigator.pop(
                       context,
                       ItineraryFilters(
@@ -354,10 +368,10 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
   }
 
   Future<void> _pickTime(bool isStart) async {
-    final initialTime = isStart 
+    final initialTime = isStart
         ? (_selectedStartTime ?? TimeOfDay.now())
         : (_selectedEndTime ?? TimeOfDay.now());
-        
+
     final time = await showTimePicker(
       context: context,
       initialTime: initialTime,
@@ -374,14 +388,46 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
         );
       },
     );
-    if (time != null) {
-      setState(() {
-        if (isStart) {
-          _selectedStartTime = time;
-        } else {
-          _selectedEndTime = time;
+    if (time == null) return;
+
+    // BUG-004: Validate that endTime > startTime immediately on pick
+    if (!isStart && _selectedStartTime != null) {
+      final startMin = _selectedStartTime!.hour * 60 + _selectedStartTime!.minute;
+      final endMin = time.hour * 60 + time.minute;
+      if (endMin <= startMin) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Hora fim deve ser posterior à hora início.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
-      });
+        return;
+      }
     }
+    if (isStart && _selectedEndTime != null) {
+      final startMin = time.hour * 60 + time.minute;
+      final endMin = _selectedEndTime!.hour * 60 + _selectedEndTime!.minute;
+      if (startMin >= endMin) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Hora início deve ser anterior à hora fim.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    setState(() {
+      if (isStart) {
+        _selectedStartTime = time;
+      } else {
+        _selectedEndTime = time;
+      }
+    });
   }
 }

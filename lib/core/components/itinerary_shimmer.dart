@@ -16,7 +16,7 @@ class ItineraryShimmer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(height: 100), // Header spacer
+          SizedBox(height: MediaQuery.of(context).padding.top), // Header spacer
           // Day Slider Shimmer
           SizedBox(
             height: 80,

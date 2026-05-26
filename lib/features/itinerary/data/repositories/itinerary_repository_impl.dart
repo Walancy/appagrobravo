@@ -128,8 +128,12 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final prefs = await SharedPreferences.getInstance();
       if (groupId != null) {
         await prefs.setString('cached_user_group_id', groupId);
+        // BUG-006: clear the "no group" flag when user has a group
+        await prefs.remove('cached_user_has_no_group');
       } else {
         await prefs.remove('cached_user_group_id');
+        // BUG-006: explicitly record that the server confirmed user has no group
+        await prefs.setBool('cached_user_has_no_group', true);
       }
     } catch (e) {
       debugPrint('Erro ao salvar ID do grupo no cache: $e');
@@ -255,18 +259,14 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       if (cached != null) {
         return Right(cached);
       }
-      // If cached is null, it might really be null (user has no group),
-      // but if error occurred we can't be sure.
-      // However if we had a success before where it was valid, it would be cached.
-      // If we had a success where it was null, we removed from cache.
-      // So if cache returns null, we can return null? Or error?
-      // Step 247 shows getUserGroupId handles maybeSingle.
-      // Returning Right(null) is safer than error if we consider "no group" a valid state.
-      // But if it's a network error, we should probably error unless we found "no group" in cache logic.
-      // My cache logic removes key if null. So _getUserGroupIdFromCache returns null if not found OR if correctly null?
-      // Actually if removed, it returns null.
-      // So we can't distinguish "not cached" from "cached as null" easily without a separate flag.
-      // But typically we only care if we HAVE a group ID cached.
+      // BUG-006: distinguish "user has no group" (confirmed by server) from network error
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final confirmedNoGroup = prefs.getBool('cached_user_has_no_group') ?? false;
+        if (confirmedNoGroup) {
+          return const Right(null);
+        }
+      } catch (_) {}
       return Left(Exception(e.toString()));
     }
   }
@@ -333,10 +333,11 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           final url = Uri.parse(
             'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng',
           );
+          // BUG-008: add timeout to avoid hanging the emergency UI indefinitely
           final response = await http.get(
             url,
             headers: {'User-Agent': 'AgroBravoApp/1.0'},
-          );
+          ).timeout(const Duration(seconds: 8));
 
           if (response.statusCode == 200) {
             final data = json.decode(response.body);

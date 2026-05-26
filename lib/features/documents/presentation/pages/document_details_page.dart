@@ -352,6 +352,8 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         // Users requested "preview of sent document" and "new screen".
         // Let's assume they might want to just see it or change metadata.
         // However, the current requirement is to upload.
+        // BUG-015: guard mounted before using context after async gap
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(

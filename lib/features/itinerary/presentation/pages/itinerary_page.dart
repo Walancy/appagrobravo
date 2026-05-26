@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../core/components/itinerary_shimmer.dart';
-import '../../../../core/tokens/app_colors.dart';
-import '../../../../core/tokens/app_text_styles.dart';
-import '../../domain/entities/itinerary_group.dart';
-import '../../domain/entities/itinerary_item.dart';
-import '../cubit/itinerary_cubit.dart';
-import '../widgets/day_slider.dart';
-import '../widgets/itinerary_list.dart';
-import '../widgets/mission_header_card.dart';
+import 'package:agrobravo/core/components/itinerary_shimmer.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
+import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/day_slider.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_list.dart';
+import 'package:agrobravo/features/itinerary/presentation/widgets/mission_header_card.dart';
 
 class ItineraryPage extends StatelessWidget {
   final String groupId;
@@ -42,13 +42,12 @@ class ItineraryPage extends StatelessWidget {
               error: (msg) => Center(child: Text('Erro: $msg')),
               loaded: (group, items, travelTimes, pendingDocs, _) {
                 final isEnded = group.endDate.isBefore(DateTime.now());
-                final displayPendingDocs = isEnded ? <String>[] : pendingDocs;
-
+                // BUG-009: pendingDocs was received but never used in build;
+                // document pending state is handled via DocumentsCubit in ItineraryTab.
                 return _ItineraryContent(
                   group: group,
                   items: items,
                   travelTimes: travelTimes,
-                  pendingDocs: displayPendingDocs,
                   isEnded: isEnded,
                 );
               },
@@ -65,14 +64,12 @@ class _ItineraryContent extends StatefulWidget {
   final ItineraryGroupEntity group;
   final List<ItineraryItemEntity> items;
   final List<Map<String, dynamic>> travelTimes;
-  final List<String> pendingDocs;
   final bool isEnded;
 
   const _ItineraryContent({
     required this.group,
     required this.items,
     required this.travelTimes,
-    required this.pendingDocs,
     required this.isEnded,
   });
 

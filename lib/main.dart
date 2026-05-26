@@ -104,8 +104,19 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('pt_BR', null);
 
+  final isFirebaseSupported = kIsWeb || 
+      defaultTargetPlatform == TargetPlatform.android || 
+      defaultTargetPlatform == TargetPlatform.iOS || 
+      defaultTargetPlatform == TargetPlatform.macOS;
+
   // Inicializa Firebase (necessário para push notifications)
-  await Firebase.initializeApp();
+  if (isFirebaseSupported) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      log('Erro ao inicializar Firebase: $e');
+    }
+  }
 
   await Supabase.initialize(
     url: dotenv.env['NEXT_PUBLIC_SUPABASE_URL']!,
@@ -117,11 +128,21 @@ void main() async {
 
   // Solicita permissão de push em paralelo — não bloqueia o app
   // O token FCM será salvo quando disponível (após APNS token do iOS ser emitido)
-  setupFCM();
+  if (isFirebaseSupported) {
+    try {
+      setupFCM();
+    } catch (e) {
+      log('Erro ao configurar FCM: $e');
+    }
+  }
+
+  // Variável para ativar/desativar a moldura de dispositivo para testes.
+  // Quando for para produção (release mode), a moldura será desativada automaticamente.
+  const bool showDeviceFrame = true;
 
   runApp(
     DevicePreview(
-      enabled: !kReleaseMode && kIsWeb,
+      enabled: showDeviceFrame && !kReleaseMode,
       builder: (context) => const AgroBravoApp(),
     ),
   );

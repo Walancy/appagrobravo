@@ -15,7 +15,7 @@ class ProfileShimmer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(height: 50), // Header spacer
+          SizedBox(height: MediaQuery.of(context).padding.top), // Header spacer
           // Cover & Avatar
           SizedBox(
             height: 230,

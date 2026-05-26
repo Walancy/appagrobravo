@@ -5,6 +5,7 @@ import 'package:agrobravo/features/chat/domain/entities/message_entity.dart';
 
 abstract class ChatRepository {
   Future<Either<Exception, ChatData>> getChatData();
+  Stream<Either<Exception, ChatData>> watchChatData();
   Stream<List<MessageEntity>> getMessages(String chatId, {bool isGroup = true});
   Future<void> sendMessage(
     String chatId,
@@ -16,4 +17,5 @@ abstract class ChatRepository {
   Future<void> editMessage(String messageId, String newText);
   Future<void> deleteMessages(List<String> messageIds);
   Future<Either<Exception, GroupDetailEntity>> getGroupDetails(String groupId);
+  Future<void> markChatAsRead(String chatId);
 }
