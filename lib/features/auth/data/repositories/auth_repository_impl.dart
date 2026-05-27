@@ -333,8 +333,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   /// Faz upsert em public.users após autenticação social.
   /// - Primeira vez (INSERT): salva todos os campos inclusive nome.
-  /// - Relogin (UPDATE): atualiza apenas email e foto — NÃO sobrescreve nome
-  ///   para não substituir um nome real por um fallback de email.
+  /// - Relogin (UPDATE): atualiza email, foto e nome (se o nome anterior for um fallback).
   Future<void> _upsertPublicUser({
     required String id,
     required String nome,
@@ -366,10 +365,28 @@ class AuthRepositoryImpl implements AuthRepository {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('show_first_access_prompt', true);
       } else {
-        // Relogin — atualiza apenas campos não-críticos, preserva nome existente
+        // Relogin — atualiza apenas campos não-críticos, preserva nome existente a menos que seja um fallback
         final updateData = <String, dynamic>{};
         if (email != null) updateData['email'] = email;
         if (foto != null) updateData['foto'] = foto;
+
+        // Se o nome existente for nulo, vazio ou um fallback (ex: início do email ou "Usuário Apple"),
+        // e recebemos um nome real (não vazio/não email), nós atualizamos o nome!
+        final currentNome = existing['nome'] as String?;
+        final isCurrentNomeFallback = currentNome == null || 
+            currentNome.trim().isEmpty || 
+            currentNome.contains('@') || 
+            currentNome.startsWith('Usuário') ||
+            currentNome.toLowerCase() == (email?.split('@').first.toLowerCase() ?? '');
+            
+        final isNewNomeReal = nome.isNotEmpty && 
+            !nome.contains('@') && 
+            !nome.startsWith('Usuário') && 
+            nome.toLowerCase() != (email?.split('@').first.toLowerCase() ?? '');
+
+        if (isCurrentNomeFallback && isNewNomeReal) {
+          updateData['nome'] = nome;
+        }
 
         // INC-016: admin-invited user has primeiro_acesso_viajante = true — detect and clear
         final isFirstAccess = existing['primeiro_acesso_viajante'] == true;
@@ -385,7 +402,7 @@ class AuthRepositoryImpl implements AuthRepository {
               .update(updateData)
               .eq('id', id);
         }
-        log('public.users UPDATE OK para $id (preservou nome: ${existing['nome']})');
+        log('public.users UPDATE OK para $id (preservou ou atualizou nome)');
       }
     } catch (e) {
       log('Aviso: falha no upsert de public.users: $e');
