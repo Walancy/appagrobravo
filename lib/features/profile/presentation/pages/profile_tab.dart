@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
@@ -12,9 +15,71 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_state.
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/settings_shimmer.dart';
-class ProfileTab extends StatelessWidget {
+import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
+import 'package:agrobravo/core/components/image_cropper_modal.dart';
+
+class ProfileTab extends StatefulWidget {
   final String? userId;
   const ProfileTab({super.key, this.userId});
+
+  @override
+  State<ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<ProfileTab> {
+  bool _isUploadingPhoto = false;
+
+  // ── Pick, crop, and upload profile photo ─────────────────────────────
+  Future<void> _pickAndCropProfilePhoto() async {
+    // 1. Ask for source (camera or gallery)
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const ImageSourceBottomSheet(
+        title: 'Alterar foto de perfil',
+      ),
+    );
+    if (source == null || !mounted) return;
+
+    // 2. Pick image
+    final picker = ImagePicker();
+    final XFile? pickedFile;
+    try {
+      pickedFile = await picker.pickImage(source: source);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Este dispositivo não suporta o uso da câmera.'),
+          ),
+        );
+      }
+      return;
+    }
+    if (pickedFile == null || !mounted) return;
+
+    // 3. Open crop modal
+    final croppedBytes = await ImageCropperModal.show(
+      context,
+      imageProvider: FileImage(File(pickedFile.path)),
+    );
+    if (croppedBytes == null || !mounted) return;
+
+    // 4. Upload cropped image
+    setState(() => _isUploadingPhoto = true);
+    try {
+      final tempFile = XFile.fromData(
+        croppedBytes,
+        name: 'profile_cropped.png',
+        mimeType: 'image/png',
+      );
+      if (mounted) {
+        await context.read<ProfileCubit>().updateProfilePhoto(tempFile);
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingPhoto = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,21 +200,69 @@ class ProfileTab extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipOval(
-            child: Container(
-              width: 68,
-              height: 68,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : AppColors.backgroundLight,
-              child: profile.avatarUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: profile.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
-                          const Icon(Icons.person, size: 36, color: Colors.grey),
-                    )
-                  : const Icon(Icons.person, size: 36, color: Colors.grey),
+          // Avatar with camera icon overlay
+          GestureDetector(
+            onTap: _isUploadingPhoto ? null : _pickAndCropProfilePhoto,
+            child: Stack(
+              children: [
+                ClipOval(
+                  child: Container(
+                    width: 68,
+                    height: 68,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppColors.backgroundLight,
+                    child: _isUploadingPhoto
+                        ? const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          )
+                        : profile.avatarUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: profile.avatarUrl!,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) =>
+                                    const Icon(Icons.person, size: 36, color: Colors.grey),
+                              )
+                            : const Icon(Icons.person, size: 36, color: Colors.grey),
+                  ),
+                ),
+                // Camera icon badge
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      size: 13,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 14),
@@ -391,3 +504,4 @@ class ProfileTab extends StatelessWidget {
     }
   }
 }
+
