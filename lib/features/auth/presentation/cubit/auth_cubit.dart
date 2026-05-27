@@ -5,6 +5,7 @@ import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
 
@@ -24,9 +25,14 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> checkAuthStatus() async {
     emit(const AuthState.loading());
     final userOption = await _authRepository.getCurrentUser();
-    userOption.fold(
-      () => emit(const AuthState.unauthenticated()),
-      (user) => emit(AuthState.authenticated(user)),
+    await userOption.fold(
+      () async => emit(const AuthState.unauthenticated()),
+      (user) async {
+        try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+        await OnboardingService.instance.initialize(user.id);
+        log('[ONB] checkAuthStatus done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
+        emit(AuthState.authenticated(user));
+      },
     );
   }
 
@@ -49,10 +55,15 @@ class AuthCubit extends Cubit<AuthState> {
       password: password,
     );
 
-    result.fold(
-      (error) =>
+    await result.fold(
+      (error) async =>
           emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
-      (user) => emit(AuthState.authenticated(user)),
+      (user) async {
+        try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+        await OnboardingService.instance.initialize(user.id);
+        log('[ONB] login done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
+        emit(AuthState.authenticated(user));
+      },
     );
   }
 
@@ -99,24 +110,22 @@ class AuthCubit extends Cubit<AuthState> {
       userType: 'USER_APP',
     );
 
-    result.fold(
-      (error) {
+    await result.fold(
+      (error) async {
           log('AuthCubit.register: Falha no repositório -> $error');
           emit(AuthState.error(error.toString().replaceAll('Exception: ', '')));
       },
-      (user) {
+      (user) async {
         log('AuthCubit.register: Sucesso no repositório! Verificando sessão atual...');
-        // Verificar se o Supabase criou uma sessão ativa (sem confirmação de email)
-        // ou se apenas criou o usuário (com confirmação de email pendente)
         final currentSession = Supabase.instance.client.auth.currentSession;
 
         if (currentSession != null) {
           log('AuthCubit.register: Sessão ativa encontrada. Logando direto.');
-          // Sessão ativa → login automático (Supabase sem confirmação de email)
+          try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+          await OnboardingService.instance.initialize(user.id);
           emit(AuthState.authenticated(user));
         } else {
           log('AuthCubit.register: Sem sessão ativa. Solicitando confirmação de email.');
-          // Sem sessão → precisa confirmar email antes de poder logar
           emit(const AuthState.registrationSuccess(
             message: 'Conta criada com sucesso! Verifique seu e-mail para confirmar o cadastro.',
             needsEmailConfirmation: true,
@@ -172,12 +181,14 @@ class AuthCubit extends Cubit<AuthState> {
     await result.fold(
       (error) async => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) async {
-        // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
         final userOption = await _authRepository.getCurrentUser();
-        userOption.fold(
-          // BUG-005: se não há sessão após o fluxo (usuário cancelou), sai do loading
-          () => emit(const AuthState.unauthenticated()),
-          (user) => emit(AuthState.authenticated(user)),
+        await userOption.fold(
+          () async => emit(const AuthState.unauthenticated()),
+          (user) async {
+            try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+            await OnboardingService.instance.initialize(user.id);
+            emit(AuthState.authenticated(user));
+          },
         );
       },
     );
@@ -189,12 +200,14 @@ class AuthCubit extends Cubit<AuthState> {
     await result.fold(
       (error) async => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) async {
-        // Fluxo nativo: signInWithIdToken já completou — busca o perfil e autentica
         final userOption = await _authRepository.getCurrentUser();
-        userOption.fold(
-          // BUG-005: se não há sessão após o fluxo (usuário cancelou), sai do loading
-          () => emit(const AuthState.unauthenticated()),
-          (user) => emit(AuthState.authenticated(user)),
+        await userOption.fold(
+          () async => emit(const AuthState.unauthenticated()),
+          (user) async {
+            try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+            await OnboardingService.instance.initialize(user.id);
+            emit(AuthState.authenticated(user));
+          },
         );
       },
     );

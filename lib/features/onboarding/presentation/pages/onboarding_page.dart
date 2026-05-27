@@ -73,9 +73,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _finish() async {
-    // Always await dismiss so the RPC completes before the itinerary reloads
+    // Await dismiss so the RPC sets primeiraAcesso=false before navigation.
+    // Do NOT call loadUserItinerary() here — HomePage.initState() will do it,
+    // and calling it twice concurrently caused a race that left the navbar in
+    // the wrong state (loading flicker / tabs missing).
     await OnboardingService.instance.dismiss();
-    if (mounted) context.go('/home');
+    if (!mounted) return;
+    context.go('/home');
   }
 
   @override

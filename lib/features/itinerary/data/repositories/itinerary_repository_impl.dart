@@ -152,13 +152,13 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
   Future<void> _saveUserGroupIdToCache(String? groupId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final ownerId = _supabaseClient.auth.currentUser?.id ?? '';
+      await prefs.setString('cached_user_group_id_owner', ownerId);
       if (groupId != null) {
         await prefs.setString('cached_user_group_id', groupId);
-        // BUG-006: clear the "no group" flag when user has a group
         await prefs.remove('cached_user_has_no_group');
       } else {
         await prefs.remove('cached_user_group_id');
-        // BUG-006: explicitly record that the server confirmed user has no group
         await prefs.setBool('cached_user_has_no_group', true);
       }
     } catch (e) {
@@ -166,9 +166,11 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     }
   }
 
-  Future<String?> _getUserGroupIdFromCache() async {
+  Future<String?> _getUserGroupIdFromCache(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final owner = prefs.getString('cached_user_group_id_owner');
+      if (owner != userId) return null; // cache belongs to a different user
       return prefs.getString('cached_user_group_id');
     } catch (e) {
       debugPrint('Erro ao recuperar ID do grupo do cache: $e');
@@ -300,70 +302,91 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
   @override
   Future<Either<Exception, String?>> getUserGroupId() async {
+    final userId = _supabaseClient.auth.currentUser?.id;
+    debugPrint('[REPO] getUserGroupId: userId=$userId');
+    if (userId == null) return Left(Exception('Usuário não autenticado'));
     try {
-      final userId = _supabaseClient.auth.currentUser?.id;
-      if (userId == null) return Left(Exception('Usuário não autenticado'));
 
       // BUG-FIX: user may belong to multiple groups — .maybeSingle() would throw.
       // Fetch all participations joined with group end date, then pick best.
       final response = await _supabaseClient
           .from('gruposParticipantes')
-          .select('grupo_id, grupos!inner(data_fim)')
+          .select('grupo_id, grupos!fk_gruposparticipantes_grupos(data_fim)')
           .eq('user_id', userId);
 
       final List<dynamic> rows = response as List<dynamic>;
+      debugPrint('[REPO] getUserGroupId: rows retornadas=${rows.length} rawData=$rows');
 
       String? groupId;
       if (rows.isNotEmpty) {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
+        debugPrint('[REPO] getUserGroupId: today=$today');
 
-        // Sort: active groups (data_fim >= today) first, then by data_fim desc
-        final sorted = List<Map<String, dynamic>>.from(
-          rows.map((r) => r as Map<String, dynamic>),
-        )..sort((a, b) {
+        // Only consider groups with data_fim >= today (active missions).
+        // If user only has expired groups → treat as no active mission.
+        final activeRows = rows
+            .map((r) => r as Map<String, dynamic>)
+            .where((r) {
+              final gruposData = r['grupos'];
+              final dateStr = (gruposData as Map<String, dynamic>?)?['data_fim'] as String?;
+              final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
+              final isActive = date != null && !date.isBefore(today);
+              debugPrint('[REPO]   row grupo_id=${r['grupo_id']} grupos=$gruposData dateStr=$dateStr date=$date isActive=$isActive');
+              return isActive;
+            })
+            .toList();
+
+        debugPrint('[REPO] getUserGroupId: activeRows=${activeRows.length}');
+
+        if (activeRows.isNotEmpty) {
+          // Sort active groups by data_fim desc — pick the most recent
+          activeRows.sort((a, b) {
             final aStr = (a['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
             final bStr = (b['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
             final aDate = aStr != null ? DateTime.tryParse(aStr) : null;
             final bDate = bStr != null ? DateTime.tryParse(bStr) : null;
-            final aActive = aDate != null && !aDate.isBefore(today);
-            final bActive = bDate != null && !bDate.isBefore(today);
-            if (aActive && !bActive) return -1;
-            if (!aActive && bActive) return 1;
-            // Both same status → most recent data_fim first
             if (aDate != null && bDate != null) return bDate.compareTo(aDate);
             return 0;
           });
-
-        groupId = sorted.first['grupo_id'] as String?;
+          groupId = activeRows.first['grupo_id'] as String?;
+        }
+        // else: user has groups but all expired → groupId stays null
       }
 
+      debugPrint('[REPO] getUserGroupId: groupId final=$groupId');
       await _saveUserGroupIdToCache(groupId);
 
-      // INC-011: mark participant as notified (fire-and-forget, non-blocking)
+      // INC-011: mark participant as notified (fire-and-forget, non-blocking).
+      // Only update when foiNotificado is still false — avoids triggering a
+      // realtime UPDATE event on every call, which would create an infinite
+      // listenToGroupChanges → loadUserItinerary loop.
       if (groupId != null) {
         _supabaseClient
             .from('gruposParticipantes')
             .update({'foiNotificado': true})
             .eq('user_id', userId)
             .eq('grupo_id', groupId)
+            .eq('foiNotificado', false)
             .then((_) {})
             .catchError((_) {});
       }
 
       return Right(groupId);
-    } catch (e) {
-      debugPrint('Erro ao buscar ID do grupo online: $e. Tentando cache.');
-      final cached = await _getUserGroupIdFromCache();
+    } catch (e, st) {
+      debugPrint('[REPO] getUserGroupId: ERRO=$e\n$st');
+      // Only use cache when it belongs to the current user
+      final cached = await _getUserGroupIdFromCache(userId);
+      debugPrint('[REPO] getUserGroupId: usando cache=$cached');
       if (cached != null) {
         return Right(cached);
       }
-      // BUG-006: distinguish "user has no group" (confirmed by server) from network error
       try {
         final prefs = await SharedPreferences.getInstance();
-        final confirmedNoGroup = prefs.getBool('cached_user_has_no_group') ?? false;
-        if (confirmedNoGroup) {
-          return const Right(null);
+        final owner = prefs.getString('cached_user_group_id_owner');
+        if (owner == userId) {
+          final confirmedNoGroup = prefs.getBool('cached_user_has_no_group') ?? false;
+          if (confirmedNoGroup) return const Right(null);
         }
       } catch (_) {}
       return Left(Exception(e.toString()));

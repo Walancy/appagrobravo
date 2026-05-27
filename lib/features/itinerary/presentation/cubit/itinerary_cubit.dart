@@ -18,7 +18,10 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   final ItineraryRepository _repository;
   RealtimeChannel? _groupSubscription;
   RealtimeChannel? _eventsSubscription;
-  String? _currentGroupId;
+  RealtimeChannel? _grupoSubscription;
+
+  // Prevents concurrent loadUserItinerary() calls from racing each other.
+  bool _loadingItinerary = false;
 
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
@@ -34,19 +37,27 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   Future<void> loadItinerary(String groupId) async {
+    dev.log('[CUBIT] loadItinerary: groupId=$groupId', name: 'itinerary');
     emit(const ItineraryState.loading());
-    _currentGroupId = groupId;
 
     final groupResult = await _repository.getGroupDetails(groupId);
 
     groupResult.fold(
-      (failure) => emit(ItineraryState.error(_mapFailure(failure))),
+      (failure) {
+        dev.log('[CUBIT] loadItinerary: FALHA getGroupDetails: $failure', name: 'itinerary');
+        emit(ItineraryState.error(_mapFailure(failure)));
+      },
       (group) async {
+        dev.log('[CUBIT] loadItinerary: grupo carregado: ${group.id} nome=${group.name}', name: 'itinerary');
         final itemsResult = await _repository.getItinerary(groupId);
 
         itemsResult.fold(
-          (failure) => emit(ItineraryState.error(_mapFailure(failure))),
+          (failure) {
+            dev.log('[CUBIT] loadItinerary: FALHA getItinerary: $failure', name: 'itinerary');
+            emit(ItineraryState.error(_mapFailure(failure)));
+          },
           (items) async {
+            dev.log('[CUBIT] loadItinerary: items=${items.length}', name: 'itinerary');
             // Non-critical data: Travel Times
             final travelResult = await _repository.getTravelTimes(groupId);
             final travelTimes = travelResult.getOrElse(() => []);
@@ -56,6 +67,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
                 .getUserPendingDocuments();
             final pendingDocs = pendingDocsResult.getOrElse(() => []);
 
+            dev.log('[CUBIT] loadItinerary: emitindo LOADED. group=${group.id}', name: 'itinerary');
             emit(ItineraryState.loaded(
               group,
               items,
@@ -65,9 +77,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
             // INC-004: subscribe to real-time changes for this group's events
             _subscribeToEventsChanges(groupId);
-
-            // Onboarding gate: check primeiraAcesso for this group/user
-            _checkPrimeiraAcesso(groupId, group);
+            // Subscribe to grupos so we detect when data_fim changes
+            // (mission ends) and immediately leave the "inside mission" state.
+            _subscribeToGrupoChanges(groupId);
           },
         );
       },
@@ -91,21 +103,28 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     );
   }
 
-  Future<void> _checkPrimeiraAcesso(
-    String groupId,
-    ItineraryGroupEntity group,
-  ) async {
-    final result = await _repository.checkPrimeiraAcesso(groupId);
-    result.fold(
-      (_) {},
-      (primeiraAcesso) {
-        OnboardingService.instance.setNeedsOnboarding(
-          primeiraAcesso,
-          groupId: groupId,
-          group: group,
-        );
-      },
-    );
+  void _subscribeToGrupoChanges(String groupId) {
+    _grupoSubscription?.unsubscribe();
+    final supabase = Supabase.instance.client;
+    _grupoSubscription = supabase
+        .channel('public:grupos:$groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'grupos',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: groupId,
+          ),
+          callback: (payload) {
+            dev.log('[CUBIT] _subscribeToGrupoChanges: EVENTO grupo=$groupId new=${payload.newRecord}', name: 'itinerary');
+            loadUserItinerary();
+          },
+        )
+        .subscribe((status, [error]) {
+          dev.log('[CUBIT] _subscribeToGrupoChanges: subscription status=$status error=$error', name: 'itinerary');
+        });
   }
 
   void _subscribeToEventsChanges(String groupId) {
@@ -131,21 +150,58 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   Future<void> loadUserItinerary() async {
-    emit(const ItineraryState.loading());
-    final userGroupResult = await _repository.getUserGroupId();
+    dev.log('[CUBIT] loadUserItinerary: chamado. _loadingItinerary=$_loadingItinerary state=${state.runtimeType}', name: 'itinerary');
+    // Guard: ignore re-entrant calls that would otherwise race and emit
+    // intermediate loading/error states (e.g. the foiNotificado realtime
+    // feedback loop or the simultaneous initState + _finish() calls).
+    if (_loadingItinerary) {
+      dev.log('[CUBIT] loadUserItinerary: BLOQUEADO (já em execução)', name: 'itinerary');
+      return;
+    }
+    _loadingItinerary = true;
 
-    userGroupResult.fold(
-      (failure) => emit(ItineraryState.error(_mapFailure(failure))),
-      (groupId) async {
-        if (groupId == null) {
-          emit(
-            const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
-          );
-        } else {
-          await loadItinerary(groupId);
-        }
-      },
-    );
+    try {
+      emit(const ItineraryState.loading());
+      dev.log('[CUBIT] loadUserItinerary: emitido loading', name: 'itinerary');
+
+      // Single source of truth: re-evaluate the onboarding gate on every load.
+      dev.log('[CUBIT] loadUserItinerary: chamando OnboardingService.refresh()...', name: 'itinerary');
+      await OnboardingService.instance.refresh();
+      dev.log('[CUBIT] loadUserItinerary: needsOnboarding=${OnboardingService.instance.needsOnboarding}', name: 'itinerary');
+
+      if (OnboardingService.instance.needsOnboarding) {
+        dev.log('[CUBIT] loadUserItinerary: needsOnboarding=true → abortando, router vai redirecionar para /onboarding', name: 'itinerary');
+        emit(const ItineraryState.initial());
+        return;
+      }
+
+      dev.log('[CUBIT] loadUserItinerary: chamando getUserGroupId()...', name: 'itinerary');
+      final userGroupResult = await _repository.getUserGroupId();
+
+      dev.log('[CUBIT] loadUserItinerary: getUserGroupId resultado=${userGroupResult}', name: 'itinerary');
+
+      await userGroupResult.fold(
+        (failure) async {
+          dev.log('[CUBIT] loadUserItinerary: FALHA no getUserGroupId: $failure', name: 'itinerary');
+          emit(ItineraryState.error(_mapFailure(failure)));
+        },
+        (groupId) async {
+          dev.log('[CUBIT] loadUserItinerary: groupId=$groupId', name: 'itinerary');
+          if (groupId == null) {
+            dev.log('[CUBIT] loadUserItinerary: groupId=null → emitindo error (sem missão ativa)', name: 'itinerary');
+            emit(
+              const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
+            );
+          } else {
+            dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...', name: 'itinerary');
+            await loadItinerary(groupId);
+          }
+        },
+      );
+    } finally {
+      _loadingItinerary = false;
+      dev.log('[CUBIT] loadUserItinerary: finalizado. state final=${state.runtimeType}', name: 'itinerary');
+    }
   }
 
   Future<Either<Exception, EmergencyContacts>> getRepositoryEmergencyContacts(
@@ -158,6 +214,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   void listenToGroupChanges() {
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
+    dev.log('[CUBIT] listenToGroupChanges: userId=$userId', name: 'itinerary');
     if (userId == null) return;
 
     _groupSubscription?.unsubscribe();
@@ -173,11 +230,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
             value: userId,
           ),
           callback: (payload) {
-            dev.log('Group change detected for user. Reloading itinerary...');
+            dev.log('[CUBIT] listenToGroupChanges: EVENTO recebido! eventType=${payload.eventType} new=${payload.newRecord} old=${payload.oldRecord}', name: 'itinerary');
             loadUserItinerary();
           },
         )
-        .subscribe();
+        .subscribe((status, [error]) {
+          dev.log('[CUBIT] listenToGroupChanges: subscription status=$status error=$error', name: 'itinerary');
+        });
   }
 
   /// Cancels all subscriptions and resets to initial state.
@@ -187,7 +246,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     _groupSubscription = null;
     _eventsSubscription?.unsubscribe();
     _eventsSubscription = null;
-    _currentGroupId = null;
+    _grupoSubscription?.unsubscribe();
+    _grupoSubscription = null;
+    _loadingItinerary = false;
     OnboardingService.instance.reset();
     emit(const ItineraryState.initial());
   }
@@ -196,6 +257,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   Future<void> close() {
     _groupSubscription?.unsubscribe();
     _eventsSubscription?.unsubscribe();
+    _grupoSubscription?.unsubscribe();
     return super.close();
   }
 }

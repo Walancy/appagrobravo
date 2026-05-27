@@ -34,7 +34,9 @@ import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,11 +45,13 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _selectedIndex = -1;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstAccessPrompt();
 
@@ -64,6 +68,7 @@ class _HomePageState extends State<HomePage> {
       );
 
       final itineraryCubit = context.read<ItineraryCubit>();
+      dev.log('[HOME] initState: chamando listenToGroupChanges + loadUserItinerary', name: 'home');
       itineraryCubit.listenToGroupChanges();
       // Always reload on home entry — the singleton cubit may retain a stale
       // 'loaded' state from a previous session, which would prevent the
@@ -92,7 +97,33 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// Fires when the app returns from background. Re-checks primeiraAcesso
+  /// (triggers onboarding if added to a group while backgrounded) and
+  /// refreshes itinerary data in case the group changed.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshAppState();
+  }
+
+  /// Fires on hot reload (debug only). Forces a fresh state check so
+  /// developers see the correct screen without needing to log out/in.
+  @override
+  void reassemble() {
+    super.reassemble();
+    _refreshAppState();
+  }
+
+  void _refreshAppState() {
+    if (!mounted) return;
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    // loadUserItinerary already refreshes the onboarding gate; no need to
+    // rebuild the realtime subscription here.
+    context.read<ItineraryCubit>().loadUserItinerary();
   }
 
   Future<void> _checkFirstAccessPrompt() async {
@@ -134,23 +165,30 @@ class _HomePageState extends State<HomePage> {
         listeners: [
           BlocListener<ItineraryCubit, ItineraryState>(
             listener: (context, state) {
+              dev.log('[HOME] BlocListener: state=${state.runtimeType} _selectedIndex=$_selectedIndex', name: 'home');
               state.maybeWhen(
                 loaded: (group, _, __, pendingDocs) {
+                  dev.log('[HOME] BlocListener: LOADED grupo=${group.id} nome=${group.name}. _selectedIndex=$_selectedIndex', name: 'home');
                   // Always go to itinerary tab on fresh load (index -1 means first load).
                   // The itinerary/chat tabs are always shown when user has a group.
                   if (_selectedIndex == -1) {
+                    dev.log('[HOME] BlocListener: setando _selectedIndex=0 (Itinerário)', name: 'home');
                     setState(() => _selectedIndex = 0);
                   }
                 },
-                error: (_) {
+                error: (msg) {
+                  dev.log('[HOME] BlocListener: ERROR msg=$msg. _selectedIndex=$_selectedIndex', name: 'home');
                   // Sem missão ou erro: destravar o loading e ir para Comunidade
                   if (_selectedIndex == -1 ||
                       _selectedIndex == 0 ||
                       _selectedIndex == 1) {
+                    dev.log('[HOME] BlocListener: setando _selectedIndex=2 (Comunidade)', name: 'home');
                     setState(() => _selectedIndex = 2);
                   }
                 },
-                orElse: () {},
+                orElse: () {
+                  dev.log('[HOME] BlocListener: orElse (provavelmente loading/initial)', name: 'home');
+                },
               );
             },
           ),
@@ -506,6 +544,7 @@ class _HomePageState extends State<HomePage> {
           loaded: (_, __, ___, ____) => true,
           orElse: () => false,
         );
+        dev.log('[HOME] _buildBottomNav: itineraryState=${itineraryState.runtimeType} showTripTabs=$showTripTabs', name: 'home');
 
         return Container(
           padding: EdgeInsets.fromLTRB(

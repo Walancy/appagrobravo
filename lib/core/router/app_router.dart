@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
@@ -39,21 +40,29 @@ final appRouter = GoRouter(
 
     final isPublicRoute = _publicPaths.contains(currentPath);
 
+    dev.log(
+      '[ONB] redirect path=$currentPath auth=$isAuthenticated '
+      'needsOnboarding=${OnboardingService.instance.needsOnboarding}',
+      name: 'router',
+    );
+
     // Se NÃO está autenticado e está tentando acessar rota protegida → login
     if (!isAuthenticated && !isPublicRoute) {
       return '/';
     }
 
-    // Se JÁ está autenticado e está na tela de login → redireciona para home
-    if (isAuthenticated && currentPath == '/') {
-      return '/home';
-    }
-
-    // Onboarding gate: bloqueia todas as rotas até o onboarding ser concluído
+    // Onboarding gate: avaliado ANTES do redirect para /home para que o
+    // onboarding sempre vença a corrida de navegação no login/app start.
+    // Bloqueia todas as rotas até o onboarding ser concluído.
     if (isAuthenticated &&
         OnboardingService.instance.needsOnboarding &&
         currentPath != '/onboarding') {
       return '/onboarding';
+    }
+
+    // Se JÁ está autenticado e está na tela de login → redireciona para home
+    if (isAuthenticated && currentPath == '/') {
+      return '/home';
     }
 
     // Nenhum redirecionamento necessário
