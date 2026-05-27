@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -79,6 +82,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     // the wrong state (loading flicker / tabs missing).
     await OnboardingService.instance.dismiss();
     if (!mounted) return;
+
+    // Kick off documents + profile checks NOW so the pending-documents banner
+    // and "Complete seu cadastro" banner are ready the moment the user lands
+    // on the home screen — no extra navigation needed to trigger them.
+    context.read<DocumentsCubit>().loadDocuments();
+    context.read<ProfileCubit>().loadProfile();
+
     context.go('/home');
   }
 
