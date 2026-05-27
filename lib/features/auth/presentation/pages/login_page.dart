@@ -365,6 +365,11 @@ class _LoginPageState extends State<LoginPage>
                                                       _recoveryEmail = email;
                                                     });
                                                   },
+                                                  onResendConfirmationAction: (email) {
+                                                    context
+                                                        .read<AuthCubit>()
+                                                        .resendConfirmationEmail(email);
+                                                  },
                                                   onVerifyOtpAction: (otp) {
                                                     context
                                                         .read<AuthCubit>()

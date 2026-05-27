@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
-import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
@@ -12,8 +11,7 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/app_header.dart';
-import 'package:agrobravo/core/components/profile_shimmer.dart';
-
+import 'package:agrobravo/core/components/settings_shimmer.dart';
 class ProfileTab extends StatelessWidget {
   final String? userId;
   const ProfileTab({super.key, this.userId});
@@ -112,7 +110,12 @@ class ProfileTab extends StatelessWidget {
                   ),
                 );
               },
-              orElse: () => const ProfileShimmer(),
+              orElse: () => const Column(
+                children: [
+                  HeaderSpacer(),
+                  Expanded(child: SettingsShimmer()),
+                ],
+              ),
             );
           },
         ),

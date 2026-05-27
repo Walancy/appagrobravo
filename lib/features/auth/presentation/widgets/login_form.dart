@@ -33,6 +33,7 @@ class LoginForm extends StatefulWidget {
   onResetPasswordAction;
   final void Function(String otp)? onVerifyOtpAction;
   final VoidCallback? onResendOtpAction;
+  final void Function(String email)? onResendConfirmationAction;
   final void Function(String email)? onEmailChanged; // Notifica email digitado na tela OTP
   final String? errorMessage; // Nova prop para erros
   final String? registeredEmail;
@@ -49,6 +50,7 @@ class LoginForm extends StatefulWidget {
     this.onResetPasswordAction,
     this.onVerifyOtpAction,
     this.onResendOtpAction,
+    this.onResendConfirmationAction,
     this.onEmailChanged,
     this.errorMessage,
     this.registeredEmail,
@@ -189,6 +191,31 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                if (_localErrorMessage == 'E-mail não confirmado. Verifique sua caixa de entrada.' && widget.authMode == AuthMode.login) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  TextButton(
+                    onPressed: () {
+                      final email = _emailController.text.trim();
+                      if (email.isNotEmpty) {
+                        widget.onResendConfirmationAction?.call(email);
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Reenviar e-mail de confirmação',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: const Color(0xFF2ECC71),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        decoration: TextDecoration.underline,
+                        decorationColor: const Color(0xFF2ECC71),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ],
           ),

@@ -78,6 +78,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(userModel.toEntity());
     } on AuthException catch (e) {
       log('Auth Error: ${e.message}');
+      if (e.message.toLowerCase().contains('email not confirmed') || e.message.toLowerCase().contains('não confirmado')) {
+        return Left(Exception('email_not_confirmed'));
+      }
       return Left(Exception(e.message));
     } catch (e) {
       log('Unexpected Error: $e');
@@ -277,6 +280,21 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(Exception(e.message));
     } catch (e) {
       return Left(Exception('Erro ao solicitar redefinição de senha.'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> resendConfirmationEmail(String email) async {
+    try {
+      await _supabaseClient.auth.resend(
+        type: OtpType.signup,
+        email: email,
+      );
+      return const Right(null);
+    } on AuthException catch (e) {
+      return Left(Exception(e.message));
+    } catch (e) {
+      return Left(Exception('Erro ao reenviar e-mail de confirmação.'));
     }
   }
 

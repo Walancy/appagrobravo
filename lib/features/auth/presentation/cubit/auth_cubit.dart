@@ -62,8 +62,14 @@ class AuthCubit extends Cubit<AuthState> {
     );
 
     await result.fold(
-      (error) async =>
-          emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (error) async {
+        final errorStr = error.toString().replaceAll('Exception: ', '');
+        if (errorStr == 'email_not_confirmed') {
+          emit(const AuthState.error('E-mail não confirmado. Verifique sua caixa de entrada.'));
+        } else {
+          emit(AuthState.error(errorStr));
+        }
+      },
       (user) async {
         await _clearUserCache();
         try { getIt<ItineraryCubit>().reset(); } catch (_) {}
@@ -153,6 +159,18 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) => emit(AuthState.otpSent(email)),
+    );
+  }
+
+  Future<void> resendConfirmationEmail(String email) async {
+    emit(const AuthState.loading());
+    final result = await _authRepository.resendConfirmationEmail(email);
+    result.fold(
+      (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
+      (_) => emit(const AuthState.registrationSuccess(
+        message: 'E-mail de confirmação reenviado com sucesso! Verifique sua caixa de entrada.',
+        needsEmailConfirmation: true,
+      )),
     );
   }
 

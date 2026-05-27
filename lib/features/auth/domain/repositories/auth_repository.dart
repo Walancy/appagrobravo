@@ -24,6 +24,7 @@ abstract class AuthRepository {
     required String email,
     required String token,
   });
+  Future<Either<Exception, void>> resendConfirmationEmail(String email);
   Future<Either<Exception, void>> updatePassword(String newPassword);
   Future<Either<Exception, void>> signInWithGoogle();
   Future<Either<Exception, void>> signInWithApple();
