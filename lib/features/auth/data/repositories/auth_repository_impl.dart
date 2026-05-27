@@ -63,6 +63,15 @@ class AuthRepositoryImpl implements AuthRepository {
           .eq('id', response.user!.id)
           .single();
 
+      if (userProfile['primeiro_acesso_viajante'] == true) {
+        await _supabaseClient
+            .from('users')
+            .update({'primeiro_acesso_viajante': false})
+            .eq('id', response.user!.id);
+        
+        userProfile['primeiro_acesso_viajante'] = false;
+      }
+
       final userModel = UserModel.fromJson(userProfile);
       await _saveUserToPreferences(userModel);
 
@@ -318,7 +327,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Verifica se já existe registro
       final existing = await _supabaseClient
           .from('users')
-          .select('nome, primeiroacesso')
+          .select('nome, primeiro_acesso_viajante')
           .eq('id', id)
           .maybeSingle();
 
@@ -331,7 +340,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'email': email,
           'foto': foto,
           'tipouser': ['USER_APP'],
-          'primeiroacesso': false,
+          'primeiro_acesso_viajante': false,
           'created_at': now,
         });
         log('public.users INSERT OK para $id (nome: $nome)');
@@ -344,10 +353,10 @@ class AuthRepositoryImpl implements AuthRepository {
         if (email != null) updateData['email'] = email;
         if (foto != null) updateData['foto'] = foto;
 
-        // INC-016: admin-invited user has primeiroacesso = true — detect and clear
-        final isFirstAccess = existing['primeiroacesso'] == true;
+        // INC-016: admin-invited user has primeiro_acesso_viajante = true — detect and clear
+        final isFirstAccess = existing['primeiro_acesso_viajante'] == true;
         if (isFirstAccess) {
-          updateData['primeiroacesso'] = false;
+          updateData['primeiro_acesso_viajante'] = false;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('show_first_access_prompt', true);
         }
