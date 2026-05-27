@@ -56,132 +56,140 @@ List<_NotificationGroup> _groupNotifications(
   ];
 }
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
   @override
+  State<NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<NotificationsCubit>().loadNotifications();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<NotificationsCubit>()..loadNotifications(),
-      child: BlocBuilder<NotificationsCubit, NotificationsState>(
-        builder: (context, state) {
-          return BlocBuilder<ProfileCubit, ProfileState>(
-            builder: (context, profileState) {
-              final isComplete = profileState.maybeMap(
-                loaded: (s) => s.profile.isComplete,
-                orElse: () => true,
-              );
+    return BlocBuilder<NotificationsCubit, NotificationsState>(
+      builder: (context, state) {
+        return BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (context, profileState) {
+            final isComplete = profileState.maybeMap(
+              loaded: (s) => s.profile.isComplete,
+              orElse: () => true,
+            );
 
-              final hasUnread = state.maybeWhen(
-                loaded: (notifications) => notifications.any((n) => !n.isRead),
-                orElse: () => false,
-              );
+            final hasUnread = state.maybeWhen(
+              loaded: (notifications) => notifications.any((n) => !n.isRead),
+              orElse: () => false,
+            );
 
-              return Scaffold(
-                appBar: AppHeader(
-                  mode: HeaderMode.back,
-                  title: 'Notificações',
-                  actions: [
-                    state.maybeWhen(
-                      loaded: (notifications) {
-                        if (notifications.isEmpty) return const SizedBox.shrink();
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (hasUnread)
-                              TextButton.icon(
-                                onPressed: () =>
-                                    context.read<NotificationsCubit>().markAllAsRead(),
-                                icon: const Icon(Icons.done_all_rounded, size: 16),
-                                label: const Text('Lidas'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.primary,
-                                  textStyle: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+            return Scaffold(
+              appBar: AppHeader(
+                mode: HeaderMode.back,
+                title: 'Notificações',
+                actions: [
+                  state.maybeWhen(
+                    loaded: (notifications) {
+                      if (notifications.isEmpty) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (hasUnread)
+                            TextButton.icon(
+                              onPressed: () =>
+                                  context.read<NotificationsCubit>().markAllAsRead(),
+                              icon: const Icon(Icons.done_all_rounded, size: 16),
+                              label: const Text('Lidas'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            _ClearAllButton(),
-                          ],
-                        );
-                      },
-                      orElse: () => const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-                body: state.when(
-                  initial: () => const NotificationsShimmer(),
-                  loading: () => const NotificationsShimmer(),
-                  error: (message) => Center(child: Text(message)),
-                  loaded: (notifications) {
-                    if (notifications.isEmpty && isComplete) {
-                      return const Padding(
-                        padding: EdgeInsets.only(top: 100),
-                        child: EmptyStateWidget(
-                          icon: Icons.notifications_off_outlined,
-                          title: 'Tudo em dia!',
-                          description:
-                              'Você não tem nenhuma notificação no momento.',
-                        ),
-                      );
-                    }
-
-                    final groups = _groupNotifications(notifications);
-                    final followRequests = notifications
-                        .where((n) => n.type == NotificationType.follow)
-                        .toList();
-
-                    return RefreshIndicator(
-                      onRefresh: () =>
-                          context.read<NotificationsCubit>().loadNotifications(),
-                      child: CustomScrollView(
-                        slivers: [
-                          // Banner perfil incompleto
-                          if (!isComplete)
-                            const SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-                                child: IncompleteProfileBanner(),
-                              ),
                             ),
-
-                          // Card de solicitações de conexão agrupadas
-                          if (followRequests.isNotEmpty)
-                            SliverToBoxAdapter(
-                              child: _FollowRequestsSummary(
-                                followRequests: followRequests,
-                              ),
-                            ),
-
-                          // Grupos de notificações
-                          for (final group in groups) ...[
-                            SliverToBoxAdapter(
-                              child: _SectionHeader(label: group.label),
-                            ),
-                            SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  return _NotificationItem(notification: group.items[index]);
-                                },
-                                childCount: group.items.length,
-                              ),
-                            ),
-                          ],
-
-                          const SliverToBoxAdapter(
-                            child: SizedBox(height: 40),
-                          ),
+                          _ClearAllButton(),
                         ],
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+              body: state.when(
+                initial: () => const NotificationsShimmer(),
+                loading: () => const NotificationsShimmer(),
+                error: (message) => Center(child: Text(message)),
+                loaded: (notifications) {
+                  if (notifications.isEmpty && isComplete) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: EmptyStateWidget(
+                        icon: Icons.notifications_off_outlined,
+                        title: 'Tudo em dia!',
+                        description:
+                            'Você não tem nenhuma notificação no momento.',
                       ),
                     );
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
+                  }
+
+                  final groups = _groupNotifications(notifications);
+                  final followRequests = notifications
+                      .where((n) => n.type == NotificationType.follow)
+                      .toList();
+
+                  return RefreshIndicator(
+                    onRefresh: () =>
+                        context.read<NotificationsCubit>().loadNotifications(),
+                    child: CustomScrollView(
+                      slivers: [
+                        // Banner perfil incompleto
+                        if (!isComplete)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+                              child: IncompleteProfileBanner(),
+                            ),
+                          ),
+
+                        // Card de solicitações de conexão agrupadas
+                        if (followRequests.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: _FollowRequestsSummary(
+                              followRequests: followRequests,
+                            ),
+                          ),
+
+                        // Grupos de notificações
+                        for (final group in groups) ...[
+                          SliverToBoxAdapter(
+                            child: _SectionHeader(label: group.label),
+                          ),
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return _NotificationItem(notification: group.items[index]);
+                              },
+                              childCount: group.items.length,
+                            ),
+                          ),
+                        ],
+
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 40),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

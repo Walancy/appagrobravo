@@ -21,6 +21,12 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
   List<String> _tags = [];
   bool _isInitialized = false;
 
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfileCubit>().loadProfile();
+  }
+
   void _addTag(BuildContext context, String text) {
     if (text.isEmpty) return;
     if (!_tags.contains(text)) {
@@ -202,9 +208,7 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<ProfileCubit>()..loadProfile(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(
           mode: HeaderMode.back,
@@ -350,7 +354,6 @@ class _MedicalRestrictionsPageState extends State<MedicalRestrictionsPage> {
             );
           },
         ),
-      ),
-    );
+      );
   }
 }

@@ -4,6 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
+import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:agrobravo/features/home/presentation/cubit/feed_cubit.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +33,8 @@ class AuthCubit extends Cubit<AuthState> {
       () async => emit(const AuthState.unauthenticated()),
       (user) async {
         try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+        try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
+        try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
         await OnboardingService.instance.initialize(user.id);
         log('[ONB] checkAuthStatus done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
         emit(AuthState.authenticated(user));
@@ -59,7 +65,10 @@ class AuthCubit extends Cubit<AuthState> {
       (error) async =>
           emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (user) async {
+        await _clearUserCache();
         try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+        try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
+        try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
         await OnboardingService.instance.initialize(user.id);
         log('[ONB] login done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
         emit(AuthState.authenticated(user));
@@ -121,7 +130,10 @@ class AuthCubit extends Cubit<AuthState> {
 
         if (currentSession != null) {
           log('AuthCubit.register: Sessão ativa encontrada. Logando direto.');
+          await _clearUserCache();
           try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+          try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
+          try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
           await OnboardingService.instance.initialize(user.id);
           emit(AuthState.authenticated(user));
         } else {
@@ -185,7 +197,10 @@ class AuthCubit extends Cubit<AuthState> {
         await userOption.fold(
           () async => emit(const AuthState.unauthenticated()),
           (user) async {
+            await _clearUserCache();
             try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+            try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
+            try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
             await OnboardingService.instance.initialize(user.id);
             emit(AuthState.authenticated(user));
           },
@@ -204,7 +219,10 @@ class AuthCubit extends Cubit<AuthState> {
         await userOption.fold(
           () async => emit(const AuthState.unauthenticated()),
           (user) async {
+            await _clearUserCache();
             try { getIt<ItineraryCubit>().reset(); } catch (_) {}
+            try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
+            try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
             await OnboardingService.instance.initialize(user.id);
             emit(AuthState.authenticated(user));
           },
@@ -214,13 +232,42 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logout() async {
-    // Reset itinerary + onboarding state before signing out so the next
-    // login triggers a full reload (fixes BUG: onboarding/itinerary not
-    // shown after re-login when cubit singleton retained stale loaded state).
+    // Reset itinerary, profile, documents, notifications and feed state before signing out so the next
+    // login triggers a full reload and clears cached user-specific data from memory.
+    await _clearUserCache();
     try {
       getIt<ItineraryCubit>().reset();
     } catch (_) {}
+    try {
+      getIt<ProfileCubit>().reset();
+    } catch (_) {}
+    try {
+      getIt<DocumentsCubit>().reset();
+    } catch (_) {}
+    try {
+      getIt<NotificationsCubit>().reset();
+    } catch (_) {}
+    try {
+      getIt<FeedCubit>().reset();
+    } catch (_) {}
     await _authRepository.signOut();
     emit(const AuthState.unauthenticated());
+  }
+
+  Future<void> _clearUserCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberedEmail = prefs.getString('remembered_email');
+      final themeMode = prefs.getInt('theme_mode');
+      await prefs.clear();
+      if (rememberedEmail != null) {
+        await prefs.setString('remembered_email', rememberedEmail);
+      }
+      if (themeMode != null) {
+        await prefs.setInt('theme_mode', themeMode);
+      }
+    } catch (e) {
+      log('Erro ao limpar cache de SharedPreferences: $e');
+    }
   }
 }

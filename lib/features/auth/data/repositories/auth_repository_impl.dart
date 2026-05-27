@@ -193,9 +193,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() async {
     await _supabaseClient.auth.signOut();
-    // Clear cache on sign out
+    // Clear all cached data on sign out except remembered email and theme preferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('cached_user_profile');
+    final keys = prefs.getKeys();
+    for (final key in keys) {
+      if (key != 'remembered_email' && key != 'theme_mode') {
+        await prefs.remove(key);
+      }
+    }
   }
 
   @override

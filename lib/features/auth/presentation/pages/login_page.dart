@@ -198,8 +198,9 @@ class _LoginPageState extends State<LoginPage>
             ),
 
             // Logo Animada — só mostra se tem espaço suficiente
-            if (showLogo)
-              AnimatedBuilder(
+            Visibility(
+              visible: showLogo,
+              child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
                   return Align(
@@ -214,6 +215,7 @@ class _LoginPageState extends State<LoginPage>
                   );
                 },
               ),
+            ),
 
             // Conteúdo Principal
             AnimatedBuilder(

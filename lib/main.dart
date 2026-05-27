@@ -138,7 +138,7 @@ void main() async {
 
   // Variável para ativar/desativar a moldura de dispositivo para testes.
   // Quando for para produção (release mode), a moldura será desativada automaticamente.
-  const bool showDeviceFrame = true;
+  const bool showDeviceFrame = false;
 
   runApp(
     DevicePreview(
@@ -156,11 +156,11 @@ class AgroBravoApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
-        BlocProvider(create: (context) => getIt<AuthCubit>()..checkAuthStatus()),
-        BlocProvider(create: (context) => getIt<ProfileCubit>()..loadProfile()),
-        BlocProvider(create: (context) => getIt<DocumentsCubit>()),
-        BlocProvider(create: (context) => getIt<NotificationsCubit>()),
-        BlocProvider(create: (context) => getIt<ItineraryCubit>()),
+        BlocProvider.value(value: getIt<AuthCubit>()..checkAuthStatus()),
+        BlocProvider.value(value: getIt<ProfileCubit>()..loadProfile()),
+        BlocProvider.value(value: getIt<DocumentsCubit>()),
+        BlocProvider.value(value: getIt<NotificationsCubit>()),
+        BlocProvider.value(value: getIt<ItineraryCubit>()),
         BlocProvider(create: (context) => GlobalAlertCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

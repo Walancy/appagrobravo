@@ -175,4 +175,8 @@ class FeedCubit extends Cubit<FeedState> {
       );
     });
   }
+
+  void reset() {
+    emit(const FeedState.initial());
+  }
 }

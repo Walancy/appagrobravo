@@ -44,6 +44,12 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    context.read<ProfileCubit>().loadProfile();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -51,9 +57,7 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<ProfileCubit>()..loadProfile(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(
           mode: HeaderMode.back,
@@ -151,7 +155,6 @@ class _FoodPreferencesPageState extends State<FoodPreferencesPage> {
             );
           },
         ),
-      ),
-    );
+      );
   }
 }

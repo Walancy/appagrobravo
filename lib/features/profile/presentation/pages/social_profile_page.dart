@@ -5,6 +5,8 @@ import 'package:dartz/dartz.dart' as dartz;
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/profile/domain/repositories/profile_repository.dart';
+import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/profile_header_cover.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/profile_header_stats.dart';
@@ -205,7 +207,10 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<ProfileCubit>()..loadProfile(widget.userId),
+      create: (context) => ProfileCubit(
+        getIt<ProfileRepository>(),
+        getIt<AuthRepository>(),
+      )..loadProfile(widget.userId),
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: widget.hideAppBar ? null : const AppHeader(mode: HeaderMode.back, title: 'Perfil Social'),

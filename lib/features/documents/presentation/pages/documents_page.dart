@@ -6,7 +6,6 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/documents_shimmer.dart';
-import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import '../cubit/documents_cubit.dart';
@@ -16,30 +15,38 @@ import '../../domain/entities/document_enums.dart';
 
 enum DocumentUserState { nuncaParticipou, semMissao, emMissao }
 
-class DocumentsPage extends StatelessWidget {
+class DocumentsPage extends StatefulWidget {
   const DocumentsPage({super.key});
 
   @override
+  State<DocumentsPage> createState() => _DocumentsPageState();
+}
+
+class _DocumentsPageState extends State<DocumentsPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<DocumentsCubit>().loadDocuments();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<DocumentsCubit>()..loadDocuments(),
-      child: Scaffold(
-        appBar: const AppHeader(
-          mode: HeaderMode.back,
-          title: 'Meus documentos',
-        ),
-        body: BlocBuilder<DocumentsCubit, DocumentsState>(
-          builder: (context, state) {
-            return state.when(
-              initial: () => const DocumentsShimmer(),
-              loading: () => const DocumentsShimmer(),
-              error: (message) => Center(child: Text(message)),
-              loaded: (documents, isAlertDismissed, profile, mission) {
-                return _buildBody(context, documents, profile, mission);
-              },
-            );
-          },
-        ),
+    return Scaffold(
+      appBar: const AppHeader(
+        mode: HeaderMode.back,
+        title: 'Meus documentos',
+      ),
+      body: BlocBuilder<DocumentsCubit, DocumentsState>(
+        builder: (context, state) {
+          return state.when(
+            initial: () => const DocumentsShimmer(),
+            loading: () => const DocumentsShimmer(),
+            error: (message) => Center(child: Text(message)),
+            loaded: (documents, isAlertDismissed, profile, mission) {
+              return _buildBody(context, documents, profile, mission);
+            },
+          );
+        },
       ),
     );
   }

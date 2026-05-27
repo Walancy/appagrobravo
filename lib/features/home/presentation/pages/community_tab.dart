@@ -12,6 +12,7 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/profile/presentation/widgets/incomplete_profile_banner.dart';
 import 'package:agrobravo/features/documents/presentation/widgets/pending_documents_banner.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 
 class CommunityTab extends StatefulWidget {
   final Widget feedWidget;
@@ -64,15 +65,25 @@ class _CommunityTabState extends State<CommunityTab>
             );
           },
         ),
-        BlocBuilder<DocumentsCubit, DocumentsState>(
-          builder: (context, documentsState) {
-            if (!documentsState.hasPendingAction) return const SizedBox.shrink();
-            return const Padding(
-              padding: EdgeInsets.only(left: 20, right: 20, bottom: 16),
-              child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                child: PendingDocumentsBanner(),
-              ),
+        BlocBuilder<ItineraryCubit, ItineraryState>(
+          builder: (context, itineraryState) {
+            final hasActiveMission = itineraryState.maybeWhen(
+              loaded: (_, __, ___, ____) => true,
+              orElse: () => false,
+            );
+            if (!hasActiveMission) return const SizedBox.shrink();
+
+            return BlocBuilder<DocumentsCubit, DocumentsState>(
+              builder: (context, documentsState) {
+                if (!documentsState.hasPendingAction) return const SizedBox.shrink();
+                return const Padding(
+                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                    child: PendingDocumentsBanner(),
+                  ),
+                );
+              },
             );
           },
         ),

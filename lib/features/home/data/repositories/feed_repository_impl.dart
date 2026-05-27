@@ -824,23 +824,48 @@ class FeedRepositoryImpl implements FeedRepository {
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) return const Right(null);
 
-      // 1. Get the most recent group participation
-      final groupResponse = await _supabaseClient
+      // Fetch all group participations to find the active one
+      final response = await _supabaseClient
           .from('gruposParticipantes')
           .select(
             'grupo_id, grupos!fk_gruposparticipantes_grupos (nome, data_inicio, data_fim, logo, missoes:missao_id (id, nome, logo, continente, documentos_exigidos))',
           )
-          .eq('user_id', userId)
-          .order('id', ascending: false)
-          .limit(1)
-          .maybeSingle();
+          .eq('user_id', userId);
 
-      if (groupResponse == null) {
+      final List<dynamic> rows = response as List<dynamic>;
+      if (rows.isEmpty) {
         await _saveMissionAlertToCache(null);
         return const Right(null);
       }
 
-      final grupoData = groupResponse['grupos'] as Map<String, dynamic>?;
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // Only consider active groups (data_fim >= today)
+      final activeRows = rows.where((r) {
+        final grupoData = r['grupos'] as Map<String, dynamic>?;
+        final dateStr = grupoData?['data_fim'] as String?;
+        final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
+        return date != null && !date.isBefore(today);
+      }).toList();
+
+      if (activeRows.isEmpty) {
+        await _saveMissionAlertToCache(null);
+        return const Right(null);
+      }
+
+      // Sort by data_fim desc to get the most recent active one
+      activeRows.sort((a, b) {
+        final aStr = (a['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
+        final bStr = (b['grupos'] as Map<String, dynamic>?)?['data_fim'] as String?;
+        final aDate = aStr != null ? DateTime.tryParse(aStr) : null;
+        final bDate = bStr != null ? DateTime.tryParse(bStr) : null;
+        if (aDate != null && bDate != null) return bDate.compareTo(aDate);
+        return 0;
+      });
+
+      final activeGroup = activeRows.first;
+      final grupoData = activeGroup['grupos'] as Map<String, dynamic>?;
       if (grupoData == null) {
         await _saveMissionAlertToCache(null);
         return const Right(null);

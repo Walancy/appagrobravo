@@ -1,4 +1,8 @@
-part of 'itinerary_cubit.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/itinerary_group.dart';
+import '../../domain/entities/itinerary_item.dart';
+
+part 'itinerary_state.freezed.dart';
 
 @freezed
 class ItineraryState with _$ItineraryState {

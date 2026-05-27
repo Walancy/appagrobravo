@@ -12,7 +12,7 @@ import '../../domain/entities/document_enums.dart';
 import '../../domain/repositories/documents_repository.dart';
 import 'documents_state.dart';
 
-@injectable
+@lazySingleton
 class DocumentsCubit extends Cubit<DocumentsState> {
   final DocumentsRepository _repository;
   final ProfileRepository _profileRepository;
@@ -39,6 +39,8 @@ class DocumentsCubit extends Cubit<DocumentsState> {
       _feedRepository.getLatestMissionAlert(),
     ]);
 
+    if (isClosed) return;
+
     final documentsResult =
         results[0] as Either<Exception, List<DocumentEntity>>;
     final profileResult = results.length > 1
@@ -49,8 +51,12 @@ class DocumentsCubit extends Cubit<DocumentsState> {
         : null;
 
     documentsResult.fold(
-      (error) => emit(DocumentsState.error(error.toString())),
+      (error) {
+        if (isClosed) return;
+        emit(DocumentsState.error(error.toString()));
+      },
       (documents) {
+        if (isClosed) return;
         // fallback to null if error in profile
         final safeProfile = profileResult?.fold((_) => null, (p) => p);
         final safeMission = missionResult?.fold((_) => null, (m) => m);
@@ -82,8 +88,13 @@ class DocumentsCubit extends Cubit<DocumentsState> {
       documentName: documentName,
     );
 
+    if (isClosed) return;
+
     result.fold(
-      (error) => emit(DocumentsState.error(error.toString())),
+      (error) {
+        if (isClosed) return;
+        emit(DocumentsState.error(error.toString()));
+      },
       (_) => loadDocuments(),
     );
   }
@@ -102,5 +113,9 @@ class DocumentsCubit extends Cubit<DocumentsState> {
       type: type,
       file: file,
     );
+  }
+
+  void reset() {
+    emit(const DocumentsState.initial());
   }
 }

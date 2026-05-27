@@ -66,19 +66,19 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final response = await _supabaseClient
           .from('eventos')
           // INC-020: explicit columns to exclude percent_agrobravo/percent_cliente
+          // BUG-FIX: removed non-existent columns (nome, hora_inicio2, imagem, attachments, deleted_at)
           .select(
-            'id, titulo, nome, subtitulo, tipo, data, hora_inicio, hora_fim,'
-            ' hora_inicio2, descricao, localizacao, imagem, codigo_de,'
+            'id, titulo, subtitulo, tipo, data, hora_inicio, hora_fim,'
+            ' descricao, localizacao, codigo_de,'
             ' codigo_para, de, para, hora_de, hora_para, atrasado, atraso,'
             ' motorista, duracao, tempo_deslocamento, conexoes, escalas,'
             ' endereco, cidade, estado, pais, latitude, longitude, rating,'
             ' estrelas, telefone, website, imagens, link_maps,'
             ' evento_referencia_id, is_day_after_transfer, dados, preco,'
-            ' site_url, status, transfer_data, transfer_hora, attachments,'
-            ' passageiros, place_id, grupo_id, deleted_at',
+            ' site_url, status, transfer_data, transfer_hora,'
+            ' passageiros, place_id, grupo_id',
           )
           .eq('grupo_id', groupId)
-          .isFilter('deleted_at', null)
           .order('data');
       // INC-024: hora_inicio is TEXT so DB sort is unreliable; app re-orders in memory
 
@@ -104,6 +104,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(items);
     } catch (e) {
+      debugPrint('[REPO] getItinerary error: $e');
       // Try cache
       try {
         final prefs = await SharedPreferences.getInstance();

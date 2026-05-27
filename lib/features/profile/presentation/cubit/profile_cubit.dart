@@ -7,7 +7,7 @@ import 'package:agrobravo/features/profile/domain/repositories/profile_repositor
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 
-@injectable
+@lazySingleton
 class ProfileCubit extends Cubit<ProfileState> {
   final ProfileRepository _profileRepository;
   final AuthRepository _authRepository;
@@ -35,34 +35,49 @@ class ProfileCubit extends Cubit<ProfileState> {
 
       if (targetUserId == null) {
         final userOption = await _authRepository.getCurrentUser();
+        if (isClosed) return;
         targetUserId = userOption.fold(() => null, (user) => user.id);
         isMe = true;
       } else {
         final userOption = await _authRepository.getCurrentUser();
+        if (isClosed) return;
         final currentId = userOption.fold(() => null, (user) => user.id);
         isMe = targetUserId == currentId;
       }
 
       if (targetUserId == null) {
+        if (isClosed) return;
         emit(const ProfileState.error('Usuário não autenticado'));
         return;
       }
 
       final profileResult = await _profileRepository.getProfile(targetUserId);
+      if (isClosed) return;
       final postsResult = await _profileRepository.getUserPosts(targetUserId);
+      if (isClosed) return;
 
       profileResult.fold(
-        (error) => emit(ProfileState.error(_mapFailure(error))),
+        (error) {
+          if (isClosed) return;
+          emit(ProfileState.error(_mapFailure(error)));
+        },
         (profile) {
           postsResult.fold(
-            (error) => emit(ProfileState.error(_mapFailure(error))),
-            (posts) => emit(
-              ProfileState.loaded(profile: profile, posts: posts, isMe: isMe),
-            ),
+            (error) {
+              if (isClosed) return;
+              emit(ProfileState.error(_mapFailure(error)));
+            },
+            (posts) {
+              if (isClosed) return;
+              emit(
+                ProfileState.loaded(profile: profile, posts: posts, isMe: isMe),
+              );
+            },
           );
         },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(ProfileState.error('Erro ao carregar perfil: ${_mapFailure(e)}'));
     }
   }
@@ -77,9 +92,15 @@ class ProfileCubit extends Cubit<ProfileState> {
           extension,
         );
 
-        result.fold((error) => emit(ProfileState.error(_mapFailure(error))), (
+        if (isClosed) return;
+
+        result.fold((error) {
+          if (isClosed) return;
+          emit(ProfileState.error(_mapFailure(error)));
+        }, (
           newUrl,
         ) {
+          if (isClosed) return;
           emit(
             currentState.copyWith(
               profile: currentState.profile.copyWith(avatarUrl: newUrl),
@@ -101,9 +122,15 @@ class ProfileCubit extends Cubit<ProfileState> {
           extension,
         );
 
-        result.fold((error) => emit(ProfileState.error(_mapFailure(error))), (
+        if (isClosed) return;
+
+        result.fold((error) {
+          if (isClosed) return;
+          emit(ProfileState.error(_mapFailure(error)));
+        }, (
           newUrl,
         ) {
+          if (isClosed) return;
           emit(
             currentState.copyWith(
               profile: currentState.profile.copyWith(coverUrl: newUrl),
@@ -132,24 +159,36 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> requestConnection(String userId) async {
     final result = await _profileRepository.requestConnection(userId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(userId),
     );
   }
 
   Future<void> cancelConnection(String userId) async {
     final result = await _profileRepository.cancelConnection(userId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(userId),
     );
   }
 
   Future<void> acceptConnection(String userId) async {
     final result = await _profileRepository.acceptConnection(userId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) =>
           loadProfile(), // Reload current user profile to update counts if needed
     );
@@ -157,24 +196,36 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> rejectConnection(String userId) async {
     final result = await _profileRepository.rejectConnection(userId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(),
     );
   }
 
   Future<void> removeConnection(String userId) async {
     final result = await _profileRepository.removeConnection(userId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(userId),
     );
   }
 
   Future<void> updateFoodPreferences(List<String> preferences) async {
     final result = await _profileRepository.updateFoodPreferences(preferences);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(),
     );
   }
@@ -183,16 +234,24 @@ class ProfileCubit extends Cubit<ProfileState> {
     final result = await _profileRepository.updateMedicalRestrictions(
       restrictions,
     );
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(),
     );
   }
 
   Future<void> updateAccountData(Map<String, dynamic> data) async {
     final result = await _profileRepository.updateAccountData(data: data);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) => loadProfile(),
     );
   }
@@ -201,8 +260,12 @@ class ProfileCubit extends Cubit<ProfileState> {
     final result = await _profileRepository.updateNotificationPreferences(
       prefs,
     );
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ProfileState.error(_mapFailure(error))),
+      (error) {
+        if (isClosed) return;
+        emit(ProfileState.error(_mapFailure(error)));
+      },
       (_) =>
           null, // Don't reload whole profile, just local save. Or reload if needed.
     );
@@ -211,5 +274,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<Map<String, bool>> getNotificationPreferences() async {
     final result = await _profileRepository.getNotificationPreferences();
     return result.fold((_) => {}, (prefs) => prefs);
+  }
+
+  void reset() {
+    emit(const ProfileState.initial());
   }
 }

@@ -77,6 +77,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
   @override
   void initState() {
     super.initState();
+    context.read<ProfileCubit>().loadProfile();
     for (var c in _allControllers) {
       c.addListener(_onInputChanged);
     }
@@ -535,15 +536,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Capture the global ProfileCubit (provided above in the widget tree by
-    // main.dart) BEFORE creating the local BlocProvider below. We need it to
-    // trigger a reload after the user saves so that the "Complete seu cadastro"
-    // banner in HomePage reflects the updated profile immediately.
-    final globalProfileCubit = context.read<ProfileCubit>();
-
-    return BlocProvider(
-      create: (context) => getIt<ProfileCubit>()..loadProfile(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: const AppHeader(mode: HeaderMode.back, title: 'Dados da conta'),
         body: BlocConsumer<ProfileCubit, ProfileState>(
@@ -555,7 +548,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   setState(() => _isSaving = false);
                   // Reload the global ProfileCubit so the banner in HomePage
                   // (and other screens) updates immediately after returning.
-                  globalProfileCubit.loadProfile();
+                  context.read<ProfileCubit>().loadProfile();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Dados atualizados com sucesso!'),
@@ -591,8 +584,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
             );
           },
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildForm(BuildContext context) {

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
-import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
@@ -14,109 +13,115 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_state.
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/settings_shimmer.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfileCubit>().loadProfile();
+    context.read<DocumentsCubit>().loadDocuments();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => getIt<ProfileCubit>()..loadProfile()),
-        BlocProvider(create: (context) => getIt<DocumentsCubit>()..loadDocuments()),
-      ],
-      child: Scaffold(
-        appBar: const AppHeader(mode: HeaderMode.back, title: 'Configurações'),
-        body: BlocBuilder<ProfileCubit, ProfileState>(
-          builder: (context, state) {
-            return state.maybeWhen(
-              loaded: (profile, _, isMe, __) {
-                return ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _buildUserCard(context, profile),
-                    const SizedBox(height: 8),
+    return Scaffold(
+      appBar: const AppHeader(mode: HeaderMode.back, title: 'Configurações'),
+      body: BlocBuilder<ProfileCubit, ProfileState>(
+        builder: (context, state) {
+          return state.maybeWhen(
+            loaded: (profile, _, isMe, __) {
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildUserCard(context, profile),
+                  const SizedBox(height: 8),
 
-                    _buildSectionLabel(context, 'CONTA'),
-                    _buildSection(context, [
-                      BlocBuilder<DocumentsCubit, DocumentsState>(
-                        builder: (context, docState) => _buildTile(
-                          context,
-                          icon: Icons.description_outlined,
-                          iconColor: Colors.blue.shade400,
-                          title: 'Meus documentos',
-                          onTap: () => context.push('/documents'),
-                          badgeText: docState.hasPendingAction ? 'Pendente' : null,
-                        ),
-                      ),
-                      _buildTile(
+                  _buildSectionLabel(context, 'CONTA'),
+                  _buildSection(context, [
+                    BlocBuilder<DocumentsCubit, DocumentsState>(
+                      builder: (context, docState) => _buildTile(
                         context,
-                        icon: Icons.person_outline_rounded,
-                        iconColor: AppColors.primary,
-                        title: 'Dados da conta',
-                        onTap: () => context.push('/account-data'),
-                      ),
-                    ]),
-
-                    const SizedBox(height: 8),
-                    _buildSectionLabel(context, 'PREFERÊNCIAS'),
-                    _buildSection(context, [
-                      _buildTile(
-                        context,
-                        icon: Icons.medical_services_outlined,
-                        iconColor: Colors.red.shade400,
-                        title: 'Condições médicas',
-                        onTap: () => context.push('/medical-restrictions'),
-                      ),
-                      _buildTile(
-                        context,
-                        icon: Icons.notifications_none_rounded,
-                        iconColor: Colors.purple.shade400,
-                        title: 'Notificações',
-                        onTap: () => context.push('/notification-preferences'),
-                      ),
-                      BlocBuilder<ThemeCubit, ThemeMode>(
-                        builder: (context, mode) => _buildThemeTile(context, mode),
-                      ),
-                    ]),
-
-                    const SizedBox(height: 8),
-                    _buildSectionLabel(context, 'SUPORTE'),
-                    _buildSection(context, [
-                      _buildTile(
-                        context,
-                        icon: Icons.privacy_tip_outlined,
-                        iconColor: Colors.grey.shade500,
-                        title: 'Política de privacidade',
-                        onTap: () => context.push('/privacy-policy'),
-                      ),
-                      _buildTile(
-                        context,
-                        icon: Icons.info_outline_rounded,
-                        iconColor: Colors.grey.shade500,
-                        title: 'Sobre nós',
-                        onTap: () => context.push('/about-us'),
-                      ),
-                    ]),
-
-                    const SizedBox(height: 32),
-                    _buildLogoutButton(context),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: Text(
-                        'AgroBravo Viajante',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
-                        ),
+                        icon: Icons.description_outlined,
+                        iconColor: Colors.blue.shade400,
+                        title: 'Meus documentos',
+                        onTap: () => context.push('/documents'),
+                        badgeText: docState.hasPendingAction ? 'Pendente' : null,
                       ),
                     ),
-                    const SizedBox(height: 48),
-                  ],
-                );
-              },
-              orElse: () => const SettingsShimmer(),
-            );
-          },
-        ),
+                    _buildTile(
+                      context,
+                      icon: Icons.person_outline_rounded,
+                      iconColor: AppColors.primary,
+                      title: 'Dados da conta',
+                      onTap: () => context.push('/account-data'),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 8),
+                  _buildSectionLabel(context, 'PREFERÊNCIAS'),
+                  _buildSection(context, [
+                    _buildTile(
+                      context,
+                      icon: Icons.medical_services_outlined,
+                      iconColor: Colors.red.shade400,
+                      title: 'Condições médicas',
+                      onTap: () => context.push('/medical-restrictions'),
+                    ),
+                    _buildTile(
+                      context,
+                      icon: Icons.notifications_none_rounded,
+                      iconColor: Colors.purple.shade400,
+                      title: 'Notificações',
+                      onTap: () => context.push('/notification-preferences'),
+                    ),
+                    BlocBuilder<ThemeCubit, ThemeMode>(
+                      builder: (context, mode) => _buildThemeTile(context, mode),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 8),
+                  _buildSectionLabel(context, 'SUPORTE'),
+                  _buildSection(context, [
+                    _buildTile(
+                      context,
+                      icon: Icons.privacy_tip_outlined,
+                      iconColor: Colors.grey.shade500,
+                      title: 'Política de privacidade',
+                      onTap: () => context.push('/privacy-policy'),
+                    ),
+                    _buildTile(
+                      context,
+                      icon: Icons.info_outline_rounded,
+                      iconColor: Colors.grey.shade500,
+                      title: 'Sobre nós',
+                      onTap: () => context.push('/about-us'),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 32),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'AgroBravo Viajante',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                ],
+              );
+            },
+            orElse: () => const SettingsShimmer(),
+          );
+        },
       ),
     );
   }
