@@ -7,6 +7,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
+import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -60,12 +61,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
       _submitError = false;
     });
     try {
+      // Persiste TODAS as respostas do onboarding em gruposParticipantes
+      // e seta primeiraAcesso=false via RPC (uma única chamada ao banco).
       await OnboardingService.instance.completeOnboarding(
         familiaresViajantes: _familiaresCtrl.text.trim(),
         particularidades: _particularidadesCtrl.text.trim(),
         autorizaImagem: _autorizaImagem,
+        concordaDeclaracao: _concordaDeclaracao,
       );
-      // Move to guide step without unblocking navigation yet
       _goToStep(6);
     } catch (_) {
       setState(() {
@@ -76,16 +79,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _finish() async {
-    // Await dismiss so the RPC sets primeiraAcesso=false before navigation.
-    // Do NOT call loadUserItinerary() here — HomePage.initState() will do it,
-    // and calling it twice concurrently caused a race that left the navbar in
-    // the wrong state (loading flicker / tabs missing).
-    await OnboardingService.instance.dismiss();
+    // 1. O RPC já rodou em _submit() e salvou tudo no banco.
+    //    Apenas limpa o gate local e notifica o router — sem RPC extra.
+    OnboardingService.instance.clearGate();
+
+    // 2. Carrega o itinerário ANTES de navegar para que o ItineraryCubit
+    //    já esteja em estado `loaded` quando a home montar — a navbar exibe
+    //    Itinerário + Chat imediatamente.
+    await context.read<ItineraryCubit>().loadUserItinerary();
     if (!mounted) return;
 
-    // Kick off documents + profile checks NOW so the pending-documents banner
-    // and "Complete seu cadastro" banner are ready the moment the user lands
-    // on the home screen — no extra navigation needed to trigger them.
+    // 3. Inicia documentos + perfil em paralelo (não bloqueante).
     context.read<DocumentsCubit>().loadDocuments();
     context.read<ProfileCubit>().loadProfile();
 

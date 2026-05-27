@@ -162,23 +162,7 @@ class NotificationsPage extends StatelessWidget {
                             SliverList(
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) {
-                                  final item = group.items[index];
-                                  final isLast =
-                                      index == group.items.length - 1;
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      _NotificationItem(notification: item),
-                                      if (!isLast)
-                                        Divider(
-                                          height: 1,
-                                          indent: 72,
-                                          color: Theme.of(context)
-                                              .dividerColor
-                                              .withValues(alpha: 0.6),
-                                        ),
-                                    ],
-                                  );
+                                  return _NotificationItem(notification: group.items[index]);
                                 },
                                 childCount: group.items.length,
                               ),
@@ -277,29 +261,29 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
       child: Row(
         children: [
           Text(
-            label,
+            label.toUpperCase(),
             style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               fontSize: 11,
-              letterSpacing: 0.8,
+              letterSpacing: 1.2,
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.45),
+                  .withValues(alpha: 0.4),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Divider(
               thickness: 1,
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.08),
+                  .withValues(alpha: 0.06),
             ),
           ),
         ],
@@ -317,13 +301,24 @@ class _FollowRequestsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.primary.withOpacity(0.1)
+            : AppColors.primary.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+        ),
+      ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: () {
             final currentUserId =
                 getIt<FeedRepository>().getCurrentUserId();
@@ -331,15 +326,8 @@ class _FollowRequestsSummary extends StatelessWidget {
               context.push('/connections/$currentUserId?initialIndex=1');
             }
           },
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              color: AppColors.primary.withOpacity(0.06),
-              border: Border.all(
-                color: AppColors.primary.withOpacity(0.15),
-              ),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 // Avatars empilhados
@@ -517,44 +505,67 @@ class _NotificationItemState extends State<_NotificationItem> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isUnread = !notification.isRead;
 
-    return InkWell(
-      onTap: () {
-        if (isUnread) {
-          context.read<NotificationsCubit>().markAsRead(notification.id);
-        }
-
-        if (notification.type == NotificationType.follow) {
-          final currentUserId = getIt<FeedRepository>().getCurrentUserId();
-          if (currentUserId != null) {
-            context.push('/connections/$currentUserId?initialIndex=1');
-          }
-        } else if (notification.type == NotificationType.like ||
-            notification.type == NotificationType.comment ||
-            notification.type == NotificationType.mention) {
-          if (notification.postId != null &&
-              notification.postOwnerId != null) {
-            context.push(
-              '/user-feed/${notification.postOwnerId}?postId=${notification.postId}',
-            );
-          }
-        } else if (notification.type == NotificationType.chatMessage) {
-          // Navega de volta para a tela de chat
-          context.pop();
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: isUnread
+            ? (isDark
+                ? AppColors.primary.withOpacity(0.12)
+                : AppColors.primary.withOpacity(0.06))
+            : (isDark
+                ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.5)
+                : Colors.white),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
           color: isUnread
-              ? (isDark
-                  ? AppColors.primary.withOpacity(0.08)
-                  : AppColors.primary.withOpacity(0.04))
-              : Colors.transparent,
+              ? AppColors.primary.withOpacity(0.2)
+              : (isDark ? Colors.white10 : Colors.black.withOpacity(0.03)),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        boxShadow: (isDark || isUnread)
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            if (isUnread) {
+              context.read<NotificationsCubit>().markAsRead(notification.id);
+            }
+
+            if (notification.type == NotificationType.follow) {
+              final currentUserId = getIt<FeedRepository>().getCurrentUserId();
+              if (currentUserId != null) {
+                context.push('/connections/$currentUserId?initialIndex=1');
+              }
+            } else if (notification.type == NotificationType.like ||
+                notification.type == NotificationType.comment ||
+                notification.type == NotificationType.mention) {
+              if (notification.postId != null &&
+                  notification.postOwnerId != null) {
+                context.push(
+                  '/user-feed/${notification.postOwnerId}?postId=${notification.postId}',
+                );
+              }
+            } else if (notification.type == NotificationType.chatMessage) {
+              // Navega de volta para a tela de chat
+              context.pop();
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // Leading icon/avatar
             _LeadingWidget(notification: notification),
             const SizedBox(width: 12),
@@ -648,12 +659,19 @@ class _NotificationItemState extends State<_NotificationItem> {
               children: [
                 if (isUnread)
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 10,
+                    height: 10,
                     margin: const EdgeInsets.only(top: 4),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.primary,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.4),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                   ),
                 if (notification.postImage != null) ...[
@@ -701,7 +719,9 @@ class _NotificationItemState extends State<_NotificationItem> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 
@@ -847,19 +867,19 @@ class _LeadingWidget extends StatelessWidget {
 
     if (icon != null) {
       return Container(
-        width: 44,
-        height: 44,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: bgColor,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: iconColor, size: 22),
+        child: Icon(icon, color: iconColor, size: 24),
       );
     }
 
     // Avatar de usuário (follow)
     return CircleAvatar(
-      radius: 22,
+      radius: 24,
       backgroundImage: notification.userAvatar != null
           ? NetworkImage(notification.userAvatar!)
           : null,

@@ -20,9 +20,6 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   RealtimeChannel? _eventsSubscription;
   RealtimeChannel? _grupoSubscription;
 
-  // Prevents concurrent loadUserItinerary() calls from racing each other.
-  bool _loadingItinerary = false;
-
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
   String _mapFailure(Exception failure) {
@@ -150,58 +147,39 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   Future<void> loadUserItinerary() async {
-    dev.log('[CUBIT] loadUserItinerary: chamado. _loadingItinerary=$_loadingItinerary state=${state.runtimeType}', name: 'itinerary');
-    // Guard: ignore re-entrant calls that would otherwise race and emit
-    // intermediate loading/error states (e.g. the foiNotificado realtime
-    // feedback loop or the simultaneous initState + _finish() calls).
-    if (_loadingItinerary) {
-      dev.log('[CUBIT] loadUserItinerary: BLOQUEADO (já em execução)', name: 'itinerary');
-      return;
-    }
-    _loadingItinerary = true;
+    dev.log('[CUBIT] loadUserItinerary: chamado. state=${state.runtimeType}', name: 'itinerary');
+    emit(const ItineraryState.loading());
+    dev.log('[CUBIT] loadUserItinerary: emitido loading', name: 'itinerary');
 
-    try {
-      emit(const ItineraryState.loading());
-      dev.log('[CUBIT] loadUserItinerary: emitido loading', name: 'itinerary');
+    // Single source of truth: re-evaluate the onboarding gate on every load.
+    // The router (refreshListenable) reacts and routes to /onboarding when
+    // the user is in an active mission with primeiraAcesso still true.
+    dev.log('[CUBIT] loadUserItinerary: chamando OnboardingService.refresh()...', name: 'itinerary');
+    await OnboardingService.instance.refresh();
+    dev.log('[CUBIT] loadUserItinerary: needsOnboarding=${OnboardingService.instance.needsOnboarding}', name: 'itinerary');
 
-      // Single source of truth: re-evaluate the onboarding gate on every load.
-      dev.log('[CUBIT] loadUserItinerary: chamando OnboardingService.refresh()...', name: 'itinerary');
-      await OnboardingService.instance.refresh();
-      dev.log('[CUBIT] loadUserItinerary: needsOnboarding=${OnboardingService.instance.needsOnboarding}', name: 'itinerary');
+    dev.log('[CUBIT] loadUserItinerary: chamando getUserGroupId()...', name: 'itinerary');
+    final userGroupResult = await _repository.getUserGroupId();
 
-      if (OnboardingService.instance.needsOnboarding) {
-        dev.log('[CUBIT] loadUserItinerary: needsOnboarding=true → abortando, router vai redirecionar para /onboarding', name: 'itinerary');
-        emit(const ItineraryState.initial());
-        return;
-      }
-
-      dev.log('[CUBIT] loadUserItinerary: chamando getUserGroupId()...', name: 'itinerary');
-      final userGroupResult = await _repository.getUserGroupId();
-
-      dev.log('[CUBIT] loadUserItinerary: getUserGroupId resultado=${userGroupResult}', name: 'itinerary');
-
-      await userGroupResult.fold(
-        (failure) async {
-          dev.log('[CUBIT] loadUserItinerary: FALHA no getUserGroupId: $failure', name: 'itinerary');
-          emit(ItineraryState.error(_mapFailure(failure)));
-        },
-        (groupId) async {
-          dev.log('[CUBIT] loadUserItinerary: groupId=$groupId', name: 'itinerary');
-          if (groupId == null) {
-            dev.log('[CUBIT] loadUserItinerary: groupId=null → emitindo error (sem missão ativa)', name: 'itinerary');
-            emit(
-              const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
-            );
-          } else {
-            dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...', name: 'itinerary');
-            await loadItinerary(groupId);
-          }
-        },
-      );
-    } finally {
-      _loadingItinerary = false;
-      dev.log('[CUBIT] loadUserItinerary: finalizado. state final=${state.runtimeType}', name: 'itinerary');
-    }
+    await userGroupResult.fold(
+      (failure) async {
+        dev.log('[CUBIT] loadUserItinerary: FALHA no getUserGroupId: $failure', name: 'itinerary');
+        emit(ItineraryState.error(_mapFailure(failure)));
+      },
+      (groupId) async {
+        dev.log('[CUBIT] loadUserItinerary: groupId=$groupId', name: 'itinerary');
+        if (groupId == null) {
+          dev.log('[CUBIT] loadUserItinerary: groupId=null → emitindo error (sem missão ativa)', name: 'itinerary');
+          emit(
+            const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
+          );
+        } else {
+          dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...', name: 'itinerary');
+          await loadItinerary(groupId);
+        }
+      },
+    );
+    dev.log('[CUBIT] loadUserItinerary: finalizado. state final=${state.runtimeType}', name: 'itinerary');
   }
 
   Future<Either<Exception, EmergencyContacts>> getRepositoryEmergencyContacts(
@@ -248,7 +226,6 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     _eventsSubscription = null;
     _grupoSubscription?.unsubscribe();
     _grupoSubscription = null;
-    _loadingItinerary = false;
     OnboardingService.instance.reset();
     emit(const ItineraryState.initial());
   }

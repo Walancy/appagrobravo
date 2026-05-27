@@ -137,8 +137,9 @@ class _LoginPageState extends State<LoginPage>
     final title = _getTitle();
     final bool isSuccess = _authMode == AuthMode.success || _authMode == AuthMode.registrationSuccess;
     final screenHeight = MediaQuery.of(context).size.height;
-    // Esconde logo na tela de register (muitos campos) ou telas pequenas
-    final bool showLogo = screenHeight > 600 && _authMode == AuthMode.login;
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    // Esconde logo na tela de register (muitos campos), telas pequenas ou quando teclado estiver aberto
+    final bool showLogo = !isKeyboardOpen && screenHeight > 600 && _authMode == AuthMode.login;
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {

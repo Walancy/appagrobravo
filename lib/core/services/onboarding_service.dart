@@ -153,14 +153,15 @@ class OnboardingService extends ChangeNotifier {
     if (changed) notifyListeners();
   }
 
-  /// Persists onboarding answers and clears the gate.
-  /// Uses a SECURITY DEFINER RPC to bypass RLS on gruposParticipantes.
-  /// Does NOT call notifyListeners here — OnboardingPage manages the
-  /// post-submit guide step before navigating away.
+  /// Persists ALL onboarding answers to gruposParticipantes and sets
+  /// primeiraAcesso=false via SECURITY DEFINER RPC (bypasses RLS).
+  /// Does NOT call notifyListeners — the guide step is shown next and
+  /// clearGate() unblocks navigation when the user taps "Ir para o app".
   Future<void> completeOnboarding({
     String? familiaresViajantes,
     String? particularidades,
     bool? autorizaImagem,
+    bool? concordaDeclaracao,
   }) async {
     if (_groupId == null) return;
     final supabase = Supabase.instance.client;
@@ -172,11 +173,20 @@ class OnboardingService extends ChangeNotifier {
       if (particularidades != null && particularidades.isNotEmpty)
         'p_particularidades': particularidades,
       if (autorizaImagem != null) 'p_autoriza_imagem': autorizaImagem,
+      if (concordaDeclaracao != null) 'p_concorda_declaracao': concordaDeclaracao,
     });
   }
 
-  /// Guarantees primeiraAcesso = false in DB and unblocks navigation.
-  /// Idempotent — safe to call even if completeOnboarding() was called before.
+  /// Clears the onboarding gate locally and notifies the router.
+  /// Call after completeOnboarding() has already persisted to DB — no
+  /// second RPC needed, saving one network round-trip.
+  void clearGate() {
+    _needsOnboarding = false;
+    notifyListeners();
+  }
+
+  /// Legacy safety-net: persists primeiraAcesso=false if completeOnboarding
+  /// was never called, then clears the gate. Kept for external callers.
   Future<void> dismiss() async {
     if (_groupId != null) {
       try {

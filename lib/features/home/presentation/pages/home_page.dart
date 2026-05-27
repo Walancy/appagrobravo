@@ -224,44 +224,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   );
                 }
 
-                Widget bodyContent = _buildBody();
-
-                final hasPendingDocs = context.read<DocumentsCubit>().state.hasPendingAction;
-                final showProfileBanner = !isComplete && _selectedIndex == 2;
-                final showPendingDocsBanner = hasPendingDocs && _selectedIndex == 2;
-                final shouldShowBanners = showProfileBanner || showPendingDocsBanner;
-
-                if (shouldShowBanners) {
-                  return Stack(
-                    children: [
-                      bodyContent,
-                      Positioned(
-                        top: kToolbarHeight + MediaQuery.of(context).padding.top + 8,
-                        left: 16,
-                        right: 16,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (showProfileBanner) ...[
-                              const ClipRRect(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
-                                child: IncompleteProfileBanner(),
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                            if (showPendingDocsBanner)
-                              const ClipRRect(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
-                                child: PendingDocumentsBanner(),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                if (_selectedIndex == -1) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   );
                 }
 
-                return bodyContent;
+                return _buildBody();
               },
             ),
             bottomNavigationBar: _buildBottomNav(),
