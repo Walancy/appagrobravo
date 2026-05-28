@@ -15,6 +15,7 @@ abstract class MessageEntity with _$MessageEntity {
     String? userAvatarUrl,
     String? guideRole,
     String? attachmentUrl,
+    String? audioUrl,
     MessageEntity? repliedToMessage,
     required bool isEdited,
     required bool isDeleted,

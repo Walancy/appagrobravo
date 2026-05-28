@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dartz/dartz.dart';
@@ -471,6 +472,7 @@ class ChatRepositoryImpl implements ChatRepository {
               'userAvatarUrl': m.userAvatarUrl,
               'guideRole': m.guideRole,
               'attachmentUrl': m.attachmentUrl,
+              'audioUrl': m.audioUrl,
               // serialize partial repliedToMessage if needed, simplistic version here:
               'repliedToId': m.repliedToMessage?.id,
               'isEdited': m.isEdited,
@@ -505,6 +507,7 @@ class ChatRepositoryImpl implements ChatRepository {
             userAvatarUrl: json['userAvatarUrl'],
             guideRole: json['guideRole'],
             attachmentUrl: json['attachmentUrl'],
+            audioUrl: json['audioUrl'],
             repliedToMessage: json['repliedToId'] != null
                 ? MessageEntity(
                     id: json['repliedToId'],

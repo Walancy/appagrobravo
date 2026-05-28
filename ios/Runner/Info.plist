@@ -56,6 +56,8 @@
 	<string>Precisamos da sua localização para fornecer funcionalidades baseadas em geolocalização, como mapas e identificação de locais próximos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Precisamos da sua localização para fornecer funcionalidades baseadas em geolocalização, como mapas e identificação de locais próximos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Precisamos do microfone para enviar mensagens de áudio no chat do grupo.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Usamos a câmera para permitir que você tire uma foto de perfil ou fotografe documentos como passaporte, visto e seguro viagem para upload e verificação.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
