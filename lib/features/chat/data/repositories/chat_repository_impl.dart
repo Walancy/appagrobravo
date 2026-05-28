@@ -605,6 +605,7 @@ class ChatRepositoryImpl implements ChatRepository {
                 userAvatarUrl: userData?['foto'] as String?,
                 guideRole: role,
                 attachmentUrl: msg['imagem'] as String?,
+                audioUrl: msg['audio_url'] as String?,
                 repliedToMessage: msg['id_mensagem_respondida'] != null
                     ? messages.firstWhere(
                         (m) => m.id == msg['id_mensagem_respondida'],
@@ -636,7 +637,7 @@ class ChatRepositoryImpl implements ChatRepository {
           final rows = await _supabaseClient
               .from('mensagens')
               .select(
-                'id, mensagem, created_at, user_id, imagem, '
+                'id, mensagem, created_at, user_id, imagem, audio_url, '
                 'id_mensagem_respondida, editado, deletado',
               )
               .eq('batepapo_id', chatRoomId!)
@@ -756,6 +757,50 @@ class ChatRepositoryImpl implements ChatRepository {
       isGroup: isGroup,
       messageText: text,
       hasImage: imageUrl != null,
+    );
+  }
+
+  @override
+  Future<void> sendAudio(
+    String chatId,
+    String audioPath, {
+    bool isGroup = true,
+    String? replyToId,
+  }) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    final realChatId = await _resolveChatId(chatId, isGroup);
+    if (realChatId == null) throw Exception('Could not resolve chat ID');
+
+    final bytes = await File(audioPath).readAsBytes();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final fileName = '${timestamp}_chat_audio.m4a';
+    final storagePath = 'chats/$realChatId/$fileName';
+
+    await _supabaseClient.storage
+        .from('files')
+        .uploadBinary(storagePath, bytes, fileOptions: const FileOptions(contentType: 'audio/m4a'));
+
+    final audioUrl = _supabaseClient.storage
+        .from('files')
+        .getPublicUrl(storagePath);
+
+    await _supabaseClient.from('mensagens').insert({
+      'batepapo_id': realChatId,
+      'user_id': user.id,
+      'mensagem': '🎵 Áudio',
+      'audio_url': audioUrl,
+      'id_mensagem_respondida': replyToId,
+    });
+
+    await _dispatchChatNotifications(
+      senderId: user.id,
+      realChatId: realChatId,
+      chatId: chatId,
+      isGroup: isGroup,
+      messageText: '🎵 Áudio',
+      hasImage: false,
     );
   }
 
