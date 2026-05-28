@@ -195,7 +195,7 @@ class _LoginFormState extends State<LoginForm> {
                   const SizedBox(height: AppSpacing.xs),
                   TextButton(
                     onPressed: () {
-                      final email = _emailController.text.trim();
+                      final email = _emailController.text.trim().toLowerCase();
                       if (email.isNotEmpty) {
                         widget.onResendConfirmationAction?.call(email);
                       }
@@ -311,7 +311,7 @@ class _LoginFormState extends State<LoginForm> {
         label: 'Entrar',
         onPressed: () {
           widget.onLoginAction?.call(
-            _emailController.text,
+            _emailController.text.trim().toLowerCase(),
             _passwordController.text,
             _rememberMe,
           );
@@ -402,7 +402,7 @@ class _LoginFormState extends State<LoginForm> {
           }
           widget.onRegisterAction?.call(
             _nameController.text,
-            _emailController.text,
+            _emailController.text.trim().toLowerCase(),
             _passwordController.text,
             _confirmPasswordController.text,
           );
@@ -432,7 +432,7 @@ class _LoginFormState extends State<LoginForm> {
       PrimaryButton(
         label: 'Enviar',
         onPressed: () {
-          widget.onRecoverPasswordAction?.call(_emailController.text);
+          widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase());
         },
       ),
     ];
@@ -485,7 +485,7 @@ class _LoginFormState extends State<LoginForm> {
           onPressed: () {
             if (needsEmail) {
               // Reenvia OTP usando o email digitado no campo
-              widget.onRecoverPasswordAction?.call(_emailController.text);
+              widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase());
             } else {
               widget.onResendOtpAction?.call();
             }

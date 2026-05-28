@@ -335,8 +335,7 @@ class _LoginPageState extends State<LoginPage>
                                                         password,
                                                         confirm,
                                                       ) {
-                                                        _recoveryEmail = email;
-                                                        _recoveryEmail = email;
+                                                        _recoveryEmail = email.trim().toLowerCase();
                                                         context
                                                             .read<AuthCubit>()
                                                             .register(
@@ -362,7 +361,7 @@ class _LoginPageState extends State<LoginPage>
                                                       },
                                                   onEmailChanged: (email) {
                                                     setState(() {
-                                                      _recoveryEmail = email;
+                                                      _recoveryEmail = email.trim().toLowerCase();
                                                     });
                                                   },
                                                   onResendConfirmationAction: (email) {

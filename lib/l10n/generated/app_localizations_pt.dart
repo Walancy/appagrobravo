@@ -90,6 +90,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsDarkMode => 'Modo escuro';
 
   @override
+  String get settingsLightMode => 'Modo claro';
+
+  @override
   String get settingsLanguage => 'Idioma';
 
   @override

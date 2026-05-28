@@ -47,17 +47,18 @@ class AuthCubit extends Cubit<AuthState> {
     String password, {
     bool rememberMe = false,
   }) async {
+    final normalizedEmail = email.trim().toLowerCase();
     emit(const AuthState.loading());
 
     final prefs = await SharedPreferences.getInstance();
     if (rememberMe) {
-      await prefs.setString('remembered_email', email);
+      await prefs.setString('remembered_email', normalizedEmail);
     } else {
       await prefs.remove('remembered_email');
     }
 
     final result = await _authRepository.signInWithEmailAndPassword(
-      email: email,
+      email: normalizedEmail,
       password: password,
     );
 
@@ -94,12 +95,13 @@ class AuthCubit extends Cubit<AuthState> {
     String passwordConfirm,
   ) async {
     log('AuthCubit.register: Iniciando validação dos dados de entrada...');
+    final normalizedEmail = email.trim().toLowerCase();
     if (name.trim().isEmpty) {
       emit(const AuthState.error('Informe seu nome.'));
       return;
     }
 
-    if (email.trim().isEmpty) {
+    if (normalizedEmail.isEmpty) {
       emit(const AuthState.error('Informe seu e-mail.'));
       return;
     }
@@ -119,7 +121,7 @@ class AuthCubit extends Cubit<AuthState> {
     
     // Default to USER_APP for self-registration via app
     final result = await _authRepository.signUpWithEmailAndPassword(
-      email: email.trim(),
+      email: normalizedEmail,
       password: password,
       name: name.trim(),
       userType: 'USER_APP',
@@ -154,8 +156,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> recoverPassword(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
     emit(const AuthState.loading());
-    final result = await _authRepository.resetPassword(email);
+    final result = await _authRepository.resetPassword(normalizedEmail);
     result.fold(
       (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) => emit(AuthState.otpSent(email)),
@@ -163,8 +166,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> resendConfirmationEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
     emit(const AuthState.loading());
-    final result = await _authRepository.resendConfirmationEmail(email);
+    final result = await _authRepository.resendConfirmationEmail(normalizedEmail);
     result.fold(
       (error) => emit(AuthState.error(error.toString().replaceAll('Exception: ', ''))),
       (_) => emit(const AuthState.registrationSuccess(
@@ -175,9 +179,10 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> verifyOtp(String email, String token) async {
+    final normalizedEmail = email.trim().toLowerCase();
     emit(const AuthState.loading());
     final result = await _authRepository.verifyOtp(
-      email: email,
+      email: normalizedEmail,
       token: token,
     );
     result.fold(

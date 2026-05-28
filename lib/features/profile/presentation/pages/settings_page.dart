@@ -333,7 +333,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       title: Text(
-        context.l10n.settingsDarkMode,
+        isDark ? context.l10n.settingsDarkMode : context.l10n.settingsLightMode,
         style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
       ),
       trailing: Switch(

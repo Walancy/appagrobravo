@@ -90,6 +90,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsDarkMode => 'Modo oscuro';
 
   @override
+  String get settingsLightMode => 'Modo claro';
+
+  @override
   String get settingsLanguage => 'Idioma';
 
   @override

@@ -262,6 +262,12 @@ abstract class AppLocalizations {
   /// **'Modo escuro'**
   String get settingsDarkMode;
 
+  /// No description provided for @settingsLightMode.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modo claro'**
+  String get settingsLightMode;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In pt, this message translates to:
