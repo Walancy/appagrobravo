@@ -163,10 +163,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final group = OnboardingService.instance.group;
 
+    // Grab the description from the first formulario (if any)
+    final descricao = _formularios.isNotEmpty ? _formularios.first.descricao : null;
+
     // Build pages: welcome + dynamic questions + guide
     final pages = <Widget>[
       _WelcomeStep(
         group: group,
+        descricao: descricao,
         onStart: _next,
       ),
       ...List.generate(_totalQuestions, (i) {
@@ -300,9 +304,10 @@ class _ProgressBar extends StatelessWidget {
 
 class _WelcomeStep extends StatelessWidget {
   final ItineraryGroupEntity? group;
+  final String? descricao;
   final VoidCallback onStart;
 
-  const _WelcomeStep({required this.group, required this.onStart});
+  const _WelcomeStep({required this.group, this.descricao, required this.onStart});
 
   String _fmtDate(DateTime? d, BuildContext context) {
     if (d == null) return '—';
@@ -411,6 +416,54 @@ class _WelcomeStep extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
+          // Description from the admin panel (optional)
+          if (descricao != null && descricao!.trim().isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.15),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 16,
+                        color: AppColors.primary.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Descrição',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    descricao!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.7),
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 40),
           SizedBox(
             width: double.infinity,

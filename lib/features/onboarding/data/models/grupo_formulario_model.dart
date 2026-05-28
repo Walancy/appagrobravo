@@ -59,6 +59,7 @@ class GrupoFormularioModel {
   final String id;
   final String grupoId;
   final String titulo;
+  final String? descricao;
   final List<PerguntaModel> perguntas;
   final String status;
 
@@ -66,6 +67,7 @@ class GrupoFormularioModel {
     required this.id,
     required this.grupoId,
     required this.titulo,
+    this.descricao,
     required this.perguntas,
     required this.status,
   });
@@ -84,6 +86,7 @@ class GrupoFormularioModel {
       id: json['id'] as String? ?? '',
       grupoId: json['grupo_id'] as String? ?? '',
       titulo: json['titulo'] as String? ?? '',
+      descricao: json['descricao'] as String?,
       perguntas: perguntas,
       status: json['status'] as String? ?? '',
     );
