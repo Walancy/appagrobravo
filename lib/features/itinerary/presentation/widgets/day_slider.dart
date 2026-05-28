@@ -155,7 +155,9 @@ class _DaySliderState extends State<DaySlider> {
                   Text(
                     DateFormat(
                       'E',
-                      'pt_BR',
+                      Localizations.localeOf(context).languageCode == 'pt' ? 'pt_BR'
+                          : Localizations.localeOf(context).languageCode == 'es' ? 'es_ES'
+                          : 'en_US',
                     ).format(date).replaceAll('.', '').capitalize(),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isSelected

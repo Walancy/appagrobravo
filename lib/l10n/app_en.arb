@@ -1,0 +1,324 @@
+{
+  "@@locale": "en",
+
+  "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
+  "commonSave": "Save",
+  "commonSignOut": "Sign out",
+  "commonNotNow": "Not now",
+  "commonDelete": "Delete",
+  "commonSend": "Send",
+  "commonOk": "OK",
+  "commonRetry": "Try again",
+  "commonClose": "Close",
+  "commonPending": "Pending",
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonError": "Error",
+  "commonSearch": "Search...",
+
+  "navItinerary": "Itinerary",
+  "navChat": "Chat",
+  "navCommunity": "Community",
+  "navMyData": "My data",
+
+  "settingsTitle": "Settings",
+  "settingsSectionAccount": "ACCOUNT",
+  "settingsMyDocuments": "My documents",
+  "settingsAccountData": "Account data",
+  "settingsSectionPreferences": "PREFERENCES",
+  "settingsMedicalConditions": "Medical conditions",
+  "settingsNotifications": "Notifications",
+  "settingsDarkMode": "Dark mode",
+  "settingsLanguage": "Language",
+  "settingsSectionSupport": "SUPPORT",
+  "settingsPrivacyPolicy": "Privacy policy",
+  "settingsAboutUs": "About us",
+  "settingsSignOut": "Sign out",
+  "settingsSignOutDialogTitle": "Sign out",
+  "settingsSignOutDialogContent": "Are you sure you want to sign out?",
+
+  "languagePickerTitle": "Select language",
+  "languageSystem": "System default",
+  "languagePortuguese": "Portuguese",
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+
+  "homeWelcomeTitle": "Welcome!",
+  "homeWelcomeContent": "To make the most of your trip, complete your profile with personal data, dietary restrictions and emergency contact.",
+  "homeCompleteProfile": "Complete profile",
+  "homeCameraError": "This device does not support camera use.",
+  "homeNoFeedTitle": "No active feed",
+  "homeNoFeedDescription": "Select a mission in the Home tab to view and interact with posts.",
+  "homeSelectMission": "Select Mission",
+  "homeDeletePostTitle": "Delete Post",
+  "homeDeletePostConfirm": "Are you sure you want to delete this post?",
+
+  "onboardingWelcomeTitle": "Welcome to the mission!",
+  "onboardingWelcomeBody": "You have been added to this mission. Before confirming your participation, please read the following information carefully. This process takes only a few minutes.",
+  "onboardingStart": "Start",
+  "onboardingGoToApp": "Go to the app",
+  "onboardingSkipForNow": "Skip for now",
+  "onboardingAllDone": "All set!",
+  "onboardingParticipationConfirmed": "Your participation has been confirmed.\nTo ensure a smooth trip, complete the steps below.",
+
+  "onboardingQ1Title": "Travel Documents",
+  "onboardingQ1Description": "Confirm that you are aware of the documents required for this mission.",
+  "onboardingQ1OptionA": "I confirm that I have read and am aware of all necessary documents (passport, visas, vaccines, etc.) and I know it is my responsibility to obtain them within the deadline.",
+
+  "onboardingQ2Title": "Family Travelers",
+  "onboardingQ2Description": "If there are other members of your family group participating in this mission, please enter their names below.",
+  "onboardingQ2Hint": "E.g.: Maria Silva, João Silva... (leave blank if none)",
+
+  "onboardingQ3Title": "Particularities",
+  "onboardingQ3Description": "Inform the organizing team of any particularities they should know about for this trip.",
+  "onboardingQ3Hint": "E.g.: special needs, dietary restrictions, relevant health conditions... (optional)",
+
+  "onboardingQ4Title": "Image Use Authorization",
+  "onboardingQ4Description": "Do you authorize the use of your image in photos and videos produced during the mission for institutional purposes?",
+  "onboardingQ4OptionA": "I authorize the use of my image for institutional and promotional purposes.",
+  "onboardingQ4OptionB": "I do not authorize the use of my image.",
+
+  "onboardingQ5Title": "Participation Declaration",
+  "onboardingQ5Description": "To conclude, confirm your agreement with the terms of this mission.",
+  "onboardingQ5OptionA": "I agree — I declare that I have read and agree with all the information and rules of this mission, committing to follow the guidelines of the organizing team.",
+  "onboardingQ5OptionB": "I disagree.",
+  "onboardingQ5Warning": "You must agree to confirm your participation in this mission.",
+  "onboardingQ5Error": "Submission error. Check your connection and try again.",
+
+  "onboardingGuidePersonalDataTitle": "Personal Data",
+  "onboardingGuidePersonalDataSub": "Complete your profile with name, photo and contact information.",
+  "onboardingGuideDocumentsTitle": "Documents",
+  "onboardingGuideDocumentsSub": "Upload passport, visa and other documents required for the trip.",
+  "onboardingGuideMedicalTitle": "Medical Conditions",
+  "onboardingGuideMedicalSub": "Inform allergies, medications or important health restrictions.",
+
+  "profileChangePhoto": "Change profile photo",
+
+  "chatCurrentMission": "CURRENT MISSION",
+  "chatGuides": "GUIDES",
+  "chatHistory": "History",
+  "chatHistorySubtitle": "All conversations",
+  "chatHistoryTileTitle": "Mission history",
+  "chatHistoryTileSubtitle": "View previous conversations",
+  "chatNoActiveMission": "No active mission",
+  "chatPrevious": "PREVIOUS",
+  "chatNoHistory": "No history found",
+  "chatYesterday": "Yesterday",
+
+  "notificationsTitle": "Notifications",
+  "notificationsMarkAllRead": "Mark read",
+  "notificationsClearAll": "Clear all",
+  "notificationsClearAllTooltip": "Clear notifications",
+  "notificationsEmpty": "All caught up!",
+  "notificationsEmptySubtitle": "You have no notifications at the moment.",
+  "notificationsToday": "Today",
+  "notificationsYesterday": "Yesterday",
+  "notificationsThisWeek": "Last 7 days",
+  "notificationsOlder": "Older",
+  "notificationsClearAllTitle": "Clear all",
+  "notificationsClearAllConfirm": "All notifications will be permanently removed. Do you want to continue?",
+  "notificationsAccept": "Accept",
+  "notificationsReject": "Decline",
+  "notificationsResolve": "Resolve",
+  "notificationsSeeMore": "See more",
+  "notificationsSeeLess": "See less",
+  "notificationsJustNow": "just now",
+  "notificationsMinutesAgo": "{minutes}min ago",
+  "@notificationsMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "notificationsHoursAgo": "{hours}h ago",
+  "@notificationsHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "notificationsYesterdayTime": "yesterday",
+  "notificationsDaysAgo": "{days} days ago",
+  "@notificationsDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "notificationsWeeksAgo": "{weeks} week{plural} ago",
+  "@notificationsWeeksAgo": {
+    "placeholders": {
+      "weeks": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+
+  "documentsTitle": "My documents",
+  "documentsAddOrView": "Add / View documents",
+  "documentsPendingUpload": "Pending upload",
+  "documentsAwaitingApproval": "Awaiting approval",
+  "documentsValid": "Document up to date",
+  "documentsRejected": "Rejected - Click to resubmit",
+  "documentsExpired": "Expired - Click to update",
+
+  "accountDataTitle": "Account data",
+  "accountDataSaveReminder": "Don't forget to save your changes",
+  "accountDataFullName": "Full name",
+  "accountDataNickname": "Name for badge",
+  "accountDataNicknameHelper": "This name will be used on your badge while traveling.",
+  "accountDataPhone": "Phone",
+  "accountDataEmergencySection": "Emergency Contact",
+  "accountDataEmergencyName": "Contact name",
+  "accountDataRelationship": "Relationship (e.g.: Father, Mother, etc.)",
+  "accountDataEmergencyPhone": "Emergency phone",
+  "accountDataCompany": "Company",
+  "accountDataCpf": "CPF",
+  "accountDataSsn": "SSN",
+  "accountDataBirthDate": "Date of birth",
+  "accountDataAddressSection": "Address",
+  "accountDataZipCode": "ZIP code",
+  "accountDataCountry": "Country",
+  "accountDataCountryPickerTitle": "Select country",
+  "accountDataState": "State",
+  "accountDataStatePickerTitle": "Select state",
+  "accountDataStateNonBrazil": "State / Province",
+  "accountDataCity": "City",
+  "accountDataNeighborhood": "Neighborhood",
+  "accountDataStreet": "Street",
+  "accountDataNumber": "Number",
+  "accountDataComplement": "Complement",
+  "accountDataSelectDate": "Select date",
+  "accountDataSaveButton": "Save changes",
+  "accountDataSuccessMessage": "Data updated successfully!",
+  "accountDataRequiredFieldsError": "Please fill in all required fields.",
+  "accountDataSelectPlaceholder": "Select",
+
+  "itineraryErrorPrefix": "Error: ",
+  "itineraryCurrentMission": "Current Mission",
+  "itineraryFiltersActive": "{count} filters applied",
+  "@itineraryFiltersActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryFiltersNone": "No filters applied",
+  "itineraryFilterButton": "Filter",
+
+  "itineraryMissionEnded": "Mission ended",
+  "itineraryEmptyFiltered": "No events match the filters.",
+  "itineraryStatusNow": "Happening now",
+  "itineraryStatusSoon": "Coming soon",
+  "itineraryFiltersTitle": "Filters",
+  "itineraryFilterEventType": "Event type",
+  "itineraryFilterStartTime": "Start time",
+  "itineraryFilterEndTime": "End time",
+  "itineraryFilterSelectTime": "Select",
+  "itineraryFilterClear": "Clear",
+  "itineraryFilterApply": "Apply",
+  "itineraryFilterEndBeforeStart": "End time must be after start time.",
+  "itineraryFilterStartAfterEnd": "Start time must be before end time.",
+  "itineraryTypeFlight": "Flight",
+  "itineraryTypeVisit": "Visit",
+  "itineraryTypeHotel": "Hotel",
+  "itineraryTypeFood": "Food",
+  "itineraryTypeMeal": "Meal",
+  "itineraryTypeLeisure": "Leisure",
+  "itineraryTypeTransfer": "Transfer",
+  "itineraryTypeReturn": "Return",
+  "itineraryTypeCheckin": "Check-in",
+  "itineraryTypeCheckout": "Check-out",
+  "itineraryTypeDisembark": "Disembark",
+  "itineraryTypeConnection": "Connection",
+  "itineraryTypeAiRecommendation": "AI Recommendation",
+  "itineraryTypeOther": "Other",
+  "itineraryMissionStartsIn": "STARTS IN",
+  "itineraryMissionEndsToday": "ENDS\nTODAY",
+  "itineraryMissionEndsIn": "ENDS IN",
+  "itineraryMissionDays": "days",
+  "itineraryTravelData": "Trip details",
+  "itineraryEmergencyTitle": "Emergency Channels",
+  "itineraryEmergencyLocation": "Current location: {country}",
+  "@itineraryEmergencyLocation": {
+    "placeholders": {
+      "country": { "type": "String" }
+    }
+  },
+  "itineraryEmergencyPolice": "Police",
+  "itineraryEmergencyFire": "Fire department",
+  "itineraryEmergencyMedical": "Medical emergency",
+  "itineraryEmergencyLocationDenied": "Location permission denied",
+  "itineraryEmergencyLocationDeniedForever": "Location permission permanently denied",
+  "itineraryEmergencyLoadError": "Error loading contacts: {error}",
+  "@itineraryEmergencyLoadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "itineraryViewOnMap": "View on Map",
+  "itineraryWebsite": "Website",
+  "itineraryBookingQuoting": "Quoting",
+  "itineraryBookingQuoted": "Quoted",
+  "itineraryFlight": "Flight",
+  "itineraryDelayed": "DELAYED",
+  "itineraryDelayedWithTime": "DELAYED {delay}",
+  "@itineraryDelayedWithTime": {
+    "placeholders": {
+      "delay": { "type": "String" }
+    }
+  },
+  "itineraryFromCity": "from {city}",
+  "@itineraryFromCity": {
+    "placeholders": {
+      "city": { "type": "String" }
+    }
+  },
+  "itineraryToCity": "to {city}",
+  "@itineraryToCity": {
+    "placeholders": {
+      "city": { "type": "String" }
+    }
+  },
+  "itineraryConnectionsTitle": "Connections ({count})",
+  "@itineraryConnectionsTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryConnectionsCount": "{count} stop{plural}",
+  "@itineraryConnectionsCount": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+  "itineraryDirectFlight": "Direct flight",
+  "itineraryConnectionTime": "Connection time: {time}",
+  "@itineraryConnectionTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "itineraryNextDay": "Next day",
+  "itineraryTravelTime": "Travel time: {duration}",
+  "@itineraryTravelTime": {
+    "placeholders": {
+      "duration": { "type": "String" }
+    }
+  },
+  "itineraryChecklistTitle": "Mission checklist",
+  "itineraryDocumentsTitle": "Mission documents",
+  "itineraryMission": "Mission",
+  "itineraryGroup": "Group",
+  "itineraryStarts": "Starts",
+  "itineraryEnds": "Ends",
+  "itineraryInDays": "in {count} days",
+  "@itineraryInDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryTomorrow": "tomorrow",
+  "itineraryToday": "today",
+  "itineraryStarted": "started",
+  "itineraryEnded": "ended",
+  "itineraryNoMaterials": "No materials available",
+  "itineraryOpenMaterialError": "Could not open the material"
+}

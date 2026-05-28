@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/tokens/app_colors.dart';
 import '../../../../core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class MissionHeaderCard extends StatelessWidget {
   final String missionName;
@@ -32,12 +33,12 @@ class MissionHeaderCard extends StatelessWidget {
     if (start.year > 0) {
       if (today.isBefore(start)) {
         daysValue = start.difference(today).inDays.toString();
-        daysLabel = 'INICIA EM';
+        daysLabel = context.l10n.itineraryMissionStartsIn;
         showDaysCard = true;
       } else if (!today.isAfter(end)) {
         final diff = end.difference(today).inDays;
         daysValue = diff.toString();
-        daysLabel = diff == 0 ? 'TERMINA\nHOJE' : 'TERMINA EM';
+        daysLabel = diff == 0 ? context.l10n.itineraryMissionEndsToday : context.l10n.itineraryMissionEndsIn;
         showDaysCard = true;
       }
     }
@@ -135,7 +136,7 @@ class MissionHeaderCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      if (daysValue != '0' || daysLabel != 'TERMINA\nHOJE')
+                      if (daysValue != '0' || !daysLabel.contains('\n'))
                         Text(
                           daysValue,
                           style: AppTextStyles.bodyLarge.copyWith(
@@ -145,9 +146,9 @@ class MissionHeaderCard extends StatelessWidget {
                             height: 1.0,
                           ),
                         ),
-                      if (daysValue != '0' || daysLabel != 'TERMINA\nHOJE')
+                      if (daysValue != '0' || !daysLabel.contains('\n'))
                         Text(
-                          'dias',
+                          context.l10n.itineraryMissionDays,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 10,
@@ -166,7 +167,7 @@ class MissionHeaderCard extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onTravelDataTap,
                 icon: const Icon(Icons.info_outline_rounded, size: 18),
-                label: const Text('Dados da viagem'),
+                label: Text(context.l10n.itineraryTravelData),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.08),

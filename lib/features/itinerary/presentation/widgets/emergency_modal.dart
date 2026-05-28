@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -33,19 +34,23 @@ class _EmergencyModalState extends State<EmergencyModal> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          setState(() {
-            _error = 'Permissão de localização negada';
-            _loading = false;
-          });
+          if (mounted) {
+            setState(() {
+              _error = context.l10n.itineraryEmergencyLocationDenied;
+              _loading = false;
+            });
+          }
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          _error = 'Permissão de localização permanentemente negada';
-          _loading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _error = context.l10n.itineraryEmergencyLocationDeniedForever;
+            _loading = false;
+          });
+        }
         return;
       }
 
@@ -74,7 +79,7 @@ class _EmergencyModalState extends State<EmergencyModal> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Erro ao carregar contatos: $e';
+          _error = context.l10n.itineraryEmergencyLoadError(e.toString());
           _loading = false;
         });
       }
@@ -125,7 +130,7 @@ class _EmergencyModalState extends State<EmergencyModal> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    'Canais de Emergência',
+                    context.l10n.itineraryEmergencyTitle,
                     style: AppTextStyles.h3.copyWith(fontSize: 20),
                   ),
                 ),
@@ -136,7 +141,7 @@ class _EmergencyModalState extends State<EmergencyModal> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Localização atual: ${_contacts!.countryName}',
+                  context.l10n.itineraryEmergencyLocation(_contacts!.countryName!),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(
                       context,
@@ -170,7 +175,7 @@ class _EmergencyModalState extends State<EmergencyModal> {
                     const SizedBox(height: AppSpacing.lg),
                     ElevatedButton(
                       onPressed: _loadContacts,
-                      child: const Text('Tentar Novamente'),
+                      child: Text(context.l10n.commonRetry),
                     ),
                   ],
                 ),
@@ -180,21 +185,21 @@ class _EmergencyModalState extends State<EmergencyModal> {
                 children: [
                   _buildEmergencyItem(
                     icon: Icons.local_police_rounded,
-                    label: 'Polícia',
+                    label: context.l10n.itineraryEmergencyPolice,
                     number: _contacts!.police,
                     color: Colors.blue[800]!,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   _buildEmergencyItem(
                     icon: Icons.local_fire_department_rounded,
-                    label: 'Bombeiros',
+                    label: context.l10n.itineraryEmergencyFire,
                     number: _contacts!.firefighters,
                     color: Colors.orange[800]!,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   _buildEmergencyItem(
                     icon: Icons.medical_services_rounded,
-                    label: 'Emergência Médica',
+                    label: context.l10n.itineraryEmergencyMedical,
                     number: _contacts!.medical,
                     color: Colors.red[800]!,
                   ),

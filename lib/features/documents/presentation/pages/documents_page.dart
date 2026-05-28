@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -32,9 +33,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppHeader(
+      appBar: AppHeader(
         mode: HeaderMode.back,
-        title: 'Meus documentos',
+        title: context.l10n.documentsTitle,
       ),
       body: BlocBuilder<DocumentsCubit, DocumentsState>(
         builder: (context, state) {
@@ -276,7 +277,7 @@ class DocumentTypeButton extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      _getStatusText(userState),
+                      _getStatusText(context, userState),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: (isPending || isAlert)
                             ? statusColor
@@ -328,23 +329,23 @@ class DocumentTypeButton extends StatelessWidget {
     );
   }
 
-  String _getStatusText(DocumentUserState state) {
+  String _getStatusText(BuildContext context, DocumentUserState state) {
     if (state != DocumentUserState.emMissao) {
       if (state == DocumentUserState.semMissao) {
         return 'Ver documentos';
       } else {
-        return 'Adicionar / Ver documentos';
+        return context.l10n.documentsAddOrView;
       }
     }
-    
-    if (document == null) return 'Pendente de envio';
+
+    if (document == null) return context.l10n.documentsPendingUpload;
     if (document!.status == DocumentStatus.pendente)
-      return 'Aguardando aprovação';
-    if (document!.status == DocumentStatus.aprovado) return 'Documento em dia';
+      return context.l10n.documentsAwaitingApproval;
+    if (document!.status == DocumentStatus.aprovado) return context.l10n.documentsValid;
     if (document!.status == DocumentStatus.recusado)
-      return 'Recusado - Clique para reenviar';
+      return context.l10n.documentsRejected;
     if (document!.status == DocumentStatus.expirado)
-      return 'Expirado - Clique para atualizar';
+      return context.l10n.documentsExpired;
     return '';
   }
 

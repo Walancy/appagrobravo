@@ -277,12 +277,31 @@ class AuthCubit extends Cubit<AuthState> {
       final prefs = await SharedPreferences.getInstance();
       final rememberedEmail = prefs.getString('remembered_email');
       final themeMode = prefs.getInt('theme_mode');
+
+      // Preserve Supabase session keys so the stored session survives cache
+      // clearance. supabase_flutter 2.x stores the session under a key of the
+      // form "sb-<project-ref>-auth-token". Clearing it here would cause
+      // currentSession to be null on every cold start, forcing re-login.
+      final supabaseKeys = prefs
+          .getKeys()
+          .where((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
+          .toList();
+      final supabaseValues = <String, String>{};
+      for (final k in supabaseKeys) {
+        final v = prefs.getString(k);
+        if (v != null) supabaseValues[k] = v;
+      }
+
       await prefs.clear();
+
       if (rememberedEmail != null) {
         await prefs.setString('remembered_email', rememberedEmail);
       }
       if (themeMode != null) {
         await prefs.setInt('theme_mode', themeMode);
+      }
+      for (final entry in supabaseValues.entries) {
+        await prefs.setString(entry.key, entry.value);
       }
     } catch (e) {
       log('Erro ao limpar cache de SharedPreferences: $e');

@@ -1,11 +1,13 @@
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/checklist_item.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/mission_material.dart';
 import 'package:agrobravo/features/itinerary/domain/repositories/itinerary_repository.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/form_page.dart';
 import 'package:dartz/dartz.dart' show Either;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -50,7 +52,7 @@ class _TravelDataPageState extends State<TravelDataPage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppHeader(
         mode: HeaderMode.back,
-        title: 'Dados da viagem',
+        title: context.l10n.itineraryTravelData,
         subtitle: widget.group.name,
       ),
       body: FutureBuilder<Either<Exception, List<MissionMaterialEntity>>>(
@@ -99,7 +101,7 @@ class _TravelDataPageState extends State<TravelDataPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Checklist da missão',
+                            context.l10n.itineraryChecklistTitle,
                             style: AppTextStyles.h3.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 18,
@@ -122,7 +124,7 @@ class _TravelDataPageState extends State<TravelDataPage> {
                 ),
 
                 Text(
-                  'Documentos da missão',
+                  context.l10n.itineraryDocumentsTitle,
                   style: AppTextStyles.h3.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
@@ -132,7 +134,22 @@ class _TravelDataPageState extends State<TravelDataPage> {
                 if (snapshot.connectionState == ConnectionState.waiting)
                   const _MaterialsLoading()
                 else if (materials.isNotEmpty)
-                  ...materials.map((material) => _MaterialTile(material))
+                  ...materials.map((material) {
+                    if (material.tipo == 'form') {
+                      return _FormMaterialTile(
+                        material: material,
+                        onTap: () async {
+                          final answered = await Navigator.of(context).push<bool>(
+                            MaterialPageRoute(
+                              builder: (_) => FormPage(material: material),
+                            ),
+                          );
+                          if (answered == true) _refresh();
+                        },
+                      );
+                    }
+                    return _MaterialTile(material);
+                  })
                 else
                   _EmptyMaterials(errorMessage: errorMessage),
               ],
@@ -153,7 +170,7 @@ class _TripSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final missionName = group.missionName?.isNotEmpty == true
         ? group.missionName!
-        : 'Missão Atual';
+        : context.l10n.itineraryCurrentMission;
     final dateFormat = DateFormat('dd/MM/yyyy');
 
     return Container(
@@ -178,13 +195,13 @@ class _TripSummary extends StatelessWidget {
         children: [
           _InfoRow(
             icon: Icons.flag_outlined,
-            label: 'Missão',
+            label: context.l10n.itineraryMission,
             value: missionName,
           ),
           const SizedBox(height: AppSpacing.md),
           _InfoRow(
             icon: Icons.group_outlined,
-            label: 'Grupo',
+            label: context.l10n.itineraryGroup,
             value: group.name,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -192,16 +209,16 @@ class _TripSummary extends StatelessWidget {
             children: [
               Expanded(
                 child: _DateMetric(
-                  label: 'Começa',
-                  value: _relativeStartLabel(group.startDate),
+                  label: context.l10n.itineraryStarts,
+                  value: _relativeStartLabel(group.startDate, context),
                   date: dateFormat.format(group.startDate),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _DateMetric(
-                  label: 'Termina',
-                  value: _relativeEndLabel(group.endDate),
+                  label: context.l10n.itineraryEnds,
+                  value: _relativeEndLabel(group.endDate, context),
                   date: dateFormat.format(group.endDate),
                 ),
               ),
@@ -212,26 +229,26 @@ class _TripSummary extends StatelessWidget {
     );
   }
 
-  String _relativeStartLabel(DateTime startDate) {
+  String _relativeStartLabel(DateTime startDate, BuildContext context) {
     final today = _dateOnly(DateTime.now());
     final start = _dateOnly(startDate);
     final diff = start.difference(today).inDays;
 
-    if (diff > 1) return 'em $diff dias';
-    if (diff == 1) return 'amanhã';
-    if (diff == 0) return 'hoje';
-    return 'iniciada';
+    if (diff > 1) return context.l10n.itineraryInDays(diff);
+    if (diff == 1) return context.l10n.itineraryTomorrow;
+    if (diff == 0) return context.l10n.itineraryToday;
+    return context.l10n.itineraryStarted;
   }
 
-  String _relativeEndLabel(DateTime endDate) {
+  String _relativeEndLabel(DateTime endDate, BuildContext context) {
     final today = _dateOnly(DateTime.now());
     final end = _dateOnly(endDate);
     final diff = end.difference(today).inDays;
 
-    if (diff > 1) return 'em $diff dias';
-    if (diff == 1) return 'amanhã';
-    if (diff == 0) return 'hoje';
-    return 'encerrada';
+    if (diff > 1) return context.l10n.itineraryInDays(diff);
+    if (diff == 1) return context.l10n.itineraryTomorrow;
+    if (diff == 0) return context.l10n.itineraryToday;
+    return context.l10n.itineraryEnded;
   }
 
   DateTime _dateOnly(DateTime date) {
@@ -654,7 +671,7 @@ class _MaterialTile extends StatelessWidget {
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o material')),
+        SnackBar(content: Text(context.l10n.itineraryOpenMaterialError)),
       );
     }
   }
@@ -711,7 +728,7 @@ class _EmptyMaterials extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            errorMessage ?? 'Nenhum material disponível',
+            errorMessage ?? context.l10n.itineraryNoMaterials,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context)
@@ -725,3 +742,152 @@ class _EmptyMaterials extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Form Material Tile
+// ---------------------------------------------------------------------------
+
+class _FormMaterialTile extends StatelessWidget {
+  final MissionMaterialEntity material;
+  final VoidCallback onTap;
+
+  const _FormMaterialTile({required this.material, required this.onTap});
+
+  static const _green = Color(0xFF4CAF50);
+  static const _orange = Color(0xFFFF9800);
+
+  @override
+  Widget build(BuildContext context) {
+    final responded = material.hasUserResponse;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(
+                color: responded
+                    ? _green.withValues(alpha: 0.25)
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.08),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Ícone
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: _green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_outlined,
+                    color: _green,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                // Título + label
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        material.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Formulário',
+                              style: TextStyle(
+                                color: _green,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Badge respondido/pendente
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: responded
+                                  ? _green.withValues(alpha: 0.08)
+                                  : _orange.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  responded
+                                      ? Icons.check_circle_outline
+                                      : Icons.pending_outlined,
+                                  size: 10,
+                                  color: responded ? _green : _orange,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  responded ? 'Respondido' : 'Pendente',
+                                  style: TextStyle(
+                                    color: responded ? _green : _orange,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.38),
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

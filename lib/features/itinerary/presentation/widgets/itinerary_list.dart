@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_cards.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filter_modal.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class ItineraryList extends StatelessWidget {
   final List<ItineraryItemEntity> items;
@@ -99,8 +100,8 @@ class ItineraryList extends StatelessWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
-            child: const Center(
-              child: Text('Nenhum evento corresponde aos filtros.'),
+            child: Center(
+              child: Text(context.l10n.itineraryEmptyFiltered),
             ),
           ),
         ),
@@ -127,12 +128,12 @@ class ItineraryList extends StatelessWidget {
             final end =
                 item.endDateTime ?? start.add(const Duration(hours: 1));
             if (now.isAfter(start) && now.isBefore(end)) {
-              statusLabel = 'Acontecendo agora';
+              statusLabel = context.l10n.itineraryStatusNow;
               statusColor = AppColors.primary;
             } else if (now.isBefore(start) &&
                 start.difference(now).inMinutes < 60 &&
                 start.day == now.day) {
-              statusLabel = 'Em breve';
+              statusLabel = context.l10n.itineraryStatusSoon;
               statusColor = Colors.orange;
             }
           }

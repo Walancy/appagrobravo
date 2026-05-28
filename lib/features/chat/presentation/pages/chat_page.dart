@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
@@ -34,7 +35,7 @@ class ChatPage extends StatelessWidget {
                     if (data.history.isNotEmpty)
                       _buildHistoryTile(context, data),
                     if (data.currentMission != null) ...[
-                      _buildSectionLabel(context, 'MISSÃO ATUAL'),
+                      _buildSectionLabel(context, context.l10n.chatCurrentMission),
                       _ChatListItem(
                         chat: data.currentMission!,
                         isCurrent: true,
@@ -44,7 +45,7 @@ class ChatPage extends StatelessWidget {
                       ),
                     ],
                     if (data.guides.isNotEmpty) ...[
-                      _buildSectionLabel(context, 'GUIAS'),
+                      _buildSectionLabel(context, context.l10n.chatGuides),
                       ...data.guides.map(
                         (g) => _ChatListItem(
                           guide: g,
@@ -135,13 +136,13 @@ class ChatPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Histórico de missões',
+                        context.l10n.chatHistoryTileTitle,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
-                        'Ver conversas anteriores',
+                        context.l10n.chatHistoryTileSubtitle,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -185,7 +186,7 @@ class ChatPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhuma missão ativa',
+            context.l10n.chatNoActiveMission,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
             ),
@@ -212,17 +213,17 @@ class _HistoryPage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(
+          AppHeader(
             mode: HeaderMode.back,
-            title: 'Histórico',
-            subtitle: 'Todas as conversas',
+            title: context.l10n.chatHistory,
+            subtitle: context.l10n.chatHistorySubtitle,
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 8, bottom: 80),
               children: [
                 if (historyChats.isNotEmpty) ...[
-                  _buildSectionLabel(context, 'ANTERIORES'),
+                  _buildSectionLabel(context, context.l10n.chatPrevious),
                   ...historyChats.map(
                     (m) => _ChatListItem(
                       chat: m,
@@ -237,7 +238,7 @@ class _HistoryPage extends StatelessWidget {
                     padding: const EdgeInsets.all(40),
                     child: Center(
                       child: Text(
-                        'Nenhum histórico encontrado',
+                        context.l10n.chatNoHistory,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -288,13 +289,13 @@ class _ChatListItem extends StatelessWidget {
     this.onReturn,
   });
 
-  String _formatTime(DateTime date) {
+  String _formatTime(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
     if (difference.inDays == 0 && now.day == date.day) {
       return DateFormat('HH:mm').format(date);
     } else if (difference.inDays < 2 && now.day - date.day == 1) {
-      return 'Ontem';
+      return context.l10n.chatYesterday;
     } else {
       return DateFormat('dd/MM/yyyy').format(date);
     }
@@ -305,7 +306,7 @@ class _ChatListItem extends StatelessWidget {
     final title = chat?.title ?? guide?.name ?? '';
     final subtitle = lastMessage ?? chat?.subtitle ?? guide?.role ?? '';
     final imageUrl = chat?.imageUrl ?? guide?.avatarUrl;
-    final time = lastMessageTime != null ? _formatTime(lastMessageTime!) : '';
+    final time = lastMessageTime != null ? _formatTime(context, lastMessageTime!) : '';
     final unreadCount = chat?.unreadCount ?? guide?.unreadCount ?? 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

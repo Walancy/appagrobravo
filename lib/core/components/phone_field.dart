@@ -11,6 +11,7 @@ class PhoneField extends StatefulWidget {
   final PhoneCountry initialCountry;
   final ValueChanged<PhoneCountry>? onCountryChanged;
   final bool hasError;
+  final bool isMandatory;
 
   const PhoneField({
     super.key,
@@ -19,6 +20,7 @@ class PhoneField extends StatefulWidget {
     this.initialCountry = kDefaultPhoneCountry,
     this.onCountryChanged,
     this.hasError = false,
+    this.isMandatory = false,
   });
 
   @override
@@ -92,11 +94,20 @@ class _PhoneFieldState extends State<PhoneField> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.label,
-            style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+          RichText(
+            text: TextSpan(
+              text: widget.label,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              children: [
+                if (widget.isMandatory)
+                  const TextSpan(
+                    text: ' *',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.xs),

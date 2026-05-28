@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:http/http.dart' as http;
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
@@ -263,13 +264,22 @@ class _AccountDataPageState extends State<AccountDataPage> {
     );
   }
 
-  Widget _label(BuildContext context, String text) => Padding(
+  Widget _label(BuildContext context, String text, {bool isMandatory = false}) => Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-        child: Text(
-          text,
-          style: AppTextStyles.bodySmall.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+        child: RichText(
+          text: TextSpan(
+            text: text,
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            children: [
+              if (isMandatory)
+                const TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: AppColors.error),
+                ),
+            ],
           ),
         ),
       );
@@ -291,7 +301,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(context, label),
+          _label(context, label, isMandatory: isMandatory),
           TextField(
             controller: controller,
             keyboardType: keyboardType,
@@ -338,12 +348,12 @@ class _AccountDataPageState extends State<AccountDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(context, 'País'),
+          _label(context, context.l10n.accountDataCountry, isMandatory: true),
           GestureDetector(
             onTap: () async {
               final result = await _showPickerSheet<AddressCountry>(
                 context: context,
-                title: 'Selecionar País',
+                title: context.l10n.accountDataCountryPickerTitle,
                 items: kAddressCountries,
                 labelOf: (c) => c.name,
                 flagOf: (c) => c.flag,
@@ -403,7 +413,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
       return _buildTextField(
         context,
         _stateTextController,
-        'Estado / Província',
+        context.l10n.accountDataStateNonBrazil,
         isMandatory: true,
       );
     }
@@ -429,12 +439,12 @@ class _AccountDataPageState extends State<AccountDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(context, 'Estado'),
+          _label(context, context.l10n.accountDataState, isMandatory: true),
           GestureDetector(
             onTap: () async {
               final result = await _showPickerSheet<BrazilianState>(
                 context: context,
-                title: 'Selecionar Estado',
+                title: context.l10n.accountDataStatePickerTitle,
                 items: kBrazilianStates,
                 labelOf: (s) => s.name,
                 flagOf: (s) => s.uf,
@@ -456,7 +466,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 children: [
                   Expanded(
                     child: Text(
-                      selectedName ?? 'Selecionar',
+                      selectedName ?? context.l10n.accountDataSelectPlaceholder,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: selectedName != null
                             ? Theme.of(context).colorScheme.onSurface
@@ -489,7 +499,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(context, label),
+          _label(context, label, isMandatory: true),
           InkWell(
             onTap: () => _selectBirthDate(context),
             child: Container(
@@ -507,7 +517,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 children: [
                   Text(
                     _birthDate == null
-                        ? 'Selecionar data'
+                        ? context.l10n.accountDataSelectDate
                         : '${_birthDate!.day.toString().padLeft(2, '0')}/'
                             '${_birthDate!.month.toString().padLeft(2, '0')}/'
                             '${_birthDate!.year}',
@@ -538,7 +548,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        appBar: const AppHeader(mode: HeaderMode.back, title: 'Dados da conta'),
+        appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.accountDataTitle),
         body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
             state.maybeWhen(
@@ -550,8 +560,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   // (and other screens) updates immediately after returning.
                   context.read<ProfileCubit>().loadProfile();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Dados atualizados com sucesso!'),
+                    SnackBar(
+                      content: Text(context.l10n.accountDataSuccessMessage),
                       backgroundColor: AppColors.primary,
                     ),
                   );
@@ -595,7 +605,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
         children: [
           Center(
             child: Text(
-              'Não esqueça de salvar suas alterações',
+              context.l10n.accountDataSaveReminder,
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 fontStyle: FontStyle.italic,
@@ -604,19 +614,20 @@ class _AccountDataPageState extends State<AccountDataPage> {
           ),
           const SizedBox(height: AppSpacing.lg),
           // ── Dados pessoais ──────────────────────────────────────────────
-          _buildTextField(context, _nameController, 'Nome Completo', isMandatory: true),
+          _buildTextField(context, _nameController, context.l10n.accountDataFullName, isMandatory: true),
           _buildTextField(
             context,
             _badgeNameController,
-            'Apelido',
-            helperText: 'Esse nome será usado no seu crachá quando estiver em viagem.',
+            context.l10n.accountDataNickname,
+            helperText: context.l10n.accountDataNicknameHelper,
           ),
           PhoneField(
             controller: _phoneController,
-            label: 'Telefone',
+            label: context.l10n.accountDataPhone,
             initialCountry: _phoneCountry,
             onCountryChanged: (c) => setState(() => _phoneCountry = c),
             hasError: _attemptedSave && _phoneController.text.trim().isEmpty,
+            isMandatory: true,
           ),
           const SizedBox(height: AppSpacing.sm),
           Container(
@@ -635,31 +646,32 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   children: [
                     const Icon(Icons.health_and_safety_outlined, color: AppColors.primary, size: 20),
                     const SizedBox(width: AppSpacing.xs),
-                    _buildSectionTitle(context, 'Contato de Emergência'),
+                    _buildSectionTitle(context, context.l10n.accountDataEmergencySection),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _buildTextField(context, _emergencyNameController, 'Nome do Contato', isMandatory: true),
-                _buildTextField(context, _emergencyRelationshipController, 'Grau de Parentesco (Ex: Pai, Mãe, etc)', isMandatory: true),
+                _buildTextField(context, _emergencyNameController, context.l10n.accountDataEmergencyName, isMandatory: true),
+                _buildTextField(context, _emergencyRelationshipController, context.l10n.accountDataRelationship, isMandatory: true),
                 PhoneField(
                   controller: _emergencyContactController,
-                  label: 'Telefone de Emergência',
+                  label: context.l10n.accountDataEmergencyPhone,
                   initialCountry: _emergencyCountry,
                   onCountryChanged: (c) => setState(() => _emergencyCountry = c),
                   hasError: _attemptedSave && _emergencyContactController.text.trim().isEmpty,
+                  isMandatory: true,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _buildTextField(context, _companyController, 'Empresa', isMandatory: true),
+          _buildTextField(context, _companyController, context.l10n.accountDataCompany),
           Row(
             children: [
               Expanded(
                 child: _buildTextField(
                   context,
                   _cpfController,
-                  'CPF',
+                  context.l10n.accountDataCpf,
                   keyboardType: TextInputType.number,
                   inputFormatters: [_cpfMask],
                   isMandatory: true,
@@ -670,13 +682,13 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 child: _buildTextField(
                   context,
                   _ssnController,
-                  'SSN',
+                  context.l10n.accountDataSsn,
                   keyboardType: TextInputType.number,
                 ),
               ),
             ],
           ),
-          _buildDatePicker(context, 'Data de Nascimento'),
+          _buildDatePicker(context, context.l10n.accountDataBirthDate),
 
           // ── Endereço ────────────────────────────────────────────────────
           const SizedBox(height: AppSpacing.sm),
@@ -696,7 +708,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   children: [
                     const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
                     const SizedBox(width: AppSpacing.xs),
-                    _buildSectionTitle(context, 'Endereço'),
+                    _buildSectionTitle(context, context.l10n.accountDataAddressSection),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -710,7 +722,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       child: _buildTextField(
                         context,
                         _zipCodeController,
-                        'CEP',
+                        context.l10n.accountDataZipCode,
                         keyboardType: TextInputType.number,
                         inputFormatters: [_cepMask],
                         isMandatory: true,
@@ -740,13 +752,13 @@ class _AccountDataPageState extends State<AccountDataPage> {
                     Expanded(child: _buildStateField(context)),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
-                      child: _buildTextField(context, _cityController, 'Cidade', isMandatory: true),
+                      child: _buildTextField(context, _cityController, context.l10n.accountDataCity, isMandatory: true),
                     ),
                   ],
                 ),
 
-                _buildTextField(context, _neighborhoodController, 'Bairro', isMandatory: true),
-                _buildTextField(context, _streetController, 'Rua', isMandatory: true),
+                _buildTextField(context, _neighborhoodController, context.l10n.accountDataNeighborhood, isMandatory: true),
+                _buildTextField(context, _streetController, context.l10n.accountDataStreet, isMandatory: true),
                 Row(
                   children: [
                     SizedBox(
@@ -754,7 +766,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       child: _buildTextField(
                         context,
                         _numberController,
-                        'Número',
+                        context.l10n.accountDataNumber,
                         keyboardType: TextInputType.number,
                         isMandatory: true,
                       ),
@@ -764,7 +776,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       child: _buildTextField(
                         context,
                         _complementController,
-                        'Complemento',
+                        context.l10n.accountDataComplement,
                       ),
                     ),
                   ],
@@ -797,7 +809,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
                       ),
                     )
                   : Text(
-                      'Salvar Alterações',
+                      context.l10n.accountDataSaveButton,
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -889,8 +901,8 @@ class _AccountDataPageState extends State<AccountDataPage> {
     setState(() => _attemptedSave = true);
     if (!_validateFields()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha todos os campos obrigatórios.'),
+        SnackBar(
+          content: Text(context.l10n.accountDataRequiredFieldsError),
           backgroundColor: Colors.red,
         ),
       );
@@ -987,7 +999,7 @@ class _PickerSheetState<T> extends State<_PickerSheet<T>> {
               onChanged: _filter,
               style: TextStyle(color: onSurface),
               decoration: InputDecoration(
-                hintText: 'Buscar...',
+                hintText: context.l10n.commonSearch,
                 hintStyle:
                     TextStyle(color: onSurface.withValues(alpha: 0.45)),
                 prefixIcon: Icon(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/tokens/assets.gen.dart';
@@ -135,22 +136,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Bem-vindo(a)!'),
-        content: const Text(
-          'Para aproveitar ao máximo a sua viagem, complete seu perfil com '
-          'dados pessoais, restrições alimentares e contato de emergência.',
-        ),
+        title: Text(context.l10n.homeWelcomeTitle),
+        content: Text(context.l10n.homeWelcomeContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Agora não'),
+            child: Text(context.l10n.commonNotNow),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               context.push('/account-data');
             },
-            child: const Text('Completar perfil'),
+            child: Text(context.l10n.homeCompleteProfile),
           ),
         ],
       ),
@@ -362,9 +360,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       padding: const EdgeInsets.symmetric(vertical: 60),
                       child: EmptyStateWidget(
                         icon: Icons.photo_library_outlined,
-                        title: 'Nenhum feed ativo',
-                        description: 'Selecione uma missão na aba Início para visualizar e interagir com as publicações.',
-                        buttonText: 'Selecionar Missão',
+                        title: context.l10n.homeNoFeedTitle,
+                        description: context.l10n.homeNoFeedDescription,
+                        buttonText: context.l10n.homeSelectMission,
                         onButtonPressed: () {
                           // Se index 0 for Itinerário, mandamos para lá
                           if (context.mounted) {
@@ -467,8 +465,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Este dispositivo não suporta o uso da câmera.'),
+            SnackBar(
+              content: Text(context.l10n.homeCameraError),
             ),
           );
         }
@@ -481,12 +479,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Excluir Publicação'),
-        content: const Text('Tem certeza que deseja excluir esta publicação?'),
+        title: Text(context.l10n.homeDeletePostTitle),
+        content: Text(context.l10n.homeDeletePostConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () {
@@ -494,7 +492,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               feedCubit.deletePost(postId);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Excluir'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -552,20 +550,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   0,
                   Icons.explore_outlined,
                   Icons.explore_rounded,
-                  'Itinerário',
+                  context.l10n.navItinerary,
                 ),
               if (showTripTabs)
                 _buildNavItem(
                   1,
                   Icons.chat_bubble_outline_rounded,
                   Icons.chat_bubble_rounded,
-                  'Chat',
+                  context.l10n.navChat,
                 ),
               _buildNavItem(
                 2,
                 Icons.group_outlined,
                 Icons.group,
-                'Comunidade',
+                context.l10n.navCommunity,
               ),
               BlocBuilder<DocumentsCubit, DocumentsState>(
                 builder: (context, state) {
@@ -573,7 +571,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     3,
                     Icons.badge_outlined,
                     Icons.badge,
-                    'Meus dados',
+                    context.l10n.navMyData,
                     hasBadge: state.hasPendingAction,
                   );
                 },

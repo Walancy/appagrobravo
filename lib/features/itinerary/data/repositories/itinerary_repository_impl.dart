@@ -12,6 +12,7 @@ import '../../domain/entities/itinerary_item.dart';
 import '../../domain/entities/emergency_contacts.dart';
 import '../../domain/entities/mission_material.dart';
 import '../../domain/entities/checklist_item.dart';
+import '../../domain/entities/form_field_entity.dart';
 import '../models/itinerary_group_dto.dart';
 import '../models/itinerary_item_dto.dart';
 
@@ -231,7 +232,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
                 Map<String, dynamic>.from(json as Map),
               ),
             )
-            .where((material) => material.url.isNotEmpty)
+            .where((material) => material.url.isNotEmpty || material.tipo == 'form')
             .toList();
       }
     } catch (e) {
@@ -435,22 +436,50 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
     String groupId,
   ) async {
     try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+
       final response = await _supabaseClient
           .from('materiais')
-          .select('id, nome, tamanho, url, created_at, updated_at')
+          .select('id, nome, tamanho, url, tipo, created_at, updated_at')
           .eq('grupo_id', groupId)
           .eq('status', 'Visivel')
           .order('created_at', ascending: false);
 
       final data = response as List<dynamic>;
-      final materials = data
+      var materials = data
           .map(
             (json) => MissionMaterialEntity.fromJson(
               Map<String, dynamic>.from(json as Map),
             ),
           )
-          .where((material) => material.url.isNotEmpty)
+          .where((material) => material.url.isNotEmpty || material.tipo == 'form')
           .toList();
+
+      // Para formulários, verificar se o usuário já respondeu
+      if (userId != null) {
+        final formMaterials = materials.where((m) => m.tipo == 'form').toList();
+        if (formMaterials.isNotEmpty) {
+          final formIds = formMaterials.map((m) => m.id).toList();
+          try {
+            final respostas = await _supabaseClient
+                .from('form_respostas')
+                .select('material_id')
+                .eq('user_id', userId)
+                .inFilter('material_id', formIds);
+            final respondedIds = (respostas as List<dynamic>)
+                .map((r) => r['material_id']?.toString())
+                .whereType<String>()
+                .toSet();
+            materials = materials
+                .map((m) => m.tipo == 'form'
+                    ? m.copyWith(hasUserResponse: respondedIds.contains(m.id))
+                    : m)
+                .toList();
+          } catch (e) {
+            debugPrint('Erro ao verificar respostas dos forms: $e');
+          }
+        }
+      }
 
       await _saveMissionMaterialsToCache(groupId, materials);
       return Right(materials);
@@ -675,6 +704,85 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return Right(res?['primeiraAcesso'] as bool? ?? false);
     } catch (e) {
       return const Right(false);
+    }
+  }
+
+  // ── Form methods ──────────────────────────────────────────────────────────
+
+  @override
+  Future<Either<Exception, List<FormFieldEntity>>> getFormFields(
+    String materialId,
+  ) async {
+    try {
+      final response = await _supabaseClient
+          .from('form_fields')
+          .select('*')
+          .eq('material_id', materialId)
+          .order('ordem');
+      final data = response as List<dynamic>;
+      final fields = data
+          .map((json) => FormFieldEntity.fromJson(Map<String, dynamic>.from(json as Map)))
+          .toList();
+      return Right(fields);
+    } catch (e) {
+      return Left(Exception('Erro ao buscar campos do formulário: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Map<String, String?>>> getFormResponses(
+    String materialId,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return const Right({});
+
+      final response = await _supabaseClient
+          .from('form_respostas')
+          .select('campo_id, valor')
+          .eq('material_id', materialId)
+          .eq('user_id', userId);
+
+      final data = response as List<dynamic>;
+      final map = <String, String?>{};
+      for (final row in data) {
+        final campoId = row['campo_id']?.toString();
+        if (campoId != null) {
+          map[campoId] = row['valor']?.toString();
+        }
+      }
+      return Right(map);
+    } catch (e) {
+      return Left(Exception('Erro ao buscar respostas do formulário: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> saveFormResponses(
+    String materialId,
+    List<Map<String, String?>> responses,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      final rows = responses
+          .map((r) => {
+                'material_id': materialId,
+                'user_id': userId,
+                'campo_id': r['campoId'],
+                'valor': r['valor'],
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+          .toList();
+
+      await _supabaseClient
+          .from('form_respostas')
+          .upsert(rows, onConflict: 'material_id,user_id,campo_id');
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Exception('Erro ao salvar respostas: $e'));
     }
   }
 }

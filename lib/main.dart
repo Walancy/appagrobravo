@@ -17,6 +17,8 @@ import 'package:agrobravo/features/notifications/presentation/cubit/notification
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/core/cubits/global_alert_cubit.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
+import 'package:agrobravo/core/cubits/locale_cubit.dart';
+import 'package:agrobravo/l10n/generated/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
@@ -102,7 +104,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-  await initializeDateFormatting('pt_BR', null);
+  await Future.wait([
+    initializeDateFormatting('pt_BR', null),
+    initializeDateFormatting('en_US', null),
+    initializeDateFormatting('es_ES', null),
+  ]);
 
   final isFirebaseSupported = kIsWeb || 
       defaultTargetPlatform == TargetPlatform.android || 
@@ -156,6 +162,7 @@ class AgroBravoApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => getIt<ThemeCubit>()),
+        BlocProvider(create: (context) => LocaleCubit()),
         BlocProvider.value(value: getIt<AuthCubit>()..checkAuthStatus()),
         BlocProvider.value(value: getIt<ProfileCubit>()..loadProfile()),
         BlocProvider.value(value: getIt<DocumentsCubit>()),
@@ -165,15 +172,21 @@ class AgroBravoApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          return MaterialApp.router(
-            title: 'AgroBravo',
-            debugShowCheckedModeBanner: false,
-            locale: DevicePreview.locale(context),
-            builder: DevicePreview.appBuilder,
-            themeMode: themeMode,
-            theme: _buildLightTheme(),
-            darkTheme: _buildDarkTheme(),
-            routerConfig: appRouter,
+          return BlocBuilder<LocaleCubit, Locale?>(
+            builder: (context, locale) {
+              return MaterialApp.router(
+                title: 'AgroBravo',
+                debugShowCheckedModeBanner: false,
+                locale: DevicePreview.locale(context) ?? locale,
+                builder: DevicePreview.appBuilder,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                themeMode: themeMode,
+                theme: _buildLightTheme(),
+                darkTheme: _buildDarkTheme(),
+                routerConfig: appRouter,
+              );
+            },
           );
         },
       ),

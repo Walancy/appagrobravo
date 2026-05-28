@@ -3,6 +3,8 @@ class MissionMaterialEntity {
   final String name;
   final String? size;
   final String url;
+  final String tipo; // 'arquivo' | 'form'
+  final bool hasUserResponse; // true se o usuário já respondeu (apenas para tipo='form')
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -11,6 +13,8 @@ class MissionMaterialEntity {
     required this.name,
     this.size,
     required this.url,
+    this.tipo = 'arquivo',
+    this.hasUserResponse = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -21,8 +25,23 @@ class MissionMaterialEntity {
       name: json['nome']?.toString() ?? 'Material',
       size: json['tamanho']?.toString(),
       url: json['url']?.toString() ?? '',
+      tipo: json['tipo']?.toString() ?? 'arquivo',
+      hasUserResponse: json['hasUserResponse'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
+    );
+  }
+
+  MissionMaterialEntity copyWith({bool? hasUserResponse}) {
+    return MissionMaterialEntity(
+      id: id,
+      name: name,
+      size: size,
+      url: url,
+      tipo: tipo,
+      hasUserResponse: hasUserResponse ?? this.hasUserResponse,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -32,6 +51,7 @@ class MissionMaterialEntity {
       'nome': name,
       'tamanho': size,
       'url': url,
+      'tipo': tipo,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

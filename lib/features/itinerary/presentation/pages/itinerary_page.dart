@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
@@ -26,7 +27,7 @@ class ItineraryPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
           title: Text(
-            'Itinerário',
+            context.l10n.navItinerary,
             style: AppTextStyles.h3.copyWith(color: AppColors.surface),
           ),
           backgroundColor: AppColors.primary,
@@ -41,7 +42,7 @@ class ItineraryPage extends StatelessWidget {
           builder: (context, state) {
             return state.maybeWhen(
               loading: () => const ItineraryShimmer(),
-              error: (msg) => Center(child: Text('Erro: $msg')),
+              error: (msg) => Center(child: Text('${context.l10n.itineraryErrorPrefix}$msg')),
               loaded: (group, items, travelTimes, pendingDocs) {
                 final isEnded =
                     group.status == 'Finalizado' ||
@@ -138,7 +139,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
                 const Icon(Icons.info_outline, color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Missão encerrada',
+                  context.l10n.itineraryMissionEnded,
                   style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
                 ),
               ],
@@ -148,7 +149,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: MissionHeaderCard(
-            missionName: widget.group.missionName ?? 'Missão Atual',
+            missionName: widget.group.missionName ?? context.l10n.itineraryCurrentMission,
             groupName: widget.group.name,
             startDate: widget.group.startDate,
             endDate: widget.group.endDate,
@@ -178,8 +179,8 @@ class _ItineraryContentState extends State<_ItineraryContent> {
             children: [
               Text(
                 _filters.isActive
-                    ? '${_filters.count} filtros aplicados'
-                    : 'Sem filtros aplicados',
+                    ? context.l10n.itineraryFiltersActive(_filters.count)
+                    : context.l10n.itineraryFiltersNone,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: _filters.isActive
                       ? AppColors.primary
@@ -223,7 +224,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Filtrar',
+                        context.l10n.itineraryFilterButton,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontWeight: FontWeight.w600,
                           color: _filters.isActive

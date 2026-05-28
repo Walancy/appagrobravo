@@ -1,0 +1,324 @@
+{
+  "@@locale": "pt",
+
+  "commonCancel": "Cancelar",
+  "commonConfirm": "Confirmar",
+  "commonSave": "Salvar",
+  "commonSignOut": "Sair",
+  "commonNotNow": "Agora não",
+  "commonDelete": "Excluir",
+  "commonSend": "Enviar",
+  "commonOk": "OK",
+  "commonRetry": "Tentar novamente",
+  "commonClose": "Fechar",
+  "commonPending": "Pendente",
+  "commonYes": "Sim",
+  "commonNo": "Não",
+  "commonError": "Erro",
+  "commonSearch": "Buscar...",
+
+  "navItinerary": "Itinerário",
+  "navChat": "Chat",
+  "navCommunity": "Comunidade",
+  "navMyData": "Meus dados",
+
+  "settingsTitle": "Configurações",
+  "settingsSectionAccount": "CONTA",
+  "settingsMyDocuments": "Meus documentos",
+  "settingsAccountData": "Dados da conta",
+  "settingsSectionPreferences": "PREFERÊNCIAS",
+  "settingsMedicalConditions": "Condições médicas",
+  "settingsNotifications": "Notificações",
+  "settingsDarkMode": "Modo escuro",
+  "settingsLanguage": "Idioma",
+  "settingsSectionSupport": "SUPORTE",
+  "settingsPrivacyPolicy": "Política de privacidade",
+  "settingsAboutUs": "Sobre nós",
+  "settingsSignOut": "Sair da conta",
+  "settingsSignOutDialogTitle": "Sair da conta",
+  "settingsSignOutDialogContent": "Tem certeza que deseja encerrar a sessão?",
+
+  "languagePickerTitle": "Selecionar idioma",
+  "languageSystem": "Padrão do sistema",
+  "languagePortuguese": "Português",
+  "languageEnglish": "Inglês",
+  "languageSpanish": "Espanhol",
+
+  "homeWelcomeTitle": "Bem-vindo(a)!",
+  "homeWelcomeContent": "Para aproveitar ao máximo a sua viagem, complete seu perfil com dados pessoais, restrições alimentares e contato de emergência.",
+  "homeCompleteProfile": "Completar perfil",
+  "homeCameraError": "Este dispositivo não suporta o uso da câmera.",
+  "homeNoFeedTitle": "Nenhum feed ativo",
+  "homeNoFeedDescription": "Selecione uma missão na aba Início para visualizar e interagir com as publicações.",
+  "homeSelectMission": "Selecionar Missão",
+  "homeDeletePostTitle": "Excluir Publicação",
+  "homeDeletePostConfirm": "Tem certeza que deseja excluir esta publicação?",
+
+  "onboardingWelcomeTitle": "Bem-vindo à missão!",
+  "onboardingWelcomeBody": "Você foi adicionado a esta missão. Antes de confirmar sua participação, leia as informações a seguir com atenção. Este processo leva apenas alguns minutos.",
+  "onboardingStart": "Iniciar",
+  "onboardingGoToApp": "Ir para o app",
+  "onboardingSkipForNow": "Pular por agora",
+  "onboardingAllDone": "Tudo certo!",
+  "onboardingParticipationConfirmed": "Sua participação foi confirmada.\nPara garantir uma viagem tranquila, complete as etapas abaixo.",
+
+  "onboardingQ1Title": "Documentos de Viagem",
+  "onboardingQ1Description": "Confirme que você está ciente dos documentos necessários para esta missão.",
+  "onboardingQ1OptionA": "Confirmo que li e estou ciente de todos os documentos necessários (passaporte, vistos, vacinas, etc.) e sei que é de minha responsabilidade providenciá-los dentro do prazo.",
+
+  "onboardingQ2Title": "Viajantes Familiares",
+  "onboardingQ2Description": "Se houver outros membros do seu grupo familiar participando desta missão, informe os nomes abaixo.",
+  "onboardingQ2Hint": "Ex: Maria Silva, João Silva... (deixe em branco se não houver)",
+
+  "onboardingQ3Title": "Particularidades",
+  "onboardingQ3Description": "Informe particularidades que a equipe organizadora deva saber para esta viagem.",
+  "onboardingQ3Hint": "Ex: necessidades especiais, restrições alimentares, condições de saúde relevantes... (opcional)",
+
+  "onboardingQ4Title": "Autorização de Uso de Imagem",
+  "onboardingQ4Description": "Você autoriza o uso da sua imagem em fotos e vídeos produzidos durante a missão para fins institucionais?",
+  "onboardingQ4OptionA": "Autorizo o uso da minha imagem para fins institucionais e de divulgação.",
+  "onboardingQ4OptionB": "Não autorizo o uso da minha imagem.",
+
+  "onboardingQ5Title": "Declaração de Participação",
+  "onboardingQ5Description": "Para concluir, confirme sua concordância com os termos desta missão.",
+  "onboardingQ5OptionA": "Concordo — declaro que li e estou de acordo com todas as informações e regras desta missão, comprometendo-me a seguir as orientações da equipe organizadora.",
+  "onboardingQ5OptionB": "Não concordo.",
+  "onboardingQ5Warning": "É necessário concordar para confirmar sua participação nesta missão.",
+  "onboardingQ5Error": "Erro ao enviar. Verifique sua conexão e tente novamente.",
+
+  "onboardingGuidePersonalDataTitle": "Dados Pessoais",
+  "onboardingGuidePersonalDataSub": "Complete seu perfil com nome, foto e informações de contato.",
+  "onboardingGuideDocumentsTitle": "Documentos",
+  "onboardingGuideDocumentsSub": "Envie passaporte, visto e demais documentos exigidos para a viagem.",
+  "onboardingGuideMedicalTitle": "Condições Médicas",
+  "onboardingGuideMedicalSub": "Informe alergias, medicamentos ou restrições de saúde importantes.",
+
+  "profileChangePhoto": "Alterar foto de perfil",
+
+  "chatCurrentMission": "MISSÃO ATUAL",
+  "chatGuides": "GUIAS",
+  "chatHistory": "Histórico",
+  "chatHistorySubtitle": "Todas as conversas",
+  "chatHistoryTileTitle": "Histórico de missões",
+  "chatHistoryTileSubtitle": "Ver conversas anteriores",
+  "chatNoActiveMission": "Nenhuma missão ativa",
+  "chatPrevious": "ANTERIORES",
+  "chatNoHistory": "Nenhum histórico encontrado",
+  "chatYesterday": "Ontem",
+
+  "notificationsTitle": "Notificações",
+  "notificationsMarkAllRead": "Lidas",
+  "notificationsClearAll": "Limpar tudo",
+  "notificationsClearAllTooltip": "Limpar notificações",
+  "notificationsEmpty": "Tudo em dia!",
+  "notificationsEmptySubtitle": "Você não tem nenhuma notificação no momento.",
+  "notificationsToday": "Hoje",
+  "notificationsYesterday": "Ontem",
+  "notificationsThisWeek": "Últimos 7 dias",
+  "notificationsOlder": "Mais antigas",
+  "notificationsClearAllTitle": "Limpar tudo",
+  "notificationsClearAllConfirm": "Todas as notificações serão removidas permanentemente. Deseja continuar?",
+  "notificationsAccept": "Aceitar",
+  "notificationsReject": "Recusar",
+  "notificationsResolve": "Resolver",
+  "notificationsSeeMore": "Ver mais",
+  "notificationsSeeLess": "Ver menos",
+  "notificationsJustNow": "agora",
+  "notificationsMinutesAgo": "{minutes}min atrás",
+  "@notificationsMinutesAgo": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "notificationsHoursAgo": "{hours}h atrás",
+  "@notificationsHoursAgo": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "notificationsYesterdayTime": "ontem",
+  "notificationsDaysAgo": "{days} dias atrás",
+  "@notificationsDaysAgo": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "notificationsWeeksAgo": "{weeks} semana{plural} atrás",
+  "@notificationsWeeksAgo": {
+    "placeholders": {
+      "weeks": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+
+  "documentsTitle": "Meus documentos",
+  "documentsAddOrView": "Adicionar / Ver documentos",
+  "documentsPendingUpload": "Pendente de envio",
+  "documentsAwaitingApproval": "Aguardando aprovação",
+  "documentsValid": "Documento em dia",
+  "documentsRejected": "Recusado - Clique para reenviar",
+  "documentsExpired": "Expirado - Clique para atualizar",
+
+  "accountDataTitle": "Dados da conta",
+  "accountDataSaveReminder": "Não esqueça de salvar suas alterações",
+  "accountDataFullName": "Nome Completo",
+  "accountDataNickname": "Nome para o crachá",
+  "accountDataNicknameHelper": "Esse nome será usado no seu crachá quando estiver em viagem.",
+  "accountDataPhone": "Telefone",
+  "accountDataEmergencySection": "Contato de Emergência",
+  "accountDataEmergencyName": "Nome do Contato",
+  "accountDataRelationship": "Grau de Parentesco (Ex: Pai, Mãe, etc)",
+  "accountDataEmergencyPhone": "Telefone de Emergência",
+  "accountDataCompany": "Empresa",
+  "accountDataCpf": "CPF",
+  "accountDataSsn": "SSN",
+  "accountDataBirthDate": "Data de Nascimento",
+  "accountDataAddressSection": "Endereço",
+  "accountDataZipCode": "CEP",
+  "accountDataCountry": "País",
+  "accountDataCountryPickerTitle": "Selecionar País",
+  "accountDataState": "Estado",
+  "accountDataStatePickerTitle": "Selecionar Estado",
+  "accountDataStateNonBrazil": "Estado / Província",
+  "accountDataCity": "Cidade",
+  "accountDataNeighborhood": "Bairro",
+  "accountDataStreet": "Rua",
+  "accountDataNumber": "Número",
+  "accountDataComplement": "Complemento",
+  "accountDataSelectDate": "Selecionar data",
+  "accountDataSaveButton": "Salvar Alterações",
+  "accountDataSuccessMessage": "Dados atualizados com sucesso!",
+  "accountDataRequiredFieldsError": "Por favor, preencha todos os campos obrigatórios.",
+  "accountDataSelectPlaceholder": "Selecionar",
+
+  "itineraryErrorPrefix": "Erro: ",
+  "itineraryCurrentMission": "Missão Atual",
+  "itineraryFiltersActive": "{count} filtros aplicados",
+  "@itineraryFiltersActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryFiltersNone": "Sem filtros aplicados",
+  "itineraryFilterButton": "Filtrar",
+
+  "itineraryMissionEnded": "Missão encerrada",
+  "itineraryEmptyFiltered": "Nenhum evento corresponde aos filtros.",
+  "itineraryStatusNow": "Acontecendo agora",
+  "itineraryStatusSoon": "Em breve",
+  "itineraryFiltersTitle": "Filtros",
+  "itineraryFilterEventType": "Tipo de evento",
+  "itineraryFilterStartTime": "Hora início",
+  "itineraryFilterEndTime": "Hora fim",
+  "itineraryFilterSelectTime": "Selecionar",
+  "itineraryFilterClear": "Limpar",
+  "itineraryFilterApply": "Aplicar",
+  "itineraryFilterEndBeforeStart": "Hora fim deve ser posterior à hora início.",
+  "itineraryFilterStartAfterEnd": "Hora início deve ser anterior à hora fim.",
+  "itineraryTypeFlight": "Voo",
+  "itineraryTypeVisit": "Visita",
+  "itineraryTypeHotel": "Hotel",
+  "itineraryTypeFood": "Alimentação",
+  "itineraryTypeMeal": "Refeição",
+  "itineraryTypeLeisure": "Lazer",
+  "itineraryTypeTransfer": "Transfer",
+  "itineraryTypeReturn": "Retorno",
+  "itineraryTypeCheckin": "Check-in",
+  "itineraryTypeCheckout": "Check-out",
+  "itineraryTypeDisembark": "Desembarque",
+  "itineraryTypeConnection": "Conexão",
+  "itineraryTypeAiRecommendation": "Recomendação IA",
+  "itineraryTypeOther": "Outro",
+  "itineraryMissionStartsIn": "INICIA EM",
+  "itineraryMissionEndsToday": "TERMINA\nHOJE",
+  "itineraryMissionEndsIn": "TERMINA EM",
+  "itineraryMissionDays": "dias",
+  "itineraryTravelData": "Dados da viagem",
+  "itineraryEmergencyTitle": "Canais de Emergência",
+  "itineraryEmergencyLocation": "Localização atual: {country}",
+  "@itineraryEmergencyLocation": {
+    "placeholders": {
+      "country": { "type": "String" }
+    }
+  },
+  "itineraryEmergencyPolice": "Polícia",
+  "itineraryEmergencyFire": "Bombeiros",
+  "itineraryEmergencyMedical": "Emergência Médica",
+  "itineraryEmergencyLocationDenied": "Permissão de localização negada",
+  "itineraryEmergencyLocationDeniedForever": "Permissão de localização permanentemente negada",
+  "itineraryEmergencyLoadError": "Erro ao carregar contatos: {error}",
+  "@itineraryEmergencyLoadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "itineraryViewOnMap": "Ver no Mapa",
+  "itineraryWebsite": "Site",
+  "itineraryBookingQuoting": "Cotando",
+  "itineraryBookingQuoted": "Cotado",
+  "itineraryFlight": "Voo",
+  "itineraryDelayed": "ATRASADO",
+  "itineraryDelayedWithTime": "ATRASADO {delay}",
+  "@itineraryDelayedWithTime": {
+    "placeholders": {
+      "delay": { "type": "String" }
+    }
+  },
+  "itineraryFromCity": "de {city}",
+  "@itineraryFromCity": {
+    "placeholders": {
+      "city": { "type": "String" }
+    }
+  },
+  "itineraryToCity": "para {city}",
+  "@itineraryToCity": {
+    "placeholders": {
+      "city": { "type": "String" }
+    }
+  },
+  "itineraryConnectionsTitle": "Escalas ({count})",
+  "@itineraryConnectionsTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryConnectionsCount": "{count} escala{plural}",
+  "@itineraryConnectionsCount": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+  "itineraryDirectFlight": "Voo direto",
+  "itineraryConnectionTime": "Tempo de conexão: {time}",
+  "@itineraryConnectionTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "itineraryNextDay": "Dia seguinte",
+  "itineraryTravelTime": "Tempo de deslocamento: {duration}",
+  "@itineraryTravelTime": {
+    "placeholders": {
+      "duration": { "type": "String" }
+    }
+  },
+  "itineraryChecklistTitle": "Checklist da missão",
+  "itineraryDocumentsTitle": "Documentos da missão",
+  "itineraryMission": "Missão",
+  "itineraryGroup": "Grupo",
+  "itineraryStarts": "Começa",
+  "itineraryEnds": "Termina",
+  "itineraryInDays": "em {count} dias",
+  "@itineraryInDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "itineraryTomorrow": "amanhã",
+  "itineraryToday": "hoje",
+  "itineraryStarted": "iniciada",
+  "itineraryEnded": "encerrada",
+  "itineraryNoMaterials": "Nenhum material disponível",
+  "itineraryOpenMaterialError": "Não foi possível abrir o material"
+}

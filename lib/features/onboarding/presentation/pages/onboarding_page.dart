@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -230,9 +231,11 @@ class _WelcomeStep extends StatelessWidget {
 
   const _WelcomeStep({required this.group, required this.onStart});
 
-  String _fmtDate(DateTime? d) {
+  String _fmtDate(DateTime? d, BuildContext context) {
     if (d == null) return '—';
-    return DateFormat('dd/MM/yyyy', 'pt_BR').format(d);
+    final lang = Localizations.localeOf(context).languageCode;
+    final locale = lang == 'en' ? 'en_US' : lang == 'es' ? 'es_ES' : 'pt_BR';
+    return DateFormat('dd/MM/yyyy', locale).format(d);
   }
 
   @override
@@ -264,7 +267,7 @@ class _WelcomeStep extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           Text(
-            'Bem-vindo à missão!',
+            context.l10n.onboardingWelcomeTitle,
             style: AppTextStyles.h2.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -305,7 +308,7 @@ class _WelcomeStep extends StatelessWidget {
                       size: 16, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Text(
-                    '${_fmtDate(startDate)}  →  ${_fmtDate(endDate)}',
+                    '${_fmtDate(startDate, context)}  →  ${_fmtDate(endDate, context)}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -325,8 +328,7 @@ class _WelcomeStep extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              'Você foi adicionado a esta missão. Antes de confirmar sua participação, '
-              'leia as informações a seguir com atenção. Este processo leva apenas alguns minutos.',
+              context.l10n.onboardingWelcomeBody,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: Theme.of(context)
                     .colorScheme
@@ -350,9 +352,9 @@ class _WelcomeStep extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text(
-                'Iniciar',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              child: Text(
+                context.l10n.onboardingStart,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -599,16 +601,13 @@ class _DocsStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return _QuestionScaffold(
       number: 1,
-      title: 'Documentos de Viagem',
-      description:
-          'Confirme que você está ciente dos documentos necessários para esta missão.',
+      title: context.l10n.onboardingQ1Title,
+      description: context.l10n.onboardingQ1Description,
       content: Column(
         children: [
           _OptionButton(
             letter: 'A',
-            label: 'Confirmo que li e estou ciente de todos os documentos necessários '
-                '(passaporte, vistos, vacinas, etc.) e sei que é de minha '
-                'responsabilidade providenciá-los dentro do prazo.',
+            label: context.l10n.onboardingQ1OptionA,
             selected: acknowledged,
             onTap: () => onChanged(true),
           ),
@@ -636,14 +635,13 @@ class _FamiliaresStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return _QuestionScaffold(
       number: 2,
-      title: 'Viajantes Familiares',
-      description:
-          'Se houver outros membros do seu grupo familiar participando desta missão, informe os nomes abaixo.',
+      title: context.l10n.onboardingQ2Title,
+      description: context.l10n.onboardingQ2Description,
       content: TextField(
         controller: controller,
         maxLines: 3,
         decoration: InputDecoration(
-          hintText: 'Ex: Maria Silva, João Silva... (deixe em branco se não houver)',
+          hintText: context.l10n.onboardingQ2Hint,
           hintStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
             fontSize: 14,
@@ -674,15 +672,13 @@ class _ParticularidadesStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return _QuestionScaffold(
       number: 3,
-      title: 'Particularidades',
-      description:
-          'Informe particularidades que a equipe organizadora deva saber para esta viagem.',
+      title: context.l10n.onboardingQ3Title,
+      description: context.l10n.onboardingQ3Description,
       content: TextField(
         controller: controller,
         maxLines: 4,
         decoration: InputDecoration(
-          hintText:
-              'Ex: necessidades especiais, restrições alimentares, condições de saúde relevantes... (opcional)',
+          hintText: context.l10n.onboardingQ3Hint,
           hintStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
             fontSize: 14,
@@ -715,21 +711,20 @@ class _ImagemStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return _QuestionScaffold(
       number: 4,
-      title: 'Autorização de Uso de Imagem',
-      description:
-          'Você autoriza o uso da sua imagem em fotos e vídeos produzidos durante a missão para fins institucionais?',
+      title: context.l10n.onboardingQ4Title,
+      description: context.l10n.onboardingQ4Description,
       content: Column(
         children: [
           _OptionButton(
             letter: 'A',
-            label: 'Autorizo o uso da minha imagem para fins institucionais e de divulgação.',
+            label: context.l10n.onboardingQ4OptionA,
             selected: value == true,
             onTap: () => onChanged(true),
           ),
           const SizedBox(height: 12),
           _OptionButton(
             letter: 'B',
-            label: 'Não autorizo o uso da minha imagem.',
+            label: context.l10n.onboardingQ4OptionB,
             selected: value == false,
             onTap: () => onChanged(false),
           ),
@@ -763,23 +758,20 @@ class _DeclaracaoStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return _QuestionScaffold(
       number: 5,
-      title: 'Declaração de Participação',
-      description:
-          'Para concluir, confirme sua concordância com os termos desta missão.',
+      title: context.l10n.onboardingQ5Title,
+      description: context.l10n.onboardingQ5Description,
       content: Column(
         children: [
           _OptionButton(
             letter: 'A',
-            label:
-                'Concordo — declaro que li e estou de acordo com todas as informações '
-                'e regras desta missão, comprometendo-me a seguir as orientações da equipe organizadora.',
+            label: context.l10n.onboardingQ5OptionA,
             selected: value == true,
             onTap: () => onChanged(true),
           ),
           const SizedBox(height: 12),
           _OptionButton(
             letter: 'B',
-            label: 'Não concordo.',
+            label: context.l10n.onboardingQ5OptionB,
             selected: value == false,
             onTap: () => onChanged(false),
           ),
@@ -799,7 +791,7 @@ class _DeclaracaoStep extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'É necessário concordar para confirmar sua participação nesta missão.',
+                      context.l10n.onboardingQ5Warning,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.orange.shade800,
                       ),
@@ -824,7 +816,7 @@ class _DeclaracaoStep extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Erro ao enviar. Verifique sua conexão e tente novamente.',
+                      context.l10n.onboardingQ5Error,
                       style: AppTextStyles.bodySmall
                           .copyWith(color: Colors.red.shade700),
                     ),
@@ -837,7 +829,7 @@ class _DeclaracaoStep extends StatelessWidget {
       ),
       action: _OkButton(
         onPressed: onSubmit,
-        label: 'Enviar',
+        label: context.l10n.commonSend,
         isLoading: isSubmitting,
       ),
     );
@@ -883,7 +875,7 @@ class _GuideStepState extends State<_GuideStep> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Tudo certo!',
+            context.l10n.onboardingAllDone,
             style: AppTextStyles.h2.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -891,7 +883,7 @@ class _GuideStepState extends State<_GuideStep> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Sua participação foi confirmada.\nPara garantir uma viagem tranquila, complete as etapas abaixo.',
+            context.l10n.onboardingParticipationConfirmed,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
               height: 1.5,
@@ -901,22 +893,22 @@ class _GuideStepState extends State<_GuideStep> {
           const SizedBox(height: 32),
           _GuideCard(
             icon: Icons.person_outline_rounded,
-            title: 'Dados Pessoais',
-            subtitle: 'Complete seu perfil com nome, foto e informações de contato.',
+            title: context.l10n.onboardingGuidePersonalDataTitle,
+            subtitle: context.l10n.onboardingGuidePersonalDataSub,
             onTap: () => context.push('/account-data'),
           ),
           const SizedBox(height: 12),
           _GuideCard(
             icon: Icons.description_outlined,
-            title: 'Documentos',
-            subtitle: 'Envie passaporte, visto e demais documentos exigidos para a viagem.',
+            title: context.l10n.onboardingGuideDocumentsTitle,
+            subtitle: context.l10n.onboardingGuideDocumentsSub,
             onTap: () => context.push('/documents'),
           ),
           const SizedBox(height: 12),
           _GuideCard(
             icon: Icons.medical_information_outlined,
-            title: 'Condições Médicas',
-            subtitle: 'Informe alergias, medicamentos ou restrições de saúde importantes.',
+            title: context.l10n.onboardingGuideMedicalTitle,
+            subtitle: context.l10n.onboardingGuideMedicalSub,
             onTap: () => context.push('/medical-restrictions'),
           ),
           const SizedBox(height: 36),
@@ -946,10 +938,9 @@ class _GuideStepState extends State<_GuideStep> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Ir para o app',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  : Text(
+                      context.l10n.onboardingGoToApp,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
             ),
           ),
@@ -962,7 +953,7 @@ class _GuideStepState extends State<_GuideStep> {
                     await widget.onFinish();
                   },
             child: Text(
-              'Pular por agora',
+              context.l10n.onboardingSkipForNow,
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context)
                     .colorScheme

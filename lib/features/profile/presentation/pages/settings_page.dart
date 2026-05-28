@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:country_flags/country_flags.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
+import 'package:agrobravo/core/cubits/locale_cubit.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
@@ -31,7 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppHeader(mode: HeaderMode.back, title: 'Configurações'),
+      appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.settingsTitle),
       body: BlocBuilder<ProfileCubit, ProfileState>(
         builder: (context, state) {
           return state.maybeWhen(
@@ -42,64 +45,65 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildUserCard(context, profile),
                   const SizedBox(height: 8),
 
-                  _buildSectionLabel(context, 'CONTA'),
+                  _buildSectionLabel(context, context.l10n.settingsSectionAccount),
                   _buildSection(context, [
                     BlocBuilder<DocumentsCubit, DocumentsState>(
                       builder: (context, docState) => _buildTile(
                         context,
                         icon: Icons.description_outlined,
                         iconColor: Colors.blue.shade400,
-                        title: 'Meus documentos',
+                        title: context.l10n.settingsMyDocuments,
                         onTap: () => context.push('/documents'),
-                        badgeText: docState.hasPendingAction ? 'Pendente' : null,
+                        badgeText: docState.hasPendingAction ? context.l10n.commonPending : null,
                       ),
                     ),
                     _buildTile(
                       context,
                       icon: Icons.person_outline_rounded,
                       iconColor: AppColors.primary,
-                      title: 'Dados da conta',
+                      title: context.l10n.settingsAccountData,
                       onTap: () => context.push('/account-data'),
                     ),
                   ]),
 
                   const SizedBox(height: 8),
-                  _buildSectionLabel(context, 'PREFERÊNCIAS'),
+                  _buildSectionLabel(context, context.l10n.settingsSectionPreferences),
                   _buildSection(context, [
                     _buildTile(
                       context,
                       icon: Icons.medical_services_outlined,
                       iconColor: Colors.red.shade400,
-                      title: 'Condições médicas',
+                      title: context.l10n.settingsMedicalConditions,
                       onTap: () => context.push('/medical-restrictions'),
                     ),
                     _buildTile(
                       context,
                       icon: Icons.notifications_none_rounded,
                       iconColor: Colors.purple.shade400,
-                      title: 'Notificações',
+                      title: context.l10n.settingsNotifications,
                       onTap: () => context.push('/notification-preferences'),
                     ),
                     BlocBuilder<ThemeCubit, ThemeMode>(
                       builder: (context, mode) => _buildThemeTile(context, mode),
                     ),
+                    _buildLanguageTile(context),
                   ]),
 
                   const SizedBox(height: 8),
-                  _buildSectionLabel(context, 'SUPORTE'),
+                  _buildSectionLabel(context, context.l10n.settingsSectionSupport),
                   _buildSection(context, [
                     _buildTile(
                       context,
                       icon: Icons.privacy_tip_outlined,
                       iconColor: Colors.grey.shade500,
-                      title: 'Política de privacidade',
+                      title: context.l10n.settingsPrivacyPolicy,
                       onTap: () => context.push('/privacy-policy'),
                     ),
                     _buildTile(
                       context,
                       icon: Icons.info_outline_rounded,
                       iconColor: Colors.grey.shade500,
-                      title: 'Sobre nós',
+                      title: context.l10n.settingsAboutUs,
                       onTap: () => context.push('/about-us'),
                     ),
                   ]),
@@ -329,7 +333,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       title: Text(
-        'Modo escuro',
+        context.l10n.settingsDarkMode,
         style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
       ),
       trailing: Switch(
@@ -348,7 +352,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: OutlinedButton.icon(
         onPressed: () => _confirmLogout(context),
         icon: const Icon(Icons.logout_rounded, size: 20),
-        label: const Text('Sair da conta'),
+        label: Text(context.l10n.settingsSignOut),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.error,
           side: BorderSide(color: AppColors.error.withValues(alpha: 0.45), width: 1.5),
@@ -360,21 +364,137 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildLanguageTile(BuildContext context) {
+    return BlocBuilder<LocaleCubit, Locale?>(
+      builder: (context, locale) {
+        final cubit = context.read<LocaleCubit>();
+        final displayName = cubit.currentLanguageName(context);
+        return ListTile(
+          onTap: () => _showLanguagePicker(context),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.teal.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.language_rounded, size: 20, color: Colors.teal),
+          ),
+          title: Text(
+            context.l10n.settingsLanguage,
+            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                displayName,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLanguagePicker(BuildContext context) {
+    final cubit = context.read<LocaleCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => BlocProvider.value(
+        value: cubit,
+        child: BlocBuilder<LocaleCubit, Locale?>(
+          builder: (ctx, locale) => Container(
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      context.l10n.languagePickerTitle,
+                      style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _LanguageOption(
+                    countryCode: 'BR',
+                    label: context.l10n.languagePortuguese,
+                    selected: locale?.languageCode == 'pt' || locale == null,
+                    onTap: () {
+                      cubit.setLocale(const Locale('pt'));
+                      Navigator.pop(sheetCtx);
+                    },
+                  ),
+                  _LanguageOption(
+                    countryCode: 'US',
+                    label: context.l10n.languageEnglish,
+                    selected: locale?.languageCode == 'en',
+                    onTap: () {
+                      cubit.setLocale(const Locale('en'));
+                      Navigator.pop(sheetCtx);
+                    },
+                  ),
+                  _LanguageOption(
+                    countryCode: 'ES',
+                    label: context.l10n.languageSpanish,
+                    selected: locale?.languageCode == 'es',
+                    onTap: () {
+                      cubit.setLocale(const Locale('es'));
+                      Navigator.pop(sheetCtx);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sair da conta'),
-        content: const Text('Tem certeza que deseja encerrar a sessão?'),
+        title: Text(context.l10n.settingsSignOutDialogTitle),
+        content: Text(context.l10n.settingsSignOutDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Sair'),
+            child: Text(context.l10n.commonSignOut),
           ),
         ],
       ),
@@ -383,5 +503,35 @@ class _SettingsPageState extends State<SettingsPage> {
       await context.read<AuthCubit>().logout();
       if (context.mounted) context.go('/');
     }
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  final String countryCode;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.countryCode,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+      leading: CountryFlag.fromCountryCode(
+        countryCode,
+        theme: const ImageTheme(width: 38, height: 26, shape: RoundedRectangle(4)),
+      ),
+      title: Text(label, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500)),
+      trailing: selected
+          ? const Icon(Icons.check_rounded, color: AppColors.primary)
+          : null,
+    );
   }
 }

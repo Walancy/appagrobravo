@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/day_slider.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_list.dart';
@@ -34,7 +35,7 @@ class ItineraryTab extends StatelessWidget {
             error: (msg) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text('Erro: $msg', textAlign: TextAlign.center),
+                child: Text('${context.l10n.itineraryErrorPrefix}$msg', textAlign: TextAlign.center),
               ),
             ),
             loaded: (group, items, travelTimes, pendingDocs) {
@@ -167,7 +168,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: MissionHeaderCard(
-              missionName: widget.group.missionName ?? 'Missão Atual',
+              missionName: widget.group.missionName ?? context.l10n.itineraryCurrentMission,
               groupName: widget.group.name,
               startDate: widget.group.startDate,
               endDate: widget.group.endDate,
@@ -205,8 +206,8 @@ class _ItineraryContentState extends State<_ItineraryContent> {
               children: [
                 Text(
                   _filters.isActive
-                      ? '${_filters.count} filtros aplicados'
-                      : 'Sem filtros aplicados',
+                      ? context.l10n.itineraryFiltersActive(_filters.count)
+                      : context.l10n.itineraryFiltersNone,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: _filters.isActive
                         ? AppColors.primary
@@ -251,7 +252,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Filtrar',
+                          context.l10n.itineraryFilterButton,
                           style: AppTextStyles.bodySmall.copyWith(
                             fontWeight: FontWeight.w600,
                             color: _filters.isActive

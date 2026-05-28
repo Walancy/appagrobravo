@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:pdfx/pdfx.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -204,10 +206,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   }
 
   Future<void> _processDocumentOcr(File file) async {
+    final isPdf = file.path.toLowerCase().endsWith('.pdf');
     final isImage = ['.jpg', '.jpeg', '.png', '.webp'].any(file.path.toLowerCase().endsWith);
     final supportsOcr = widget.type == DocumentType.passaporte || widget.type == DocumentType.visto;
 
-    if (!isImage || !supportsOcr) {
+    if ((!isImage && !isPdf) || !supportsOcr) {
       setState(() {
         _ocrError = null;
       });
@@ -219,8 +222,42 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       _ocrError = null;
     });
 
+    File fileToProcess = file;
+
+    if (isPdf) {
+      try {
+        final document = await PdfDocument.openFile(file.path);
+        if (document.pagesCount > 0) {
+          final page = await document.getPage(1);
+          final pageImage = await page.render(
+            width: page.width * 2,
+            height: page.height * 2,
+            format: PdfPageImageFormat.jpeg,
+          );
+          
+          if (pageImage != null) {
+            final tempDir = await getTemporaryDirectory();
+            final tempFile = File('${tempDir.path}/ocr_temp_${DateTime.now().millisecondsSinceEpoch}.jpg');
+            await tempFile.writeAsBytes(pageImage.bytes);
+            fileToProcess = tempFile;
+          }
+          
+          await page.close();
+        }
+        await document.close();
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _ocrError = 'Erro ao converter PDF para IA: $e';
+            _isProcessingOcr = false;
+          });
+        }
+        return;
+      }
+    }
+
     final cubit = widget.cubit ?? getIt<DocumentsCubit>();
-    final result = await cubit.parseDocument(type: widget.type, file: file);
+    final result = await cubit.parseDocument(type: widget.type, file: fileToProcess);
 
     if (!mounted) return;
 

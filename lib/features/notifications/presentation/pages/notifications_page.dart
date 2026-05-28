@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
@@ -23,6 +24,7 @@ class _NotificationGroup {
 }
 
 List<_NotificationGroup> _groupNotifications(
+  BuildContext context,
   List<NotificationEntity> notifications,
 ) {
   final now = DateTime.now();
@@ -49,10 +51,10 @@ List<_NotificationGroup> _groupNotifications(
   }
 
   return [
-    if (today.isNotEmpty) _NotificationGroup('Hoje', today),
-    if (yesterday.isNotEmpty) _NotificationGroup('Ontem', yesterday),
-    if (thisWeek.isNotEmpty) _NotificationGroup('Últimos 7 dias', thisWeek),
-    if (older.isNotEmpty) _NotificationGroup('Mais antigas', older),
+    if (today.isNotEmpty) _NotificationGroup(context.l10n.notificationsToday, today),
+    if (yesterday.isNotEmpty) _NotificationGroup(context.l10n.notificationsYesterday, yesterday),
+    if (thisWeek.isNotEmpty) _NotificationGroup(context.l10n.notificationsThisWeek, thisWeek),
+    if (older.isNotEmpty) _NotificationGroup(context.l10n.notificationsOlder, older),
   ];
 }
 
@@ -89,7 +91,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             return Scaffold(
               appBar: AppHeader(
                 mode: HeaderMode.back,
-                title: 'Notificações',
+                title: context.l10n.notificationsTitle,
                 actions: [
                   state.maybeWhen(
                     loaded: (notifications) {
@@ -102,7 +104,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               onPressed: () =>
                                   context.read<NotificationsCubit>().markAllAsRead(),
                               icon: const Icon(Icons.done_all_rounded, size: 16),
-                              label: const Text('Lidas'),
+                              label: Text(context.l10n.notificationsMarkAllRead),
                               style: TextButton.styleFrom(
                                 foregroundColor: AppColors.primary,
                                 textStyle: const TextStyle(
@@ -125,18 +127,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 error: (message) => Center(child: Text(message)),
                 loaded: (notifications) {
                   if (notifications.isEmpty && isComplete) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 100),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 100),
                       child: EmptyStateWidget(
                         icon: Icons.notifications_off_outlined,
-                        title: 'Tudo em dia!',
-                        description:
-                            'Você não tem nenhuma notificação no momento.',
+                        title: context.l10n.notificationsEmpty,
+                        description: context.l10n.notificationsEmptySubtitle,
                       ),
                     );
                   }
 
-                  final groups = _groupNotifications(notifications);
+                  final groups = _groupNotifications(context, notifications);
                   final followRequests = notifications
                       .where((n) => n.type == NotificationType.follow)
                       .toList();
@@ -201,7 +202,7 @@ class _ClearAllButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Limpar notificações',
+      tooltip: context.l10n.notificationsClearAllTooltip,
       icon: const Icon(Icons.delete_sweep_rounded, size: 22),
       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
       onPressed: () => _confirmClear(context),
@@ -229,16 +230,16 @@ class _ClearAllButton extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Text('Limpar tudo', style: TextStyle(fontSize: 17)),
+            Text(context.l10n.notificationsClearAllTitle, style: const TextStyle(fontSize: 17)),
           ],
         ),
-        content: const Text(
-          'Todas as notificações serão removidas permanentemente. Deseja continuar?',
+        content: Text(
+          context.l10n.notificationsClearAllConfirm,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -251,7 +252,7 @@ class _ClearAllButton extends StatelessWidget {
               minimumSize: const Size(0, 40),
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
-            child: const Text('Limpar'),
+            child: Text(context.l10n.notificationsClearAll),
           ),
         ],
       ),
@@ -468,12 +469,12 @@ class _NotificationItemState extends State<_NotificationItem> {
 
   static const int _collapsedMaxLines = 3;
 
-  String _formatTime(DateTime date) {
+  String _formatTime(BuildContext context, DateTime date) {
     final diff = DateTime.now().difference(date);
-    if (diff.inSeconds < 60) return 'agora';
+    if (diff.inSeconds < 60) return context.l10n.notificationsJustNow;
     if (diff.inMinutes < 60) return '${diff.inMinutes}min atrás';
     if (diff.inHours < 24) return '${diff.inHours}h atrás';
-    if (diff.inDays == 1) return 'ontem';
+    if (diff.inDays == 1) return context.l10n.notificationsYesterdayTime;
     if (diff.inDays < 7) return '${diff.inDays} dias atrás';
     final weeks = (diff.inDays / 7).floor();
     return '$weeks semana${weeks > 1 ? 's' : ''} atrás';
@@ -621,7 +622,7 @@ class _NotificationItemState extends State<_NotificationItem> {
                         GestureDetector(
                           onTap: () => setState(() => _expanded = !_expanded),
                           child: Text(
-                            _expanded ? 'Ver menos' : 'Ver mais',
+                            _expanded ? context.l10n.notificationsSeeLess : context.l10n.notificationsSeeMore,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -634,7 +635,7 @@ class _NotificationItemState extends State<_NotificationItem> {
                       const SizedBox(height: 5),
                       // Timestamp separado
                       Text(
-                        _formatTime(notification.createdAt),
+                        _formatTime(context, notification.createdAt),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
@@ -712,9 +713,9 @@ class _NotificationItemState extends State<_NotificationItem> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Resolver',
-                        style: TextStyle(
+                      child: Text(
+                        context.l10n.notificationsResolve,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -766,9 +767,9 @@ class _FollowActions extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              'Aceitar',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            child: Text(
+              context.l10n.notificationsAccept,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -799,9 +800,9 @@ class _FollowActions extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              'Recusar',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            child: Text(
+              context.l10n.notificationsReject,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
         ),

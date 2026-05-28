@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 // ---------------------------------------------------------------------------
 // GenericEventCard — hotel, visit, food, meal, leisure, checkin, checkout, etc.
@@ -57,7 +58,7 @@ class GenericEventCard extends StatelessWidget {
       }
     }
 
-    final bookingBadge = _buildBookingBadge();
+    final bookingBadge = _buildBookingBadge(context);
 
     // Show subtitle only when it's distinct from the name and not the hotel tag
     final showSubtitle = item.subtitle != null &&
@@ -259,7 +260,7 @@ class GenericEventCard extends StatelessWidget {
     return parts.isEmpty ? null : parts.join(', ');
   }
 
-  Widget? _buildBookingBadge() {
+  Widget? _buildBookingBadge(BuildContext context) {
     if (item.bookingStatus == null || item.bookingStatus!.isEmpty) return null;
     Color color;
     String label;
@@ -268,15 +269,15 @@ class GenericEventCard extends StatelessWidget {
         return null;
       case 'quoting':
         color = Colors.orange;
-        label = 'Cotando';
+        label = context.l10n.itineraryBookingQuoting;
         break;
       case 'quoted':
         color = Colors.blue;
-        label = 'Cotado';
+        label = context.l10n.itineraryBookingQuoted;
         break;
       case 'pending':
         color = Colors.orange;
-        label = 'Pendente';
+        label = context.l10n.commonPending;
         break;
       default:
         return null;
@@ -314,14 +315,14 @@ class GenericEventCard extends StatelessWidget {
           _actionButton(
             context,
             icon: Icons.location_on_outlined,
-            label: 'Ver no Mapa',
+            label: context.l10n.itineraryViewOnMap,
             onTap: _launchMaps,
           ),
         if (hasWebsite)
           _actionButton(
             context,
             icon: Icons.language_outlined,
-            label: 'Site',
+            label: context.l10n.itineraryWebsite,
             onTap: _launchWebsite,
           ),
       ],
@@ -505,7 +506,7 @@ class FlightCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Voo',
+                      context.l10n.itineraryFlight,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
                         color: Theme.of(context)
@@ -554,8 +555,8 @@ class FlightCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         item.delay?.isNotEmpty == true
-                            ? 'ATRASADO ${item.delay}'
-                            : 'ATRASADO',
+                            ? context.l10n.itineraryDelayedWithTime(item.delay!)
+                            : context.l10n.itineraryDelayed,
                         style: const TextStyle(
                           color: Colors.orange,
                           fontSize: 10,
@@ -603,7 +604,7 @@ class FlightCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   if (item.fromCity != null)
                     Text(
-                      'de ${item.fromCity}',
+                      context.l10n.itineraryFromCity(item.fromCity!),
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
                         color: Theme.of(context)
@@ -658,7 +659,7 @@ class FlightCard extends StatelessWidget {
                       ),
                       if (hasConnections)
                         Text(
-                          '${connections.length} escala${connections.length > 1 ? 's' : ''}',
+                          context.l10n.itineraryConnectionsCount(connections.length, connections.length > 1 ? 's' : ''),
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: 10,
                             color: Theme.of(context)
@@ -700,7 +701,7 @@ class FlightCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   if (item.toCity != null)
                     Text(
-                      'para ${item.toCity}',
+                      context.l10n.itineraryToCity(item.toCity!),
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
                         color: Theme.of(context)
@@ -725,7 +726,7 @@ class FlightCard extends StatelessWidget {
                 tilePadding: EdgeInsets.zero,
                 childrenPadding: const EdgeInsets.only(bottom: 12),
                 title: Text(
-                  'Escalas (${connections.length})',
+                  context.l10n.itineraryConnectionsTitle(connections.length),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -745,7 +746,7 @@ class FlightCard extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'Voo direto',
+                    context.l10n.itineraryDirectFlight,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context)
                           .colorScheme
@@ -803,7 +804,7 @@ class FlightCard extends StatelessWidget {
         conn['duration']?.toString() ?? conn['duracao']?.toString() ?? '';
     final airlineName = conn['airline']?.toString() ??
         conn['companhia_codigo']?.toString() ??
-        'Voo';
+        context.l10n.itineraryFlight;
     final flightNum =
         conn['flightNumber']?.toString() ?? conn['voo']?.toString() ?? '';
     final layoverTime = conn['layoverDuration']?.toString() ??
@@ -825,7 +826,7 @@ class FlightCard extends StatelessWidget {
                         .withValues(alpha: 0.6)),
                 const SizedBox(width: 6),
                 Text(
-                  'Tempo de conexão: $layoverTime',
+                  context.l10n.itineraryConnectionTime(layoverTime),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -1168,7 +1169,7 @@ class TransferCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Dia seguinte',
+                      context.l10n.itineraryNextDay,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w500,
@@ -1191,7 +1192,7 @@ class TransferCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      _routeLabel(),
+                      _routeLabel(context),
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: 11,
                         color: mutedColor,
@@ -1208,12 +1209,12 @@ class TransferCard extends StatelessWidget {
     );
   }
 
-  String _routeLabel() {
+  String _routeLabel(BuildContext context) {
     final from = item.fromCity;
     final to = item.toCity;
     if (from != null && to != null) return '$from → $to';
-    if (from != null) return 'de $from';
-    if (to != null) return 'para $to';
+    if (from != null) return context.l10n.itineraryFromCity(from);
+    if (to != null) return context.l10n.itineraryToCity(to);
     return '';
   }
 
@@ -1262,7 +1263,7 @@ class TravelTimeWidget extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            'Tempo de deslocamento: $duration',
+            context.l10n.itineraryTravelTime(duration!),
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.w500,
               fontSize: 12,

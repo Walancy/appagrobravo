@@ -4,6 +4,7 @@ import '../entities/itinerary_group.dart';
 import '../entities/emergency_contacts.dart';
 import '../entities/mission_material.dart';
 import '../entities/checklist_item.dart';
+import '../entities/form_field_entity.dart';
 
 abstract class ItineraryRepository {
   Future<Either<Exception, ItineraryGroupEntity>> getGroupDetails(
@@ -38,4 +39,24 @@ abstract class ItineraryRepository {
 
   /// Returns true if [groupId] has primeiraAcesso = true for the current user.
   Future<Either<Exception, bool>> checkPrimeiraAcesso(String groupId);
+
+  // ── Form methods ──────────────────────────────────────────────────────────
+
+  /// Returns all form fields for the given material, ordered by [ordem].
+  Future<Either<Exception, List<FormFieldEntity>>> getFormFields(
+    String materialId,
+  );
+
+  /// Returns the current user's responses for [materialId].
+  /// Map key = campo_id, value = valor (string).
+  Future<Either<Exception, Map<String, String?>>> getFormResponses(
+    String materialId,
+  );
+
+  /// Saves (upsert) the user's responses.
+  /// [responses] is a list of {campoId, valor}.
+  Future<Either<Exception, void>> saveFormResponses(
+    String materialId,
+    List<Map<String, String?>> responses,
+  );
 }

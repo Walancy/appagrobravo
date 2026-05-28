@@ -75,13 +75,17 @@ abstract class ItineraryItemDto with _$ItineraryItemDto {
     switch (typeString.toUpperCase()) {
       case 'RESTAURANTE':
       case 'FOOD':
+      case 'MEAL':
         type = ItineraryType.food;
         break;
-      case 'MEAL':
-        type = ItineraryType.meal;
-        break;
       case 'HOTEL':
-        type = ItineraryType.hotel;
+        if (subtitle != null && (subtitle!.toUpperCase() == 'CHECK-IN' || subtitle!.toUpperCase() == 'CHECKIN')) {
+          type = ItineraryType.checkin;
+        } else if (subtitle != null && (subtitle!.toUpperCase() == 'CHECK-OUT' || subtitle!.toUpperCase() == 'CHECKOUT')) {
+          type = ItineraryType.checkout;
+        } else {
+          type = ItineraryType.hotel;
+        }
         break;
       case 'CHECKIN':
       case 'CHECK_IN':

@@ -47,6 +47,12 @@ class OnboardingService extends ChangeNotifier {
           },
         )
         .subscribe();
+
+    // Always notify after initialize so GoRouter re-evaluates the redirect
+    // with the confirmed session. Without this, a cold-start race where
+    // Supabase.initialize() hasn't yet completed recoverSession() leaves the
+    // router stuck on the login screen even though the user is authenticated.
+    notifyListeners();
   }
 
   Future<void> _checkForUser(String userId, SupabaseClient supabase) async {

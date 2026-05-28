@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_item.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
+import 'package:agrobravo/l10n/generated/app_localizations.dart';
 
 class ItineraryFilters {
   final Set<ItineraryType> types;
@@ -78,7 +79,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Filtros',
+                context.l10n.itineraryFiltersTitle,
                 style: AppTextStyles.h3.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -92,7 +93,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
           const SizedBox(height: 20),
 
           Text(
-            'Tipo de evento',
+            context.l10n.itineraryFilterEventType,
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w500,
             ),
@@ -101,9 +102,19 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ItineraryType.values
-                .where((t) => t != ItineraryType.other)
-                .map((type) {
+            children: [
+              ItineraryType.flight,
+              ItineraryType.connection,
+              ItineraryType.disembark,
+              ItineraryType.hotel,
+              ItineraryType.checkin,
+              ItineraryType.checkout,
+              ItineraryType.food,
+              ItineraryType.leisure,
+              ItineraryType.visit,
+              ItineraryType.returnType,
+              ItineraryType.transfer,
+            ].map((type) {
                   final isSelected = _selectedTypes.contains(type);
                   return FilterChip(
                     selected: isSelected,
@@ -112,7 +123,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       size: 16,
                       color: isSelected ? Colors.white : AppColors.primary,
                     ),
-                    label: Text(_getTypeLabel(type)),
+                    label: Text(_getTypeLabel(context.l10n, type)),
                     labelStyle: AppTextStyles.bodySmall.copyWith(
                       color: isSelected
                           ? Colors.white
@@ -154,7 +165,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hora início',
+                      context.l10n.itineraryFilterStartTime,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -185,7 +196,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                             Text(
                               _selectedStartTime != null
                                   ? _selectedStartTime!.format(context)
-                                  : 'Selecionar',
+                                  : context.l10n.itineraryFilterSelectTime,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
@@ -203,7 +214,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hora fim',
+                      context.l10n.itineraryFilterEndTime,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -234,7 +245,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                             Text(
                               _selectedEndTime != null
                                   ? _selectedEndTime!.format(context)
-                                  : 'Selecionar',
+                                  : context.l10n.itineraryFilterSelectTime,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
@@ -268,7 +279,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                     ),
                   ),
                   child: Text(
-                    'Limpar',
+                    context.l10n.itineraryFilterClear,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -285,8 +296,8 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       final endMin = _selectedEndTime!.hour * 60 + _selectedEndTime!.minute;
                       if (endMin <= startMin) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Hora fim deve ser posterior à hora início.'),
+                          SnackBar(
+                            content: Text(context.l10n.itineraryFilterEndBeforeStart),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -309,9 +320,9 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Aplicar',
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.itineraryFilterApply,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -334,6 +345,7 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
       case ItineraryType.hotel:
         return Icons.hotel;
       case ItineraryType.food:
+      case ItineraryType.meal:
         return Icons.restaurant;
       case ItineraryType.leisure:
         return Icons.pool; // or local_play
@@ -341,29 +353,51 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
         return Icons.directions_bus;
       case ItineraryType.returnType:
         return Icons.swap_horiz_rounded;
+      case ItineraryType.checkin:
+        return Icons.login;
+      case ItineraryType.checkout:
+        return Icons.logout;
+      case ItineraryType.disembark:
+        return Icons.flight_land;
+      case ItineraryType.connection:
+        return Icons.sync_alt;
+      case ItineraryType.aiRecommendation:
+        return Icons.auto_awesome;
       default:
         return Icons.event;
     }
   }
 
-  String _getTypeLabel(ItineraryType type) {
+  String _getTypeLabel(AppLocalizations l10n, ItineraryType type) {
     switch (type) {
       case ItineraryType.flight:
-        return 'Voo';
+        return l10n.itineraryTypeFlight;
       case ItineraryType.visit:
-        return 'Visita';
+        return l10n.itineraryTypeVisit;
       case ItineraryType.hotel:
-        return 'Hotel';
+        return l10n.itineraryTypeHotel;
       case ItineraryType.food:
-        return 'Alimentação';
+        return l10n.itineraryTypeFood;
+      case ItineraryType.meal:
+        return l10n.itineraryTypeMeal;
       case ItineraryType.leisure:
-        return 'Lazer';
+        return l10n.itineraryTypeLeisure;
       case ItineraryType.transfer:
-        return 'Transfer';
+        return l10n.itineraryTypeTransfer;
       case ItineraryType.returnType:
-        return 'Retorno';
+        return l10n.itineraryTypeReturn;
+      case ItineraryType.checkin:
+        return l10n.itineraryTypeCheckin;
+      case ItineraryType.checkout:
+        return l10n.itineraryTypeCheckout;
+      case ItineraryType.disembark:
+        return l10n.itineraryTypeDisembark;
+      case ItineraryType.connection:
+        return l10n.itineraryTypeConnection;
+      case ItineraryType.aiRecommendation:
+        return l10n.itineraryTypeAiRecommendation;
       default:
-        return 'Outro';
+        return l10n.itineraryTypeOther;
     }
   }
 
@@ -397,8 +431,8 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
       if (endMin <= startMin) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Hora fim deve ser posterior à hora início.'),
+            SnackBar(
+              content: Text(context.l10n.itineraryFilterEndBeforeStart),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -412,8 +446,8 @@ class _ItineraryFilterModalState extends State<ItineraryFilterModal> {
       if (startMin >= endMin) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Hora início deve ser anterior à hora fim.'),
+            SnackBar(
+              content: Text(context.l10n.itineraryFilterStartAfterEnd),
               behavior: SnackBarBehavior.floating,
             ),
           );
