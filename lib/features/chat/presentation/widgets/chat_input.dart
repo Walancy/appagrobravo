@@ -290,7 +290,7 @@ class _ChatInputState extends State<ChatInput> {
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(width: 12),
           Expanded(
@@ -310,24 +310,25 @@ class _ChatInputState extends State<ChatInput> {
                 hintText: widget.isEditing ? 'Editar mensagem...' : 'Mensagem',
                 hintStyle: TextStyle(fontSize: 15, color: Theme.of(context).hintColor),
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: true,
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 13),
                 isDense: true,
               ),
             ),
           ),
           if (!widget.isEditing) ...[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 2),
-              child: IconButton(
-                onPressed: widget.onImagePicked,
-                icon: Icon(Icons.attach_file_rounded, color: iconColor, size: 22),
-                padding: const EdgeInsets.all(10),
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
-                splashRadius: 18,
-              ),
+            IconButton(
+              onPressed: widget.onImagePicked,
+              icon: Icon(Icons.attach_file_rounded, color: iconColor, size: 22),
+              padding: const EdgeInsets.all(10),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
+              splashRadius: 18,
             ),
             Padding(
-              padding: const EdgeInsets.only(right: 6, bottom: 2),
+              padding: const EdgeInsets.only(right: 6),
               child: IconButton(
                 onPressed: widget.onCameraPicked,
                 icon: Icon(Icons.camera_alt_outlined, color: iconColor, size: 22),

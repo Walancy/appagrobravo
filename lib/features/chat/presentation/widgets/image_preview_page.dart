@@ -95,11 +95,8 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                        ),
                       ),
                       child: TextField(
                         controller: _captionController,
@@ -115,6 +112,10 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                             fontSize: 15,
                           ),
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.transparent,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 10),
                         ),
