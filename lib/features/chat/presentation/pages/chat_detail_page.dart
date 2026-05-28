@@ -376,11 +376,17 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                       userAvatarUrl: msg.userAvatarUrl,
                                       guideRole: msg.guideRole,
                                       attachmentUrl: msg.attachmentUrl,
+                                      audioUrl: msg.audioUrl,
+                                      audioDurationMs: msg.audioDurationMs,
                                       isEdited: msg.isEdited,
                                       isDeleted: msg.isDeleted,
                                       isSelected: isSelected,
-                                      repliedMessage:
-                                          msg.repliedToMessage?.text,
+                                      repliedMessage: msg.repliedToMessage != null
+                                          ? (msg.repliedToMessage!.audioUrl != null &&
+                                                  msg.repliedToMessage!.text.isEmpty
+                                              ? '🎤 Áudio'
+                                              : msg.repliedToMessage!.text)
+                                          : null,
                                       repliedUserName:
                                           msg.repliedToMessage?.userName,
                                       onReply: () {
@@ -473,6 +479,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                 },
                 onImagePicked: () => _pickImage(ImageSource.gallery),
                 onCameraPicked: () => _pickImage(ImageSource.camera),
+                onAudioRecorded: (path, durationMs) {
+                  context.read<ChatDetailCubit>().sendAudioMessage(
+                    path,
+                    audioDurationMs: durationMs,
+                    replyToId: _replyingToMessage?.id,
+                  );
+                  setState(() => _replyingToMessage = null);
+                },
                 onSendMessage: (text) {
                   if (_editingMessageId != null) {
                     context.read<ChatDetailCubit>().editMessage(

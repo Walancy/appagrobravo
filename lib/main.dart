@@ -19,9 +19,11 @@ import 'package:agrobravo/core/cubits/global_alert_cubit.dart';
 import 'package:agrobravo/core/cubits/theme_cubit.dart';
 import 'package:agrobravo/core/cubits/locale_cubit.dart';
 import 'package:agrobravo/l10n/generated/app_localizations.dart';
+import 'package:agrobravo/features/chat/presentation/cubit/chat_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
+import 'package:audioplayers/audioplayers.dart';
 
 /// Handler de mensagens em background (precisa ser top-level)
 @pragma('vm:entry-point')
@@ -132,6 +134,25 @@ void main() async {
   configureDependencies();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+  // Configure audio playback session globally so audio plays on iOS
+  // even when the device is in silent/ring mode, and gets proper focus on Android.
+  try {
+    await AudioPlayer.global.setAudioContext(AudioContext(
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playback,
+        options: const {AVAudioSessionOptions.defaultToSpeaker},
+      ),
+      android: AudioContextAndroid(
+        contentType: AndroidContentType.speech,
+        usageType: AndroidUsageType.media,
+        audioFocus: AndroidAudioFocus.gain,
+        isSpeakerphoneOn: true,
+      ),
+    ));
+  } catch (e) {
+    log('Audio context setup failed: $e');
+  }
+
   // Solicita permissão de push em paralelo — não bloqueia o app
   // O token FCM será salvo quando disponível (após APNS token do iOS ser emitido)
   if (isFirebaseSupported) {
@@ -168,6 +189,7 @@ class AgroBravoApp extends StatelessWidget {
         BlocProvider.value(value: getIt<DocumentsCubit>()),
         BlocProvider.value(value: getIt<NotificationsCubit>()),
         BlocProvider.value(value: getIt<ItineraryCubit>()),
+        BlocProvider.value(value: getIt<ChatCubit>()),
         BlocProvider(create: (context) => GlobalAlertCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

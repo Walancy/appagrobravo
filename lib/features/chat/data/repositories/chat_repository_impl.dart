@@ -473,6 +473,7 @@ class ChatRepositoryImpl implements ChatRepository {
               'guideRole': m.guideRole,
               'attachmentUrl': m.attachmentUrl,
               'audioUrl': m.audioUrl,
+              'audioDurationMs': m.audioDurationMs,
               // serialize partial repliedToMessage if needed, simplistic version here:
               'repliedToId': m.repliedToMessage?.id,
               'isEdited': m.isEdited,
@@ -508,6 +509,7 @@ class ChatRepositoryImpl implements ChatRepository {
             guideRole: json['guideRole'],
             attachmentUrl: json['attachmentUrl'],
             audioUrl: json['audioUrl'],
+            audioDurationMs: json['audioDurationMs'] as int?,
             repliedToMessage: json['repliedToId'] != null
                 ? MessageEntity(
                     id: json['repliedToId'],
@@ -605,6 +607,8 @@ class ChatRepositoryImpl implements ChatRepository {
                 userAvatarUrl: userData?['foto'] as String?,
                 guideRole: role,
                 attachmentUrl: msg['imagem'] as String?,
+                audioUrl: msg['audio_url'] as String?,
+                audioDurationMs: msg['audio_duration_ms'] as int?,
                 repliedToMessage: msg['id_mensagem_respondida'] != null
                     ? messages.firstWhere(
                         (m) => m.id == msg['id_mensagem_respondida'],
@@ -636,7 +640,7 @@ class ChatRepositoryImpl implements ChatRepository {
           final rows = await _supabaseClient
               .from('mensagens')
               .select(
-                'id, mensagem, created_at, user_id, imagem, '
+                'id, mensagem, created_at, user_id, imagem, audio_url, audio_duration_ms, '
                 'id_mensagem_respondida, editado, deletado',
               )
               .eq('batepapo_id', chatRoomId!)
@@ -759,6 +763,54 @@ class ChatRepositoryImpl implements ChatRepository {
     );
   }
 
+  @override
+  Future<void> sendAudio(
+    String chatId,
+    String audioPath, {
+    bool isGroup = true,
+    int audioDurationMs = 0,
+    String? replyToId,
+  }) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    final realChatId = await _resolveChatId(chatId, isGroup);
+    if (realChatId == null) throw Exception('Could not resolve chat ID');
+
+    final bytes = await File(audioPath).readAsBytes();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final storagePath = 'chats/$realChatId/audio/${timestamp}_${user.id}.m4a';
+
+    await _supabaseClient.storage
+        .from('files')
+        .uploadBinary(storagePath, bytes);
+
+    final audioUrl = _supabaseClient.storage
+        .from('files')
+        .getPublicUrl(storagePath);
+
+    await _supabaseClient.from('mensagens').insert({
+      'batepapo_id': realChatId,
+      'user_id': user.id,
+      'mensagem': '',
+      'audio_url': audioUrl,
+      'audio_duration_ms': audioDurationMs > 0 ? audioDurationMs : null,
+      'id_mensagem_respondida': replyToId,
+    });
+
+    try { await File(audioPath).delete(); } catch (_) {}
+
+    await _dispatchChatNotifications(
+      senderId: user.id,
+      realChatId: realChatId,
+      chatId: chatId,
+      isGroup: isGroup,
+      messageText: '',
+      hasImage: false,
+      hasAudio: true,
+    );
+  }
+
   /// Envia notificações in-app para os destinatários da mensagem.
   ///
   /// - Chat individual (DM com guia): notifica apenas o guia (`lider_id`).
@@ -770,6 +822,7 @@ class ChatRepositoryImpl implements ChatRepository {
     required bool isGroup,
     required String messageText,
     required bool hasImage,
+    bool hasAudio = false,
   }) async {
     try {
       // Busca o nome do remetente
@@ -782,9 +835,11 @@ class ChatRepositoryImpl implements ChatRepository {
       final senderName = (senderData?['nome'] as String?)?.split(' ').first ?? 'Alguém';
       final msgPreview = hasImage
           ? '$senderName enviou uma foto'
-          : messageText.length > 60
-              ? '${messageText.substring(0, 60)}...'
-              : messageText;
+          : hasAudio
+              ? '$senderName enviou um áudio'
+              : messageText.length > 60
+                  ? '${messageText.substring(0, 60)}...'
+                  : messageText;
 
       final List<String> recipientIds = [];
 

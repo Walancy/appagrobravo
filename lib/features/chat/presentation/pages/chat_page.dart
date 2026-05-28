@@ -3,7 +3,7 @@ import 'package:agrobravo/core/components/chat_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:agrobravo/core/di/injection.dart';
+
 import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -18,54 +18,51 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<ChatCubit>()..watchChatData(),
-      child: BlocBuilder<ChatCubit, ChatState>(
-        builder: (context, state) {
-          return Scaffold(
-            body: state.when(
-              initial: () => const ChatShimmer(),
-              loading: () => const ChatShimmer(),
-              error: (message) => Center(child: Text('Erro: $message')),
-              loaded: (data) {
-                return ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    const HeaderSpacer(),
-                    if (data.history.isNotEmpty)
-                      _buildHistoryTile(context, data),
-                    if (data.currentMission != null) ...[
-                      _buildSectionLabel(context, context.l10n.chatCurrentMission),
-                      _ChatListItem(
-                        chat: data.currentMission!,
+    return BlocBuilder<ChatCubit, ChatState>(
+      builder: (context, state) {
+        return Scaffold(
+          body: state.when(
+            initial: () => const ChatShimmer(),
+            loading: () => const ChatShimmer(),
+            error: (message) => Center(child: Text('Erro: $message')),
+            loaded: (data) {
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  const HeaderSpacer(),
+                  if (data.history.isNotEmpty)
+                    _buildHistoryTile(context, data),
+                  if (data.currentMission != null) ...[
+                    _buildSectionLabel(context, context.l10n.chatCurrentMission),
+                    _ChatListItem(
+                      chat: data.currentMission!,
+                      isCurrent: true,
+                      lastMessage: data.lastMessages[data.currentMission!.id],
+                      lastMessageTime: data.lastMessageTimes[data.currentMission!.id],
+                      onReturn: () => context.read<ChatCubit>().loadChatData(),
+                    ),
+                  ],
+                  if (data.guides.isNotEmpty) ...[
+                    _buildSectionLabel(context, context.l10n.chatGuides),
+                    ...data.guides.map(
+                      (g) => _ChatListItem(
+                        guide: g,
                         isCurrent: true,
-                        lastMessage: data.lastMessages[data.currentMission!.id],
-                        lastMessageTime: data.lastMessageTimes[data.currentMission!.id],
+                        lastMessage: data.lastMessages[g.id],
+                        lastMessageTime: data.lastMessageTimes[g.id],
                         onReturn: () => context.read<ChatCubit>().loadChatData(),
                       ),
-                    ],
-                    if (data.guides.isNotEmpty) ...[
-                      _buildSectionLabel(context, context.l10n.chatGuides),
-                      ...data.guides.map(
-                        (g) => _ChatListItem(
-                          guide: g,
-                          isCurrent: true,
-                          lastMessage: data.lastMessages[g.id],
-                          lastMessageTime: data.lastMessageTimes[g.id],
-                          onReturn: () => context.read<ChatCubit>().loadChatData(),
-                        ),
-                      ),
-                    ],
-                    if (data.currentMission == null && data.guides.isEmpty)
-                      _buildEmptyState(context),
-                    const SizedBox(height: 80),
+                    ),
                   ],
-                );
-              },
-            ),
-          );
-        },
-      ),
+                  if (data.currentMission == null && data.guides.isEmpty)
+                    _buildEmptyState(context),
+                  const SizedBox(height: 80),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

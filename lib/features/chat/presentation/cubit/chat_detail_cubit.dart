@@ -68,6 +68,25 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
     }
   }
 
+  Future<void> sendAudioMessage(
+    String audioPath, {
+    int audioDurationMs = 0,
+    String? replyToId,
+  }) async {
+    if (_currentChatId == null) return;
+    try {
+      await _repository.sendAudio(
+        _currentChatId!,
+        audioPath,
+        isGroup: _isGroup,
+        audioDurationMs: audioDurationMs,
+        replyToId: replyToId,
+      );
+    } catch (e) {
+      print('Error sending audio: $e');
+    }
+  }
+
   Future<void> editMessage(String messageId, String newText) async {
     try {
       await _repository.editMessage(messageId, newText);

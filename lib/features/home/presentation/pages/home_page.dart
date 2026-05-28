@@ -18,6 +18,7 @@ import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_she
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/empty_state_widget.dart';
 import 'package:agrobravo/features/chat/presentation/pages/chat_page.dart';
+import 'package:agrobravo/features/chat/presentation/cubit/chat_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/itinerary_tab.dart';
@@ -75,6 +76,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       // 'loaded' state from a previous session, which would prevent the
       // onboarding gate and itinerary/chat tabs from appearing correctly.
       itineraryCubit.loadUserItinerary();
+
+      // Start watching chat data so the navbar badge stays up to date.
+      context.read<ChatCubit>().watchChatData();
 
       // Fallback extra: se já está em error/loaded no momento da montagem,
       // o BlocListener não vai disparar — trata agora.
@@ -553,11 +557,26 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   context.l10n.navItinerary,
                 ),
               if (showTripTabs)
-                _buildNavItem(
-                  1,
-                  Icons.chat_bubble_outline_rounded,
-                  Icons.chat_bubble_rounded,
-                  context.l10n.navChat,
+                BlocBuilder<ChatCubit, ChatState>(
+                  builder: (context, chatState) {
+                    final hasUnreadChat = chatState.maybeWhen(
+                      loaded: (data) {
+                        final missionUnread =
+                            (data.currentMission?.unreadCount ?? 0) > 0;
+                        final guidesUnread =
+                            data.guides.any((g) => g.unreadCount > 0);
+                        return missionUnread || guidesUnread;
+                      },
+                      orElse: () => false,
+                    );
+                    return _buildNavItem(
+                      1,
+                      Icons.chat_bubble_outline_rounded,
+                      Icons.chat_bubble_rounded,
+                      context.l10n.navChat,
+                      hasBadge: hasUnreadChat,
+                    );
+                  },
                 ),
               _buildNavItem(
                 2,

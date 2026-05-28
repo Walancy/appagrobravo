@@ -101,7 +101,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i934.ItineraryCubit>(
       () => _i934.ItineraryCubit(gh<_i889.ItineraryRepository>()),
     );
-    gh.factory<_i178.ChatCubit>(
+    gh.lazySingleton<_i178.ChatCubit>(
       () => _i178.ChatCubit(gh<_i135.ChatRepository>()),
     );
     gh.factory<_i997.ChatDetailCubit>(

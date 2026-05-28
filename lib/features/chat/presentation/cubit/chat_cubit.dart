@@ -9,7 +9,7 @@ import 'package:agrobravo/features/chat/domain/repositories/chat_repository.dart
 part 'chat_state.dart';
 part 'chat_cubit.freezed.dart';
 
-@injectable
+@lazySingleton
 class ChatCubit extends Cubit<ChatState> {
   final ChatRepository _repository;
   StreamSubscription? _chatDataSubscription;

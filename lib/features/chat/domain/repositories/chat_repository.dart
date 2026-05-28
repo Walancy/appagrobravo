@@ -18,6 +18,7 @@ abstract class ChatRepository {
     String chatId,
     String audioPath, {
     bool isGroup = true,
+    int audioDurationMs = 0,
     String? replyToId,
   });
   Future<void> editMessage(String messageId, String newText);

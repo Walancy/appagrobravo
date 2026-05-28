@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/components/full_screen_image_viewer.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 
 enum ChatBubbleType { me, other, guide }
 
@@ -16,6 +17,8 @@ class ChatBubble extends StatelessWidget {
   final String? userAvatarUrl;
   final String? guideRole;
   final String? attachmentUrl;
+  final String? audioUrl;
+  final int? audioDurationMs;
   final bool isGroupChat;
   final bool showAvatar;
   final bool isSelected;
@@ -38,6 +41,8 @@ class ChatBubble extends StatelessWidget {
     this.userAvatarUrl,
     this.guideRole,
     this.attachmentUrl,
+    this.audioUrl,
+    this.audioDurationMs,
     this.isGroupChat = true,
     this.showAvatar = true,
     this.isEdited = false,
@@ -53,7 +58,7 @@ class ChatBubble extends StatelessWidget {
   });
 
   bool get isMe => type == ChatBubbleType.me;
-  bool get _imageOnly => attachmentUrl != null && message.isEmpty && !isDeleted;
+  bool get _imageOnly => attachmentUrl != null && message.isEmpty && audioUrl == null && !isDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -221,8 +226,18 @@ class ChatBubble extends StatelessWidget {
         if (attachmentUrl != null)
           _buildAttachment(context, borderRadius, textColor),
 
-        // Message text
-        if (message.isNotEmpty)
+        // Audio message
+        if (audioUrl != null && !isDeleted)
+          _AudioPlayer(
+            audioUrl: audioUrl!,
+            storedDurationMs: audioDurationMs,
+            isMe: isMe,
+            time: time,
+            isEdited: isEdited,
+          ),
+
+        // Message text (caption below attachment or audio, or standalone)
+        if (message.isNotEmpty && audioUrl == null)
           _buildMessageText(context, textColor),
 
         // Time row for image-only (rendered inside the image, see _buildAttachment)
@@ -604,5 +619,231 @@ class ChatBubble extends StatelessWidget {
       hash = name.codeUnitAt(i) + ((hash << 5) - hash);
     }
     return colors[hash.abs() % colors.length];
+  }
+}
+
+class _AudioPlayer extends StatefulWidget {
+  final String audioUrl;
+  final int? storedDurationMs;
+  final bool isMe;
+  final String time;
+  final bool isEdited;
+
+  const _AudioPlayer({
+    required this.audioUrl,
+    required this.storedDurationMs,
+    required this.isMe,
+    required this.time,
+    required this.isEdited,
+  });
+
+  @override
+  State<_AudioPlayer> createState() => _AudioPlayerState();
+}
+
+class _AudioPlayerState extends State<_AudioPlayer> {
+  late final ap.AudioPlayer _player;
+  bool _isPlaying = false;
+  bool _isLoading = false;
+  bool _sourceLoaded = false;
+  Duration _position = Duration.zero;
+  Duration? _duration;
+
+  @override
+  void initState() {
+    super.initState();
+    _player = ap.AudioPlayer();
+
+    _player.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = state == ap.PlayerState.playing;
+        if (state == ap.PlayerState.completed) {
+          _position = Duration.zero;
+          _sourceLoaded = false; // allow replay via play() on next tap
+        }
+      });
+    });
+
+    _player.onPositionChanged.listen((pos) {
+      if (!mounted) return;
+      setState(() => _position = pos);
+    });
+
+    _player.onDurationChanged.listen((dur) {
+      if (!mounted) return;
+      // Ignore zero durations — they fire spuriously before metadata loads
+      if (dur > Duration.zero) setState(() => _duration = dur);
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _togglePlay() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      if (_isPlaying) {
+        await _player.pause();
+      } else if (_sourceLoaded) {
+        await _player.resume();
+      } else {
+        // First tap: load and start playback in one call
+        await _player.play(ap.UrlSource(widget.audioUrl));
+        _sourceLoaded = true;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao reproduzir áudio'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.isMe ? Colors.white : AppColors.primary;
+    final subtleColor = widget.isMe
+        ? Colors.white.withValues(alpha: 0.65)
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55);
+
+    // Prefer non-zero live duration; fall back to stored value from DB
+    final effectiveDuration =
+        (_duration != null && _duration! > Duration.zero)
+            ? _duration
+            : (widget.storedDurationMs != null && widget.storedDurationMs! > 0
+                ? Duration(milliseconds: widget.storedDurationMs!)
+                : null);
+
+    final totalMs = effectiveDuration?.inMilliseconds ?? 0;
+    final currentMs = _position.inMilliseconds.clamp(0, totalMs > 0 ? totalMs : 1);
+    final progress = totalMs > 0 ? currentMs / totalMs : 0.0;
+
+    // When paused/stopped show total duration; when playing show current position
+    final displayTime = _isPlaying
+        ? _fmt(_position)
+        : (effectiveDuration != null ? _fmt(effectiveDuration) : '--:--');
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Play/pause button
+          GestureDetector(
+            onTap: _togglePlay,
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.18),
+              ),
+              child: _isLoading
+                  ? Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
+                    )
+                  : Icon(
+                      _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: color,
+                      size: 22,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Waveform + time row
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SliderTheme(
+                  data: SliderThemeData(
+                    trackHeight: 2.5,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 5,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 12,
+                    ),
+                    activeTrackColor: color,
+                    inactiveTrackColor: color.withValues(alpha: 0.25),
+                    thumbColor: color,
+                    overlayColor: color.withValues(alpha: 0.12),
+                  ),
+                  child: Slider(
+                    value: progress.toDouble(),
+                    onChanged: (val) async {
+                      if (effectiveDuration != null) {
+                        await _player.seek(effectiveDuration * val);
+                      }
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        displayTime,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: subtleColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.isEdited) ...[
+                            Text(
+                              'editado',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: subtleColor,
+                                fontSize: 10,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            widget.time,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: subtleColor,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
