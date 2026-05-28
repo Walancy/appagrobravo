@@ -26,6 +26,8 @@ class PerguntaModel {
   final String title;
   final List<String> options; // usado em checkbox
   final bool required;
+  /// Descrição/observação opcional exibida abaixo do título da pergunta.
+  final String? descricao;
 
   const PerguntaModel({
     required this.id,
@@ -33,6 +35,7 @@ class PerguntaModel {
     required this.title,
     required this.options,
     required this.required,
+    this.descricao,
   });
 
   factory PerguntaModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +53,7 @@ class PerguntaModel {
       title: json['title'] as String? ?? '',
       options: opts,
       required: json['required'] as bool? ?? false,
+      descricao: json['descricao'] as String?,
     );
   }
 }
