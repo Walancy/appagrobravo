@@ -17,28 +17,6 @@ class GenericEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isHotel = item.type == ItineraryType.hotel ||
-        item.type == ItineraryType.checkin ||
-        item.type == ItineraryType.checkout;
-
-    // Check-in / check-out badge
-    String? hotelTag;
-    Color hotelTagColor = Colors.blue;
-    if (isHotel) {
-      final sub = item.subtitle?.toLowerCase() ?? '';
-      final nm = item.name.toLowerCase();
-      if (sub.contains('check-in') ||
-          nm.contains('check-in') ||
-          item.type == ItineraryType.checkin) {
-        hotelTag = 'CHECK-IN';
-        hotelTagColor = Colors.blue;
-      } else if (sub.contains('check-out') ||
-          nm.contains('check-out') ||
-          item.type == ItineraryType.checkout) {
-        hotelTag = 'CHECK-OUT';
-        hotelTagColor = Colors.orange;
-      }
-    }
 
     final firstImage = (item.images != null && item.images!.isNotEmpty)
         ? item.images!.first
@@ -58,13 +36,10 @@ class GenericEventCard extends StatelessWidget {
       }
     }
 
-    final bookingBadge = _buildBookingBadge(context);
-
-    // Show subtitle only when it's distinct from the name and not the hotel tag
+    // Show subtitle only when it's distinct from the name
     final showSubtitle = item.subtitle != null &&
         item.subtitle!.isNotEmpty &&
-        item.subtitle!.toLowerCase() != item.name.toLowerCase() &&
-        hotelTag == null;
+        item.subtitle!.toLowerCase() != item.name.toLowerCase();
 
     return Container(
       decoration: BoxDecoration(
@@ -128,7 +103,7 @@ class GenericEventCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          if (isHotel && item.estrelas != null)
+                          if (item.type == ItineraryType.hotel && item.estrelas != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: _buildStars(item.estrelas!),
@@ -186,35 +161,18 @@ class GenericEventCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Right column: time range + tags
-                    if (timeLabel != null ||
-                        hotelTag != null ||
-                        bookingBadge != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (timeLabel != null)
-                            Text(
-                              timeLabel,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.75),
-                              ),
-                            ),
-                          if (hotelTag != null) ...[
-                            if (timeLabel != null) const SizedBox(height: 4),
-                            _buildTag(hotelTag, hotelTagColor),
-                          ],
-                          if (bookingBadge != null) ...[
-                            const SizedBox(height: 4),
-                            bookingBadge,
-                          ],
-                        ],
+                    // Right column: time range
+                    if (timeLabel != null)
+                      Text(
+                        timeLabel,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.75),
+                        ),
                       ),
                   ],
                 ),
@@ -260,42 +218,7 @@ class GenericEventCard extends StatelessWidget {
     return parts.isEmpty ? null : parts.join(', ');
   }
 
-  Widget? _buildBookingBadge(BuildContext context) {
-    if (item.bookingStatus == null || item.bookingStatus!.isEmpty) return null;
-    Color color;
-    String label;
-    switch (item.bookingStatus!.toLowerCase()) {
-      case 'confirmed':
-        return null;
-      case 'quoting':
-        color = Colors.orange;
-        label = context.l10n.itineraryBookingQuoting;
-        break;
-      case 'quoted':
-        color = Colors.blue;
-        label = context.l10n.itineraryBookingQuoted;
-        break;
-      case 'pending':
-        color = Colors.orange;
-        label = context.l10n.commonPending;
-        break;
-      default:
-        return null;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-            color: color, fontSize: 9, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
+
 
   Widget _buildActionButtons(BuildContext context) {
     final hasWebsite = (item.website != null && item.website!.isNotEmpty) ||
@@ -390,21 +313,6 @@ class GenericEventCard extends StatelessWidget {
     }
   }
 
-  Widget _buildTag(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-            color: color, fontSize: 10, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
 
   Widget _buildStars(double count) {
     final full = count.floor();

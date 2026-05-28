@@ -90,8 +90,13 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           ? data
           : data.where((json) {
               final p = json['passageiros'];
-              if (p == null) return true;
-              if (p is List) return p.isEmpty || p.contains(userId);
+              if (p == null || (p is List && p.isEmpty)) return true;
+              if (p is List) {
+                // Check if any element looks like a UUID (contains hyphens)
+                final hasUuid = p.any((e) => e.toString().contains('-'));
+                if (!hasUuid) return true; // It's likely index positions, show for all
+                return p.contains(userId);
+              }
               return true;
             }).toList();
 
