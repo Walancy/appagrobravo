@@ -89,7 +89,7 @@ class _CommunityTabState extends State<CommunityTab>
         ),
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Colors.transparent,
             border: Border(
               bottom: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface.withValues(

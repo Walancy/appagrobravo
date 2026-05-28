@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/data/models/itinerary_group_dto.dart';
+import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model.dart';
 import 'dart:developer' as dev;
 
 /// Global singleton that drives the onboarding gate.
@@ -14,9 +15,14 @@ class OnboardingService extends ChangeNotifier {
   String? _groupId;
   ItineraryGroupEntity? _group;
   RealtimeChannel? _subscription;
+  List<GrupoFormularioModel> _formularios = [];
 
   bool get needsOnboarding => _needsOnboarding;
   ItineraryGroupEntity? get group => _group;
+
+  /// Lista de formulários dinâmicos do painel para o grupo atual.
+  /// Populada em [_checkForUser] após encontrar o grupo.
+  List<GrupoFormularioModel> get formularios => List.unmodifiable(_formularios);
 
   /// Call immediately after the user authenticates (login, register, app resume).
   /// Does an immediate DB check then subscribes real-time to gruposParticipantes.
@@ -119,6 +125,15 @@ class OnboardingService extends ChangeNotifier {
       final group = ItineraryGroupDto.fromJson(groupData).toEntity();
       dev.log('[ONB] _checkForUser: MATCH grupo=${group.id} -> needsOnboarding=true',
           name: 'onboarding');
+
+      // IMPORTANT: Load formulários BEFORE setting needsOnboarding.
+      // setNeedsOnboarding triggers notifyListeners → GoRouter navigates
+      // to /onboarding, and OnboardingPage.initState reads formularios.
+      // If we load AFTER, the page sees an empty list.
+      _groupId = group.id;
+      _group = group;
+      await loadFormularios(groupId: group.id, supabase: supabase);
+
       setNeedsOnboarding(true, groupId: group.id, group: group);
     } catch (e, st) {
       dev.log('[ONB] _checkForUser error: $e', name: 'onboarding', stackTrace: st);
@@ -159,27 +174,74 @@ class OnboardingService extends ChangeNotifier {
     if (changed) notifyListeners();
   }
 
-  /// Persists ALL onboarding answers to gruposParticipantes and sets
-  /// primeiraAcesso=false via SECURITY DEFINER RPC (bypasses RLS).
-  /// Does NOT call notifyListeners — the guide step is shown next and
-  /// clearGate() unblocks navigation when the user taps "Ir para o app".
-  Future<void> completeOnboarding({
-    String? familiaresViajantes,
-    String? particularidades,
-    bool? autorizaImagem,
-    bool? concordaDeclaracao,
+  /// Busca todos os formulários visíveis do painel para o [groupId] informado.
+  /// Chamada automaticamente em [_checkForUser]; pode ser chamada manualmente
+  /// passando [supabase] nulo para usar o cliente global.
+  Future<void> loadFormularios({
+    required String groupId,
+    SupabaseClient? supabase,
   }) async {
+    final client = supabase ?? Supabase.instance.client;
+    try {
+      final res = await client
+          .from('grupoFormulario')
+          .select()
+          .eq('grupo_id', groupId)
+          .eq('titulo', 'Onboarding')
+          .eq('status', 'Visivel')
+          .order('created_at', ascending: false)
+          .limit(1);
+
+      _formularios = (res as List)
+          .map((e) => GrupoFormularioModel.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ))
+          .where((f) => f.perguntas.isNotEmpty)
+          .toList();
+
+      dev.log(
+        '[ONB] loadFormularios: groupId=$groupId => ${_formularios.length} formulário(s) "Onboarding"',
+        name: 'onboarding',
+      );
+    } catch (e, st) {
+      dev.log('[ONB] loadFormularios error: $e', name: 'onboarding', stackTrace: st);
+      _formularios = [];
+    }
+  }
+
+
+  /// Salva as respostas de um formulário dinâmico em [respostasGrupoFormulario].
+  /// [respostas] deve ser um mapa `{ pergunta_id: valor }` onde valor pode ser
+  /// String, bool, ou List<String>.
+  Future<void> saveFormularioRespostas({
+    required String formularioId,
+    required Map<String, dynamic> respostas,
+  }) async {
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    await supabase.from('respostasGrupoFormulario').insert({
+      'formulario_id': formularioId,
+      'user_id': userId,
+      'respostas': respostas,
+    });
+
+    dev.log(
+      '[ONB] saveFormularioRespostas: formularioId=$formularioId saved',
+      name: 'onboarding',
+    );
+  }
+
+  /// Seta primeiraAcesso=false via SECURITY DEFINER RPC (bypasses RLS).
+  /// Deve ser chamado após salvar todas as respostas dinâmicas.
+  /// Does NOT call notifyListeners — clearGate() unblocks navigation.
+  Future<void> completeOnboarding() async {
     if (_groupId == null) return;
     final supabase = Supabase.instance.client;
 
     await supabase.rpc('complete_onboarding', params: {
       'p_grupo_id': _groupId,
-      if (familiaresViajantes != null && familiaresViajantes.isNotEmpty)
-        'p_familiares': familiaresViajantes,
-      if (particularidades != null && particularidades.isNotEmpty)
-        'p_particularidades': particularidades,
-      if (autorizaImagem != null) 'p_autoriza_imagem': autorizaImagem,
-      if (concordaDeclaracao != null) 'p_concorda_declaracao': concordaDeclaracao,
     });
   }
 
@@ -188,6 +250,7 @@ class OnboardingService extends ChangeNotifier {
   /// second RPC needed, saving one network round-trip.
   void clearGate() {
     _needsOnboarding = false;
+    _formularios = [];
     notifyListeners();
   }
 
@@ -214,6 +277,7 @@ class OnboardingService extends ChangeNotifier {
     _needsOnboarding = false;
     _groupId = null;
     _group = null;
+    _formularios = [];
     // Do NOT call notifyListeners here — GoRouter may not have a valid
     // context during logout. The caller manages navigation.
   }

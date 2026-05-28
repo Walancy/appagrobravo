@@ -306,7 +306,7 @@ class ChatRepositoryImpl implements ChatRepository {
           // Fetch last message with sender info
           final response = await _supabaseClient
               .from('mensagens')
-              .select('mensagem, created_at, user_id')
+              .select('mensagem, created_at, user_id, audio_url, imagem')
               .eq('batepapo_id', chatId)
               .order('created_at', ascending: false)
               .limit(1)
@@ -315,6 +315,8 @@ class ChatRepositoryImpl implements ChatRepository {
           if (response != null) {
             final senderId = response['user_id'] as String?;
             final rawText = response['mensagem'] as String? ?? '';
+            final hasAudioUrl = response['audio_url'] != null;
+            final hasImageUrl = response['imagem'] != null;
             final isMe = senderId == userId;
 
             String senderLabel;
@@ -340,9 +342,13 @@ class ChatRepositoryImpl implements ChatRepository {
             }
 
             final prefix = senderLabel.isNotEmpty ? '$senderLabel: ' : '';
-            final preview = rawText.isNotEmpty
-                ? '$prefix$rawText'
-                : '${prefix}📷 Foto';
+            final preview = hasAudioUrl
+                ? '${prefix}🎤 Áudio'
+                : hasImageUrl
+                    ? '${prefix}📷 Foto'
+                    : rawText.isNotEmpty
+                        ? '$prefix$rawText'
+                        : '';
 
             lastMessages[identifier] = preview;
             if (response['created_at'] != null) {

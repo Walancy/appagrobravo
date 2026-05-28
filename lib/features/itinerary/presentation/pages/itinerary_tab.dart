@@ -126,7 +126,7 @@ class _ItineraryContentState extends State<_ItineraryContent> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surface, // Theme-aware background
+      color: Theme.of(context).scaffoldBackgroundColor, // Standardised background
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
