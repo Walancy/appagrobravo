@@ -679,6 +679,35 @@ class _DynamicQuestionStepState extends State<_DynamicQuestionStep> {
               ],
             ],
           ),
+          // Descrição/observação da pergunta (opcional, vem do JSONB)
+          if (widget.pergunta.descricao != null &&
+              widget.pergunta.descricao!.trim().isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border(
+                  left: BorderSide(
+                    color: AppColors.primary.withOpacity(0.5),
+                    width: 3,
+                  ),
+                ),
+              ),
+              child: Text(
+                widget.pergunta.descricao!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.65),
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
           _buildContent(context),
           // Submit error
