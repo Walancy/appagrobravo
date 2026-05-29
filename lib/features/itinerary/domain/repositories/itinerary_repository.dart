@@ -17,6 +17,7 @@ abstract class ItineraryRepository {
     String groupId,
   );
   Future<Either<Exception, String?>> getUserGroupId();
+  Future<Either<Exception, List<ItineraryGroupEntity>>> getActiveGroups();
   Future<Either<Exception, List<String>>> getUserPendingDocuments();
   Future<Either<Exception, List<MissionMaterialEntity>>> getMissionMaterials(
     String groupId,

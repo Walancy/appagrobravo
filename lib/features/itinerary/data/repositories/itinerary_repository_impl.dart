@@ -401,6 +401,50 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
   }
 
   @override
+  Future<Either<Exception, List<ItineraryGroupEntity>>> getActiveGroups() async {
+    final userId = _supabaseClient.auth.currentUser?.id;
+    if (userId == null) return Left(Exception('Usuário não autenticado'));
+    try {
+      final response = await _supabaseClient
+          .from('gruposParticipantes')
+          .select(
+            'grupo_id, grupos!fk_gruposparticipantes_grupos(id, nome, data_inicio, data_fim, missao:missao_id(nome))',
+          )
+          .eq('user_id', userId);
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      final groups = (response as List)
+          .map((r) => r as Map<String, dynamic>)
+          .where((r) {
+            final g = r['grupos'] as Map<String, dynamic>?;
+            final dateStr = g?['data_fim'] as String?;
+            final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
+            return date != null && !date.isBefore(today);
+          })
+          .map((r) {
+            final g = r['grupos'] as Map<String, dynamic>;
+            final m = g['missao'] as Map<String, dynamic>?;
+            final startStr = g['data_inicio'] as String?;
+            final endStr = g['data_fim'] as String?;
+            return ItineraryGroupEntity(
+              id: r['grupo_id'] as String,
+              name: g['nome'] as String? ?? '',
+              missionName: m?['nome'] as String?,
+              startDate: startStr != null ? DateTime.tryParse(startStr) ?? DateTime(0) : DateTime(0),
+              endDate: endStr != null ? DateTime.tryParse(endStr) ?? DateTime(0) : DateTime(0),
+            );
+          })
+          .toList();
+
+      return Right(groups);
+    } catch (e) {
+      return Left(Exception('Erro ao buscar grupos ativos: $e'));
+    }
+  }
+
+  @override
   Future<Either<Exception, List<String>>> getUserPendingDocuments() async {
     try {
       final userId = _supabaseClient.auth.currentUser?.id;

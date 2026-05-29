@@ -267,6 +267,7 @@
   "itineraryMissionEndsIn": "TERMINA EM",
   "itineraryMissionDays": "dias",
   "itineraryTravelData": "Dados da viagem",
+  "itinerarySwitchMission": "Trocar missão",
   "itineraryEmergencyTitle": "Canais de Emergência",
   "itineraryEmergencyLocation": "Localização atual: {country}",
   "@itineraryEmergencyLocation": {

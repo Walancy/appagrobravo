@@ -4,8 +4,8 @@ import 'package:agrobravo/features/chat/domain/entities/chat_entity.dart';
 import 'package:agrobravo/features/chat/domain/entities/message_entity.dart';
 
 abstract class ChatRepository {
-  Future<Either<Exception, ChatData>> getChatData();
-  Stream<Either<Exception, ChatData>> watchChatData();
+  Future<Either<Exception, ChatData>> getChatData({String? groupId});
+  Stream<Either<Exception, ChatData>> watchChatData({String? groupId});
   Stream<List<MessageEntity>> getMessages(String chatId, {bool isGroup = true});
   Future<void> sendMessage(
     String chatId,

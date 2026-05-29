@@ -1366,6 +1366,12 @@ abstract class AppLocalizations {
   /// **'Dados da viagem'**
   String get itineraryTravelData;
 
+  /// No description provided for @itinerarySwitchMission.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trocar missão'**
+  String get itinerarySwitchMission;
+
   /// No description provided for @itineraryEmergencyTitle.
   ///
   /// In pt, this message translates to:

@@ -41,9 +41,7 @@ class ChatRepositoryImpl implements ChatRepository {
       };
 
       final json = {
-        'currentMission': data.currentMission != null
-            ? chatToJson(data.currentMission!)
-            : null,
+        'currentMissions': data.currentMissions.map(chatToJson).toList(),
         'guides': data.guides.map(guideToJson).toList(),
         'history': data.history.map(chatToJson).toList(),
         'lastMessages': data.lastMessages,
@@ -88,9 +86,9 @@ class ChatRepositoryImpl implements ChatRepository {
           unreadCount: map['unreadCount'] ?? 0,
         );
 
-        final current = json['currentMission'] != null
-            ? chatFromJson(json['currentMission'])
-            : null;
+        final currentMissions = (json['currentMissions'] as List? ?? [])
+            .map((e) => chatFromJson(e as Map<String, dynamic>))
+            .toList();
         final guides = (json['guides'] as List)
             .map((e) => guideFromJson(e))
             .toList();
@@ -110,7 +108,7 @@ class ChatRepositoryImpl implements ChatRepository {
             {};
 
         return ChatData(
-          currentMission: current,
+          currentMissions: currentMissions,
           guides: guides,
           history: history,
           lastMessages: lastMessages,
@@ -124,7 +122,7 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Exception, ChatData>> getChatData() async {
+  Future<Either<Exception, ChatData>> getChatData({String? groupId}) async {
     try {
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) return Left(Exception('Usuário não autenticado.'));
@@ -231,9 +229,9 @@ class ChatRepositoryImpl implements ChatRepository {
         );
       }
 
-      // 4. Determine Current vs History
+      // 4. Determine Current Missions vs History
       final now = DateTime.now();
-      ChatEntity? current;
+      List<ChatEntity> currentMissions = [];
       List<ChatEntity> history = [];
 
       // Sort by date (descending)
@@ -245,37 +243,37 @@ class ChatRepositoryImpl implements ChatRepository {
 
       for (var chat in allChats) {
         if (chat.endDate != null && chat.endDate!.isAfter(now)) {
-          if (current == null) {
-            current = chat;
-          } else {
-            history.add(chat);
-          }
+          currentMissions.add(chat);
         } else {
           history.add(chat);
         }
       }
 
-      // 5. Fetch Guides for the Current Mission GROUP
+      // When a specific group is selected (itinerary sync), show only that group.
+      if (groupId != null) {
+        currentMissions = currentMissions.where((m) => m.id == groupId).toList();
+      }
+
+      // 5. Fetch Guides for all Current Mission GROUPs (deduplicated)
       List<GuideEntity> guides = [];
-      if (current != null) {
-        final currentGroupId = current.id;
+      if (currentMissions.isNotEmpty) {
+        final Set<String> allLeaderIds = {};
+        for (final mission in currentMissions) {
+          final leadersResponse = await _supabaseClient
+              .from('lideresGrupo')
+              .select('lider_id')
+              .eq('grupo_id', mission.id);
 
-        // Fetch leaders/guides from lideresGrupo table
-        final leadersResponse = await _supabaseClient
-            .from('lideresGrupo')
-            .select('lider_id')
-            .eq('grupo_id', currentGroupId);
+          for (final l in leadersResponse as List) {
+            allLeaderIds.add(l['lider_id'] as String);
+          }
+        }
 
-        final leaderIds = (leadersResponse as List)
-            .map((l) => l['lider_id'] as String)
-            .toSet()
-            .toList();
-
-        if (leaderIds.isNotEmpty) {
+        if (allLeaderIds.isNotEmpty) {
           final usersResponse = await _supabaseClient
               .from('users')
               .select('id, nome, foto')
-              .inFilter('id', leaderIds);
+              .inFilter('id', allLeaderIds.toList());
 
           for (var u in usersResponse as List) {
             guides.add(
@@ -295,7 +293,7 @@ class ChatRepositoryImpl implements ChatRepository {
       Map<String, DateTime> lastMessageTimes = {};
       Map<String, int> unreadCounts = {};
 
-      final allChatEntities = [if (current != null) current, ...history];
+      final allChatEntities = [...currentMissions, ...history];
       final allGuideEntities = guides;
 
       Future<void> fetchLastMsg(String identifier, bool isGroup) async {
@@ -379,7 +377,9 @@ class ChatRepositoryImpl implements ChatRepository {
       ]);
 
       // Apply unread counts to chat and guide entities
-      current = current?.copyWith(unreadCount: unreadCounts[current!.id] ?? 0);
+      currentMissions = currentMissions
+          .map((c) => c.copyWith(unreadCount: unreadCounts[c.id] ?? 0))
+          .toList();
       history = history
           .map((c) => c.copyWith(unreadCount: unreadCounts[c.id] ?? 0))
           .toList();
@@ -388,7 +388,7 @@ class ChatRepositoryImpl implements ChatRepository {
           .toList();
 
       final chatData = ChatData(
-        currentMission: current,
+        currentMissions: currentMissions,
         guides: guides,
         history: history,
         lastMessages: lastMessages,
@@ -407,7 +407,7 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Stream<Either<Exception, ChatData>> watchChatData() {
+  Stream<Either<Exception, ChatData>> watchChatData({String? groupId}) {
     late StreamController<Either<Exception, ChatData>> controller;
     RealtimeChannel? messagesSubscription;
     Timer? reloadDebounce;
@@ -422,7 +422,7 @@ class ChatRepositoryImpl implements ChatRepository {
       }
 
       isReloading = true;
-      final result = await getChatData();
+      final result = await getChatData(groupId: groupId);
       if (!controller.isClosed) {
         controller.add(result);
       }

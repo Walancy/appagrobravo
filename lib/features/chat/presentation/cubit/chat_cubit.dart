@@ -22,19 +22,19 @@ class ChatCubit extends Cubit<ChatState> {
     return super.close();
   }
 
-  Future<void> loadChatData() async {
+  Future<void> loadChatData({String? groupId}) async {
     emit(const ChatState.loading());
-    final result = await _repository.getChatData();
+    final result = await _repository.getChatData(groupId: groupId);
     result.fold(
       (error) => emit(ChatState.error(error.toString())),
       (data) => emit(ChatState.loaded(data)),
     );
   }
 
-  void watchChatData() {
+  void watchChatData({String? groupId}) {
     emit(const ChatState.loading());
     _chatDataSubscription?.cancel();
-    _chatDataSubscription = _repository.watchChatData().listen(
+    _chatDataSubscription = _repository.watchChatData(groupId: groupId).listen(
       (result) {
         if (isClosed) return;
         result.fold(

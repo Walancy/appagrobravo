@@ -179,6 +179,9 @@ class _ItineraryContentState extends State<_ItineraryContent> {
                   ),
                 );
               },
+              allGroups: context.read<ItineraryCubit>().activeGroups,
+              onGroupSelected: (g) =>
+                  context.read<ItineraryCubit>().switchGroup(g.id),
             ),
           ),
           const SizedBox(height: 12),

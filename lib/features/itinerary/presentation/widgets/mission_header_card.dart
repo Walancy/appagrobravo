@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/tokens/app_colors.dart';
 import '../../../../core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/extensions/build_context_l10n.dart';
+import '../../domain/entities/itinerary_group.dart';
 
 class MissionHeaderCard extends StatelessWidget {
   final String missionName;
@@ -9,6 +11,8 @@ class MissionHeaderCard extends StatelessWidget {
   final DateTime startDate;
   final DateTime endDate;
   final VoidCallback? onTravelDataTap;
+  final List<ItineraryGroupEntity> allGroups;
+  final ValueChanged<ItineraryGroupEntity>? onGroupSelected;
 
   const MissionHeaderCard({
     super.key,
@@ -17,6 +21,8 @@ class MissionHeaderCard extends StatelessWidget {
     required this.startDate,
     required this.endDate,
     this.onTravelDataTap,
+    this.allGroups = const [],
+    this.onGroupSelected,
   });
 
   @override
@@ -25,6 +31,11 @@ class MissionHeaderCard extends StatelessWidget {
     final today = DateTime(now.year, now.month, now.day);
     final start = DateTime(startDate.year, startDate.month, startDate.day);
     final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+    final switchableGroups = allGroups.where((g) {
+      final end = DateTime(g.endDate.year, g.endDate.month, g.endDate.day);
+      return !end.isBefore(today);
+    }).toList();
 
     String daysLabel = '';
     String daysValue = '';
@@ -43,7 +54,9 @@ class MissionHeaderCard extends StatelessWidget {
       }
     }
 
-    return Container(
+    return Stack(
+      children: [
+        Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -171,7 +184,11 @@ class MissionHeaderCard extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onTravelDataTap,
                 icon: const Icon(Icons.info_outline_rounded, size: 18),
-                label: Text(context.l10n.itineraryTravelData),
+                label: Text(
+                  context.l10n.itineraryTravelData,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.08),
@@ -189,6 +206,119 @@ class MissionHeaderCard extends StatelessWidget {
           ],
         ],
       ),
+        ),
+        if (switchableGroups.length > 1)
+          Positioned(
+            bottom: 6,
+            right: 6,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _showGroupPicker(context, switchableGroups),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.swap_horiz_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showGroupPicker(BuildContext context, List<ItineraryGroupEntity> groups) {
+    final fmt = DateFormat('dd/MM/yyyy');
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final bg = Theme.of(context).colorScheme.surface;
+        final onSurface = Theme.of(context).colorScheme.onSurface;
+        return Container(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Text(
+                  context.l10n.itinerarySwitchMission,
+                  style: AppTextStyles.h3.copyWith(color: onSurface),
+                ),
+              ),
+              ...groups.map((g) {
+                final isCurrent = g.name == groupName;
+                final subtitle = [
+                  if (g.missionName != null && g.missionName!.isNotEmpty) g.missionName!,
+                  if (g.startDate.year > 0)
+                    '${fmt.format(g.startDate)} – ${fmt.format(g.endDate)}',
+                ].join(' · ');
+                return ListTile(
+                  leading: Icon(
+                    Icons.flag_outlined,
+                    color: isCurrent ? AppColors.primary : onSurface.withValues(alpha: 0.5),
+                  ),
+                  title: Text(
+                    g.name,
+                    style: TextStyle(
+                      color: isCurrent ? AppColors.primary : onSurface,
+                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: subtitle.isNotEmpty
+                      ? Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: onSurface.withValues(alpha: 0.5),
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : null,
+                  trailing: isCurrent
+                      ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
+                      : null,
+                  selected: isCurrent,
+                  selectedTileColor: AppColors.primary.withValues(alpha: 0.08),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    if (!isCurrent) onGroupSelected?.call(g);
+                  },
+                );
+              }),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
+            ],
+          ),
+        );
+      },
     );
   }
 }

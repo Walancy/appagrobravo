@@ -171,6 +171,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               state.maybeWhen(
                 loaded: (group, _, __, pendingDocs) {
                   dev.log('[HOME] BlocListener: LOADED grupo=${group.id} nome=${group.name}. _selectedIndex=$_selectedIndex', name: 'home');
+                  // Sync chat to the currently selected group/mission.
+                  context.read<ChatCubit>().watchChatData(groupId: group.id);
                   // Always go to itinerary tab on fresh load (index -1 means first load).
                   // The itinerary/chat tabs are always shown when user has a group.
                   if (_selectedIndex == -1) {
@@ -562,7 +564,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     final hasUnreadChat = chatState.maybeWhen(
                       loaded: (data) {
                         final missionUnread =
-                            (data.currentMission?.unreadCount ?? 0) > 0;
+                            data.currentMissions.any((m) => m.unreadCount > 0);
                         final guidesUnread =
                             data.guides.any((g) => g.unreadCount > 0);
                         return missionUnread || guidesUnread;

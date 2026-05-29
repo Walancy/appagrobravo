@@ -687,6 +687,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itineraryTravelData => 'Trip details';
 
   @override
+  String get itinerarySwitchMission => 'Switch mission';
+
+  @override
   String get itineraryEmergencyTitle => 'Emergency Channels';
 
   @override

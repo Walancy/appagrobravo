@@ -31,7 +31,7 @@ abstract class GuideEntity with _$GuideEntity {
 @freezed
 abstract class ChatData with _$ChatData {
   const factory ChatData({
-    ChatEntity? currentMission,
+    @Default([]) List<ChatEntity> currentMissions,
     @Default([]) List<GuideEntity> guides,
     @Default([]) List<ChatEntity> history,
     @Default({}) Map<String, String> lastMessages,

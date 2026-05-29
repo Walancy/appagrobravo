@@ -32,14 +32,16 @@ class ChatPage extends StatelessWidget {
                   const HeaderSpacer(),
                   if (data.history.isNotEmpty)
                     _buildHistoryTile(context, data),
-                  if (data.currentMission != null) ...[
+                  if (data.currentMissions.isNotEmpty) ...[
                     _buildSectionLabel(context, context.l10n.chatCurrentMission),
-                    _ChatListItem(
-                      chat: data.currentMission!,
-                      isCurrent: true,
-                      lastMessage: data.lastMessages[data.currentMission!.id],
-                      lastMessageTime: data.lastMessageTimes[data.currentMission!.id],
-                      onReturn: () => context.read<ChatCubit>().loadChatData(),
+                    ...data.currentMissions.map(
+                      (chat) => _ChatListItem(
+                        chat: chat,
+                        isCurrent: true,
+                        lastMessage: data.lastMessages[chat.id],
+                        lastMessageTime: data.lastMessageTimes[chat.id],
+                        onReturn: () => context.read<ChatCubit>().loadChatData(),
+                      ),
                     ),
                   ],
                   if (data.guides.isNotEmpty) ...[
@@ -54,7 +56,7 @@ class ChatPage extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (data.currentMission == null && data.guides.isEmpty)
+                  if (data.currentMissions.isEmpty && data.guides.isEmpty)
                     _buildEmptyState(context),
                   const SizedBox(height: 80),
                 ],

@@ -22,6 +22,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   ItineraryCubit(this._repository) : super(const ItineraryState.initial());
 
+  /// All active groups the user belongs to. Populated on every loadUserItinerary().
+  List<ItineraryGroupEntity> activeGroups = [];
+
   String _mapFailure(Exception failure) {
     final message = failure.toString();
     if (message.contains('SocketException') ||
@@ -192,10 +195,20 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         if (groupId == null) {
           debugPrint('[CUBIT] loadUserItinerary: groupId=null → emitindo error (sem missão ativa)');
           dev.log('[CUBIT] loadUserItinerary: groupId=null → emitindo error (sem missão ativa)', name: 'itinerary');
+          activeGroups = [];
           emit(
             const ItineraryState.error("Usuário não vinculado a nenhum grupo."),
           );
         } else {
+          // Fetch all active groups (non-blocking, best-effort) so the
+          // switch-group button knows how many missions the user is in.
+          final allGroupsResult = await _repository.getActiveGroups();
+          if (!isClosed) {
+            allGroupsResult.fold(
+              (_) => activeGroups = [],
+              (groups) => activeGroups = groups,
+            );
+          }
           debugPrint('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...');
           dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...', name: 'itinerary');
           await loadItinerary(groupId);
@@ -205,6 +218,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     debugPrint('[CUBIT] loadUserItinerary: finalizado. state final=${state.runtimeType}');
     dev.log('[CUBIT] loadUserItinerary: finalizado. state final=${state.runtimeType}', name: 'itinerary');
   }
+
+  /// Switches the displayed itinerary to [groupId] without refetching activeGroups.
+  Future<void> switchGroup(String groupId) => loadItinerary(groupId);
 
   Future<Either<Exception, EmergencyContacts>> getRepositoryEmergencyContacts(
     double lat,
@@ -250,6 +266,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     _eventsSubscription = null;
     _grupoSubscription?.unsubscribe();
     _grupoSubscription = null;
+    activeGroups = [];
     OnboardingService.instance.reset();
     emit(const ItineraryState.initial());
   }
