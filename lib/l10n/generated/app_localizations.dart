@@ -1012,6 +1012,18 @@ abstract class AppLocalizations {
   /// **'Empresa'**
   String get accountDataCompany;
 
+  /// No description provided for @accountDataNationality.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nacionalidade'**
+  String get accountDataNationality;
+
+  /// No description provided for @accountDataNationalityPickerTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar Nacionalidade'**
+  String get accountDataNationalityPickerTitle;
+
   /// No description provided for @accountDataCpf.
   ///
   /// In pt, this message translates to:

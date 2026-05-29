@@ -20,6 +20,7 @@ abstract class ProfileEntity with _$ProfileEntity {
     required String? phone,
     required String? cpf,
     required String? ssn,
+    required String? nationality,
     required String? zipCode,
     required String? state,
     required String? city,
@@ -44,8 +45,9 @@ abstract class ProfileEntity with _$ProfileEntity {
   const ProfileEntity._();
 
   bool get isComplete {
-    return (cpf != null && cpf!.isNotEmpty) &&
-        (phone != null && phone!.isNotEmpty) &&
-        (birthDate != null);
+    final needsCpf = nationality == null || nationality == 'BR';
+    final cpfOk = needsCpf ? (cpf != null && cpf!.isNotEmpty) : true;
+    final ssnOk = nationality == 'US' ? (ssn != null && ssn!.isNotEmpty) : true;
+    return cpfOk && ssnOk && (phone != null && phone!.isNotEmpty) && (birthDate != null);
   }
 }

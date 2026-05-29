@@ -201,6 +201,8 @@
   "accountDataRelationship": "Grau de Parentesco (Ex: Pai, Mãe, etc)",
   "accountDataEmergencyPhone": "Telefone de Emergência",
   "accountDataCompany": "Empresa",
+  "accountDataNationality": "Nacionalidade",
+  "accountDataNationalityPickerTitle": "Selecionar Nacionalidade",
   "accountDataCpf": "CPF",
   "accountDataSsn": "SSN",
   "accountDataBirthDate": "Data de Nascimento",

@@ -201,6 +201,8 @@
   "accountDataRelationship": "Relationship (e.g.: Father, Mother, etc.)",
   "accountDataEmergencyPhone": "Emergency phone",
   "accountDataCompany": "Company",
+  "accountDataNationality": "Nationality",
+  "accountDataNationalityPickerTitle": "Select Nationality",
   "accountDataCpf": "CPF",
   "accountDataSsn": "SSN",
   "accountDataBirthDate": "Date of birth",

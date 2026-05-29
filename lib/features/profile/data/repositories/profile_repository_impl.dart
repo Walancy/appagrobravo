@@ -33,6 +33,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'phone': profile.phone,
         'cpf': profile.cpf,
         'ssn': profile.ssn,
+        'nationality': profile.nationality,
         'zipCode': profile.zipCode,
         'state': profile.state,
         'city': profile.city,
@@ -79,6 +80,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           phone: json['phone'],
           cpf: json['cpf'],
           ssn: json['ssn'],
+          nationality: json['nationality'],
           zipCode: json['zipCode'],
           state: json['state'],
           city: json['city'],
@@ -221,6 +223,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         phone: userResponse['telefone'],
         cpf: userResponse['cpf'],
         ssn: userResponse['ssn'],
+        nationality: userResponse['nacionalidade'],
         company: userResponse['empresa'],
         zipCode: userResponse['cep'],
         state: userResponse['estado'],
@@ -381,6 +384,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 emergencyContact: null,
                 cpf: null,
                 ssn: null,
+                nationality: null,
                 foodPreferences: null,
                 medicalRestrictions: null,
                 missionName: null,
@@ -611,6 +615,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 emergencyContact: null,
                 cpf: null,
                 ssn: null,
+                nationality: null,
                 foodPreferences: null,
                 medicalRestrictions: null,
                 missionName: null,
@@ -794,6 +799,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           phone: u['telefone'],
           cpf: u['cpf'],
           ssn: u['ssn'],
+          nationality: u['nacionalidade'],
           zipCode: u['cep'],
           state: u['estado'],
           city: u['cidade'],
@@ -892,6 +898,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (data.containsKey('emergencyRelationship')) dbData['grau_parentesco_emergencia'] = data['emergencyRelationship'];
       if (data.containsKey('emergencyContact')) dbData['contato_emergencia'] = data['emergencyContact'];
       if (data.containsKey('ssn')) dbData['ssn'] = data['ssn'];
+      if (data.containsKey('nationality')) dbData['nacionalidade'] = data['nationality'];
 
       await _supabaseClient.from('users').update(dbData).eq('id', userId);
       return const Right(null);

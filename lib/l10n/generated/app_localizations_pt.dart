@@ -504,6 +504,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountDataCompany => 'Empresa';
 
   @override
+  String get accountDataNationality => 'Nacionalidade';
+
+  @override
+  String get accountDataNationalityPickerTitle => 'Selecionar Nacionalidade';
+
+  @override
   String get accountDataCpf => 'CPF';
 
   @override

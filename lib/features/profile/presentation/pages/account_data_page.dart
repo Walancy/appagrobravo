@@ -57,6 +57,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
   PhoneCountry _phoneCountry = kDefaultPhoneCountry;
   PhoneCountry _emergencyCountry = kDefaultPhoneCountry;
   AddressCountry _selectedCountry = kDefaultAddressCountry;
+  AddressCountry? _nationalityCountry;
   String? _selectedStateUf;
 
   bool _loadingCep = false;
@@ -190,6 +191,16 @@ class _AccountDataPageState extends State<AccountDataPage> {
         orElse: () => kDefaultAddressCountry,
       );
       _selectedCountry = match;
+    }
+
+    // Nationality
+    final savedNationality = profile.nationality;
+    if (savedNationality != null && savedNationality.isNotEmpty) {
+      final match = kAddressCountries.firstWhere(
+        (c) => c.code == savedNationality,
+        orElse: () => kDefaultAddressCountry,
+      );
+      _nationalityCountry = match;
     }
 
     // State
@@ -402,6 +413,99 @@ class _AccountDataPageState extends State<AccountDataPage> {
                   Icon(
                     Icons.arrow_drop_down_rounded,
                     size: 18,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNationalityDropdown(BuildContext context) {
+    final fillColor = Theme.of(context).brightness == Brightness.dark
+        ? Theme.of(context).colorScheme.surface
+        : const Color(0xFFFAFAFA);
+
+    final hasError = _attemptedSave && _nationalityCountry == null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label(context, context.l10n.accountDataNationality, isMandatory: true),
+          GestureDetector(
+            onTap: () async {
+              final result = await _showPickerSheet<AddressCountry>(
+                context: context,
+                title: context.l10n.accountDataNationalityPickerTitle,
+                items: kAddressCountries,
+                labelOf: (c) => c.name,
+                flagOf: (c) => CountryFlag.fromCountryCode(
+                  c.code,
+                  theme: const ImageTheme(width: 36, height: 24, shape: RoundedRectangle(3)),
+                ),
+                isSelected: (c) => c.code == (_nationalityCountry?.code ?? ''),
+              );
+              if (result != null) {
+                setState(() {
+                  _nationalityCountry = result;
+                  // Clear document fields if nationality changed
+                  if (result.code != 'BR') _cpfController.clear();
+                  if (result.code != 'US') _ssnController.clear();
+                });
+              }
+            },
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: fillColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: hasError
+                      ? AppColors.error
+                      : Theme.of(context).dividerColor,
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (_nationalityCountry != null) ...[
+                    CountryFlag.fromCountryCode(
+                      _nationalityCountry!.code,
+                      theme: const ImageTheme(width: 28, height: 18, shape: RoundedRectangle(3)),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        _nationalityCountry!.name,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ] else
+                    Expanded(
+                      child: Text(
+                        context.l10n.accountDataSelectPlaceholder,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  Icon(
+                    Icons.arrow_drop_down_rounded,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -678,29 +782,24 @@ class _AccountDataPageState extends State<AccountDataPage> {
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildTextField(context, _companyController, context.l10n.accountDataCompany),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  context,
-                  _cpfController,
-                  context.l10n.accountDataCpf,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [_cpfMask],
-                  isMandatory: true,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildTextField(
-                  context,
-                  _ssnController,
-                  context.l10n.accountDataSsn,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
+          _buildNationalityDropdown(context),
+          if (_nationalityCountry?.code == 'BR')
+            _buildTextField(
+              context,
+              _cpfController,
+              context.l10n.accountDataCpf,
+              keyboardType: TextInputType.number,
+              inputFormatters: [_cpfMask],
+              isMandatory: true,
+            )
+          else if (_nationalityCountry?.code == 'US')
+            _buildTextField(
+              context,
+              _ssnController,
+              context.l10n.accountDataSsn,
+              keyboardType: TextInputType.number,
+              isMandatory: true,
+            ),
           _buildDatePicker(context, context.l10n.accountDataBirthDate),
 
           // ── Endereço ────────────────────────────────────────────────────
@@ -860,6 +959,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
       'cpf': _cpfController.text,
       'ssn': _ssnController.text,
       'company': _companyController.text,
+      'nationality': _nationalityCountry?.code ?? '',
       'zipCode': _zipCodeController.text,
       'state': stateValue,
       'city': _cityController.text,
@@ -896,7 +996,6 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
     if (_nameController.text.trim().isEmpty ||
         _phoneController.text.trim().isEmpty ||
-        _cpfController.text.trim().isEmpty ||
         _emergencyNameController.text.trim().isEmpty ||
         _emergencyRelationshipController.text.trim().isEmpty ||
         _emergencyContactController.text.trim().isEmpty ||
@@ -909,6 +1008,11 @@ class _AccountDataPageState extends State<AccountDataPage> {
         _birthDate == null) {
       return false;
     }
+    final nat = _nationalityCountry?.code;
+    final cpfRequired = nat == null || nat == 'BR';
+    final ssnRequired = nat == 'US';
+    if (cpfRequired && _cpfController.text.trim().isEmpty) return false;
+    if (ssnRequired && _ssnController.text.trim().isEmpty) return false;
     return true;
   }
 
