@@ -7,10 +7,12 @@ import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
 import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -115,7 +117,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     try {
       final service = OnboardingService.instance;
 
-      // 1. Save all formulario answers
+      // Save all formulario answers — primeiraAcesso stays true until _finish()
       for (final form in _formularios) {
         final respostas = _answers[form.id] ?? {};
         if (respostas.isNotEmpty) {
@@ -125,9 +127,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
           );
         }
       }
-
-      // 2. Mark primeiraAcesso = false via RPC
-      await service.completeOnboarding();
 
       _goToStep(_guideStep);
     } catch (_) {
@@ -139,9 +138,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _finish() async {
-    // Safety-net: ensure primeiraAcesso=false is persisted in the DB.
-    // _submit() already calls this for the normal flow, but if there
-    // were no questions (formularios empty), _submit is never reached.
+    // Only here — after the user completes the mandatory guide steps — do we
+    // set primeiraAcesso = false. This is the single call site for the RPC.
     try {
       await OnboardingService.instance.completeOnboarding();
     } catch (_) {
@@ -877,7 +875,7 @@ class _OkButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Last step: Guide
+// Last step: Guide (mandatory checklist)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _GuideStep extends StatefulWidget {
@@ -892,118 +890,238 @@ class _GuideStep extends StatefulWidget {
 class _GuideStepState extends State<_GuideStep> {
   bool _isFinishing = false;
 
+  // Whether medical was opened at least once (optional — no real check needed)
+  bool _medicalVisited = false;
+
+  // Completion flags derived from cubit state — refreshed after each sub-page return
+  bool _profileComplete = false;
+  bool _docsComplete = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshCompletionState();
+  }
+
+  void _refreshCompletionState() {
+    // Profile: uses ProfileEntity.isComplete (cpf/ssn + phone + birthDate)
+    context.read<ProfileCubit>().state.maybeWhen(
+      loaded: (profile, _, __, ___) {
+        _profileComplete = profile.isComplete;
+      },
+      orElse: () {},
+    );
+
+    // Documents: all mandatory docs uploaded and valid (ignores isAlertDismissed)
+    _docsComplete = context.read<DocumentsCubit>().state.areDocumentsComplete;
+  }
+
+  bool get _canFinish => _profileComplete && _docsComplete;
+
+  int get _doneCount => (_profileComplete ? 1 : 0) + (_docsComplete ? 1 : 0);
+
+  void _open(String key, String route) {
+    if (key == 'medical') {
+      // Medical is optional — mark visited immediately and open
+      setState(() => _medicalVisited = true);
+      context.push(route);
+    } else {
+      // For required items: open, then re-check state when user returns
+      context.push(route).then((_) {
+        if (mounted) setState(_refreshCompletionState);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final allDone = _canFinish;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
-          Container(
-            width: 80,
-            height: 80,
+          const SizedBox(height: 8),
+
+          // ── Header icon ──────────────────────────────────────────────────
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            width: 76,
+            height: 76,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: allDone
+                  ? AppColors.primary.withOpacity(0.12)
+                  : Colors.orange.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check_circle_outline_rounded,
-              color: AppColors.primary,
-              size: 44,
+            child: Icon(
+              allDone
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.assignment_outlined,
+              color: allDone ? AppColors.primary : Colors.orange.shade600,
+              size: 40,
             ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            context.l10n.onboardingAllDone,
-            style: AppTextStyles.h2.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+          const SizedBox(height: 20),
+
+          // ── Title ─────────────────────────────────────────────────────────
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Text(
+              allDone
+                  ? context.l10n.onboardingAllDone
+                  : context.l10n.onboardingGuideIncompleteTitle,
+              key: ValueKey(allDone),
+              style: AppTextStyles.h2.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            context.l10n.onboardingParticipationConfirmed,
+            allDone
+                ? context.l10n.onboardingParticipationConfirmed
+                : context.l10n.onboardingGuideIncompleteBody,
             style: AppTextStyles.bodyMedium.copyWith(
-              color:
-                  Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.60),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+
+          const SizedBox(height: 20),
+
+          // ── Progress chips ─────────────────────────────────────────────────
+          if (!allDone)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.orange.withOpacity(0.12)
+                    : Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.orange.withOpacity(0.25)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline_rounded,
+                      size: 14, color: Colors.orange.shade700),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$_doneCount/2 ${context.l10n.onboardingGuideMandatoryDone}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.orange.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // ── Cards ─────────────────────────────────────────────────────────
           _GuideCard(
             icon: Icons.person_outline_rounded,
             title: context.l10n.onboardingGuidePersonalDataTitle,
             subtitle: context.l10n.onboardingGuidePersonalDataSub,
-            onTap: () => context.push('/account-data'),
+            badgeLabel: context.l10n.onboardingBadgeRequired,
+            isRequired: true,
+            isDone: _profileComplete,
+            onTap: () => _open('profile', '/account-data'),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _GuideCard(
             icon: Icons.description_outlined,
             title: context.l10n.onboardingGuideDocumentsTitle,
             subtitle: context.l10n.onboardingGuideDocumentsSub,
-            onTap: () => context.push('/documents'),
+            badgeLabel: context.l10n.onboardingBadgeRequired,
+            isRequired: true,
+            isDone: _docsComplete,
+            onTap: () => _open('docs', '/documents'),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _GuideCard(
             icon: Icons.medical_information_outlined,
             title: context.l10n.onboardingGuideMedicalTitle,
             subtitle: context.l10n.onboardingGuideMedicalSub,
-            onTap: () => context.push('/medical-restrictions'),
+            badgeLabel: context.l10n.onboardingBadgeOptional,
+            isRequired: false,
+            isDone: _medicalVisited,
+            onTap: () => _open('medical', '/medical-restrictions'),
           ),
-          const SizedBox(height: 36),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isFinishing
-                  ? null
-                  : () async {
-                      setState(() => _isFinishing = true);
-                      await widget.onFinish();
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+
+          const SizedBox(height: 32),
+
+          // ── Main button ───────────────────────────────────────────────────
+          AnimatedOpacity(
+            opacity: _canFinish ? 1.0 : 0.45,
+            duration: const Duration(milliseconds: 300),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: (_canFinish && !_isFinishing)
+                    ? () async {
+                        setState(() => _isFinishing = true);
+                        await widget.onFinish();
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: _canFinish ? 2 : 0,
                 ),
-              ),
-              child: _isFinishing
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
+                child: _isFinishing
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            context.l10n.onboardingGoToApp,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (_canFinish) ...[
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 18),
+                          ],
+                        ],
                       ),
-                    )
-                  : Text(
-                      context.l10n.onboardingGoToApp,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: _isFinishing
-                ? null
-                : () async {
-                    setState(() => _isFinishing = true);
-                    await widget.onFinish();
-                  },
-            child: Text(
-              context.l10n.onboardingSkipForNow,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withOpacity(0.45),
               ),
             ),
           ),
+
+          if (!_canFinish) ...[
+            const SizedBox(height: 10),
+            Text(
+              context.l10n.onboardingGuideCompleteHint,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.40),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -1014,78 +1132,154 @@ class _GuideCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String badgeLabel;
+  final bool isRequired;
+  final bool isDone;
   final VoidCallback onTap;
 
   const _GuideCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.badgeLabel,
+    required this.isRequired,
+    required this.isDone,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final badgeColor = isDone
+        ? AppColors.primary
+        : isRequired
+            ? Colors.orange.shade600
+            : Colors.grey.shade500;
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.white,
+          color: isDone
+              ? (isDark
+                  ? AppColors.primary.withOpacity(0.08)
+                  : AppColors.primary.withOpacity(0.04))
+              : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.4),
+            color: isDone
+                ? AppColors.primary.withOpacity(0.30)
+                : isRequired
+                    ? Colors.orange.withOpacity(0.35)
+                    : Theme.of(context).dividerColor.withOpacity(0.35),
+            width: isDone || isRequired ? 1.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(isDark ? 0.0 : 0.03),
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
+            // Icon container
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: isDone
+                    ? AppColors.primary.withOpacity(0.12)
+                    : isRequired
+                        ? Colors.orange.withOpacity(0.10)
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.06),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 22),
+              child: Icon(
+                icon,
+                color: isDone
+                    ? AppColors.primary
+                    : isRequired
+                        ? Colors.orange.shade600
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.45),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 14),
+
+            // Text + badge
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: isDone
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.75)
+                                : Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isDone ? context.l10n.onboardingBadgeDone : badgeLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: badgeColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(0.55),
+                          .withOpacity(0.50),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
+
+            // Right icon
             Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color:
-                  Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              isDone
+                  ? Icons.check_circle_rounded
+                  : Icons.arrow_forward_ios_rounded,
+              size: isDone ? 20 : 14,
+              color: isDone
+                  ? AppColors.primary
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.28),
             ),
           ],
         ),

@@ -24,6 +24,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 
 class SocialProfilePage extends StatefulWidget {
@@ -79,7 +80,7 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('Minhas Missões', style: AppTextStyles.h3),
+              child: Text(context.l10n.socialProfileMyMissions, style: AppTextStyles.h3),
             ),
             const Divider(),
             Expanded(
@@ -106,7 +107,7 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Nenhuma missão encontrada',
+                            context.l10n.socialProfileNoMissions,
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: Colors.grey,
                             ),
@@ -213,7 +214,7 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
       )..loadProfile(widget.userId),
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: widget.hideAppBar ? null : const AppHeader(mode: HeaderMode.back, title: 'Perfil Social'),
+        appBar: widget.hideAppBar ? null : AppHeader(mode: HeaderMode.back, title: context.l10n.socialProfileTitle),
         body: BlocBuilder<ProfileCubit, ProfileState>(
           builder: (context, state) {
             return state.when(
@@ -228,8 +229,8 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                     backgroundColor: Colors.transparent,
                     builder: (context) => ImageSourceBottomSheet(
                       title: isAvatar
-                          ? 'Alterar foto de perfil'
-                          : 'Alterar capa',
+                          ? context.l10n.profileChangePhoto
+                          : context.l10n.socialProfileChangeCover,
                     ),
                   );
 

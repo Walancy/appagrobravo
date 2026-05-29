@@ -17,6 +17,7 @@ import 'package:agrobravo/core/utils/phone_countries.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:country_flags/country_flags.dart';
 import 'package:agrobravo/core/components/account_data_shimmer.dart';
 
 class AccountDataPage extends StatefulWidget {
@@ -321,7 +322,7 @@ class _AccountDataPageState extends State<AccountDataPage> {
     required String title,
     required List<T> items,
     required String Function(T) labelOf,
-    required String Function(T) flagOf,
+    required Widget Function(T) flagOf,
     required bool Function(T) isSelected,
   }) {
     return showModalBottomSheet<T>(
@@ -356,7 +357,10 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 title: context.l10n.accountDataCountryPickerTitle,
                 items: kAddressCountries,
                 labelOf: (c) => c.name,
-                flagOf: (c) => c.flag,
+                flagOf: (c) => CountryFlag.fromCountryCode(
+                  c.code,
+                  theme: const ImageTheme(width: 36, height: 24, shape: RoundedRectangle(3)),
+                ),
                 isSelected: (c) => c.code == _selectedCountry.code,
               );
               if (result != null && result.code != _selectedCountry.code) {
@@ -369,29 +373,35 @@ class _AccountDataPageState extends State<AccountDataPage> {
             },
             child: Container(
               height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 color: fillColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: _attemptedSave && _selectedCountry.code.trim().isEmpty ? AppColors.error : Theme.of(context).dividerColor),
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _selectedCountry.flag,
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      _selectedCountry.name,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CountryFlag.fromCountryCode(
+                        _selectedCountry.code,
+                        theme: const ImageTheme(width: 24, height: 16, shape: RoundedRectangle(2)),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _selectedCountry.code,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                   Icon(
                     Icons.arrow_drop_down_rounded,
+                    size: 18,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -424,16 +434,6 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
     final hasError = _attemptedSave && (_selectedStateUf ?? '').trim().isEmpty;
 
-    final selectedName = _selectedStateUf != null
-        ? kBrazilianStates
-            .firstWhere(
-              (s) => s.uf == _selectedStateUf,
-              orElse: () =>
-                  BrazilianState(uf: _selectedStateUf!, name: _selectedStateUf!),
-            )
-            .name
-        : null;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
@@ -447,7 +447,15 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 title: context.l10n.accountDataStatePickerTitle,
                 items: kBrazilianStates,
                 labelOf: (s) => s.name,
-                flagOf: (s) => s.uf,
+                flagOf: (s) => SizedBox(
+                  width: 36,
+                  child: Center(
+                    child: Text(
+                      s.uf,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ),
                 isSelected: (s) => s.uf == _selectedStateUf,
               );
               if (result != null) {
@@ -456,29 +464,34 @@ class _AccountDataPageState extends State<AccountDataPage> {
             },
             child: Container(
               height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 color: fillColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: hasError ? AppColors.error : Theme.of(context).dividerColor),
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
+                  Flexible(
                     child: Text(
-                      selectedName ?? context.l10n.accountDataSelectPlaceholder,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: selectedName != null
+                      _selectedStateUf ?? '—',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: _selectedStateUf != null
                             ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context)
                                 .colorScheme
                                 .onSurface
                                 .withValues(alpha: 0.4),
+                        fontWeight: _selectedStateUf != null ? FontWeight.w700 : FontWeight.normal,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Icon(
                     Icons.arrow_drop_down_rounded,
+                    size: 18,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -713,12 +726,11 @@ class _AccountDataPageState extends State<AccountDataPage> {
                 ),
                 const SizedBox(height: AppSpacing.md),
 
-                // CEP + País na mesma linha
+                // CEP (expande) + País (compacto)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 130,
+                    Expanded(
                       child: _buildTextField(
                         context,
                         _zipCodeController,
@@ -741,16 +753,20 @@ class _AccountDataPageState extends State<AccountDataPage> {
                             : null,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(child: _buildCountryDropdown(context)),
+                    const SizedBox(width: AppSpacing.sm),
+                    SizedBox(width: 96, child: _buildCountryDropdown(context)),
                   ],
                 ),
 
+                // Estado (compacto se BR, expandido se outro país) + Cidade (expande)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildStateField(context)),
-                    const SizedBox(width: AppSpacing.md),
+                    if (_selectedCountry.code == 'BR')
+                      SizedBox(width: 80, child: _buildStateField(context))
+                    else
+                      Expanded(child: _buildStateField(context)),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: _buildTextField(context, _cityController, context.l10n.accountDataCity, isMandatory: true),
                     ),
@@ -919,7 +935,7 @@ class _PickerSheet<T> extends StatefulWidget {
   final String title;
   final List<T> items;
   final String Function(T) labelOf;
-  final String Function(T) flagOf;
+  final Widget Function(T) flagOf;
   final bool Function(T) isSelected;
 
   const _PickerSheet({
@@ -1026,26 +1042,8 @@ class _PickerSheetState<T> extends State<_PickerSheet<T>> {
               itemBuilder: (context, i) {
                 final item = _filtered[i];
                 final selected = widget.isSelected(item);
-                final flag = widget.flagOf(item);
-                // For states, flag is the UF abbreviation (2 chars), not emoji
-                final isUf = flag.length <= 3;
                 return ListTile(
-                  leading: isUf
-                      ? SizedBox(
-                          width: 36,
-                          child: Center(
-                            child: Text(
-                              flag,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: selected
-                                    ? AppColors.primary
-                                    : onSurface.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Text(flag, style: const TextStyle(fontSize: 24)),
+                  leading: widget.flagOf(item),
                   title: Text(
                     widget.labelOf(item),
                     style: TextStyle(

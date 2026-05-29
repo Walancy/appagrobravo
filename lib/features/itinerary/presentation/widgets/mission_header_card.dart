@@ -77,6 +77,8 @@ class MissionHeaderCard extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (groupName != null && groupName!.isNotEmpty) ...[
                       const SizedBox(height: 2),
@@ -100,6 +102,8 @@ class MissionHeaderCard extends StatelessWidget {
                                     .onSurface
                                     .withValues(alpha: 0.6),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

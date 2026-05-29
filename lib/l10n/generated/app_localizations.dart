@@ -586,11 +586,125 @@ abstract class AppLocalizations {
   /// **'Informe alergias, medicamentos ou restrições de saúde importantes.'**
   String get onboardingGuideMedicalSub;
 
+  /// No description provided for @onboardingGuideIncompleteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quase lá! Complete as etapas'**
+  String get onboardingGuideIncompleteTitle;
+
+  /// No description provided for @onboardingGuideIncompleteBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para participar da missão precisamos de algumas informações suas.'**
+  String get onboardingGuideIncompleteBody;
+
+  /// No description provided for @onboardingGuideMandatoryDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'etapas obrigatórias concluídas'**
+  String get onboardingGuideMandatoryDone;
+
+  /// No description provided for @onboardingBadgeRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Obrigatório'**
+  String get onboardingBadgeRequired;
+
+  /// No description provided for @onboardingBadgeOptional.
+  ///
+  /// In pt, this message translates to:
+  /// **'Opcional'**
+  String get onboardingBadgeOptional;
+
+  /// No description provided for @onboardingBadgeDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Concluído'**
+  String get onboardingBadgeDone;
+
+  /// No description provided for @onboardingGuideCompleteHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Complete os itens obrigatórios para continuar'**
+  String get onboardingGuideCompleteHint;
+
   /// No description provided for @profileChangePhoto.
   ///
   /// In pt, this message translates to:
   /// **'Alterar foto de perfil'**
   String get profileChangePhoto;
+
+  /// No description provided for @groupInfoTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Detalhes do grupo'**
+  String get groupInfoTitle;
+
+  /// No description provided for @groupInfoSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Visualize mais detalhes'**
+  String get groupInfoSubtitle;
+
+  /// No description provided for @groupInfoMission.
+  ///
+  /// In pt, this message translates to:
+  /// **'Missão: {mission}'**
+  String groupInfoMission(String mission);
+
+  /// No description provided for @groupInfoMembersCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} membros'**
+  String groupInfoMembersCount(int count);
+
+  /// No description provided for @groupInfoMediaSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídias, links e docs'**
+  String get groupInfoMediaSection;
+
+  /// No description provided for @groupInfoYou.
+  ///
+  /// In pt, this message translates to:
+  /// **' (você)'**
+  String get groupInfoYou;
+
+  /// No description provided for @groupInfoGuideLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guia'**
+  String get groupInfoGuideLabel;
+
+  /// No description provided for @groupInfoPendingSent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pendente'**
+  String get groupInfoPendingSent;
+
+  /// No description provided for @groupInfoRequested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Solicitou'**
+  String get groupInfoRequested;
+
+  /// No description provided for @groupInfoErrorPrefix.
+  ///
+  /// In pt, this message translates to:
+  /// **'Erro: '**
+  String get groupInfoErrorPrefix;
+
+  /// No description provided for @groupMediaTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídia e arquivos'**
+  String get groupMediaTitle;
+
+  /// No description provided for @groupMediaSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Visualize as mídias do grupo'**
+  String get groupMediaSubtitle;
 
   /// No description provided for @chatCurrentMission.
   ///
@@ -1455,6 +1569,552 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Não foi possível abrir o material'**
   String get itineraryOpenMaterialError;
+
+  /// No description provided for @incompleteProfileTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Complete seu cadastro'**
+  String get incompleteProfileTitle;
+
+  /// No description provided for @incompleteProfileSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faltam dados importantes na sua conta. Toque aqui para preencher.'**
+  String get incompleteProfileSubtitle;
+
+  /// No description provided for @notificationsConnectionRequests.
+  ///
+  /// In pt, this message translates to:
+  /// **'Solicitações de conexão'**
+  String get notificationsConnectionRequests;
+
+  /// No description provided for @notificationsAndOthers.
+  ///
+  /// In pt, this message translates to:
+  /// **'e outras {count} pessoas'**
+  String notificationsAndOthers(int count);
+
+  /// No description provided for @medicalTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Condições médicas'**
+  String get medicalTitle;
+
+  /// No description provided for @medicalDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicione informações importantes para sua viagem, como condições médicas, uso contínuo de medicamentos, alergias, restrições alimentares, limitações de mobilidade ou fobias.\n\nSe necessário, leve medicação extra e prescrição médica durante a viagem.'**
+  String get medicalDescription;
+
+  /// No description provided for @medicalAddInfo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar informação'**
+  String get medicalAddInfo;
+
+  /// No description provided for @medicalSelectCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecione uma categoria'**
+  String get medicalSelectCategory;
+
+  /// No description provided for @medicalAddDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicione a descrição'**
+  String get medicalAddDescription;
+
+  /// No description provided for @medicalCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categoria: {category}'**
+  String medicalCategory(String category);
+
+  /// No description provided for @medicalDescriptionHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escreva a descrição...'**
+  String get medicalDescriptionHint;
+
+  /// No description provided for @medicalAddButton.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar'**
+  String get medicalAddButton;
+
+  /// No description provided for @medicalBackToCategories.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar para categorias'**
+  String get medicalBackToCategories;
+
+  /// No description provided for @medicalAutoSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Suas informações são salvas automaticamente.'**
+  String get medicalAutoSave;
+
+  /// No description provided for @medicalCategoryMedical.
+  ///
+  /// In pt, this message translates to:
+  /// **'Condição médica'**
+  String get medicalCategoryMedical;
+
+  /// No description provided for @medicalCategoryMedication.
+  ///
+  /// In pt, this message translates to:
+  /// **'Uso de medicamento'**
+  String get medicalCategoryMedication;
+
+  /// No description provided for @medicalCategoryAllergy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alergia'**
+  String get medicalCategoryAllergy;
+
+  /// No description provided for @medicalCategoryDiet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Restrição alimentar'**
+  String get medicalCategoryDiet;
+
+  /// No description provided for @medicalCategoryMobility.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mobilidade'**
+  String get medicalCategoryMobility;
+
+  /// No description provided for @medicalCategoryPhobia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fobia'**
+  String get medicalCategoryPhobia;
+
+  /// No description provided for @medicalCategoryOther.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro'**
+  String get medicalCategoryOther;
+
+  /// No description provided for @notifPrefTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Notificações'**
+  String get notifPrefTitle;
+
+  /// No description provided for @notifPrefGeneral.
+  ///
+  /// In pt, this message translates to:
+  /// **'Geral'**
+  String get notifPrefGeneral;
+
+  /// No description provided for @notifPrefAlertTypes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipos de Alerta'**
+  String get notifPrefAlertTypes;
+
+  /// No description provided for @notifPrefPush.
+  ///
+  /// In pt, this message translates to:
+  /// **'Notificações Push'**
+  String get notifPrefPush;
+
+  /// No description provided for @notifPrefPushSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Receba alertas em tempo real no seu celular'**
+  String get notifPrefPushSub;
+
+  /// No description provided for @notifPrefEmail.
+  ///
+  /// In pt, this message translates to:
+  /// **'E-mails'**
+  String get notifPrefEmail;
+
+  /// No description provided for @notifPrefEmailSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informativos e resumos da missão'**
+  String get notifPrefEmailSub;
+
+  /// No description provided for @notifPrefDocuments.
+  ///
+  /// In pt, this message translates to:
+  /// **'Documentação'**
+  String get notifPrefDocuments;
+
+  /// No description provided for @notifPrefDocumentsSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alertas de pendências e aprovações de documentos'**
+  String get notifPrefDocumentsSub;
+
+  /// No description provided for @notifPrefMission.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atualizações da Missão'**
+  String get notifPrefMission;
+
+  /// No description provided for @notifPrefMissionSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mudanças no itinerário e avisos do guia'**
+  String get notifPrefMissionSub;
+
+  /// No description provided for @notifPrefConnections.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novas Conexões'**
+  String get notifPrefConnections;
+
+  /// No description provided for @notifPrefConnectionsSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Solicitações de seguidores e novas mensagens'**
+  String get notifPrefConnectionsSub;
+
+  /// No description provided for @notifPrefAutoSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Suas preferências são salvas automaticamente.'**
+  String get notifPrefAutoSave;
+
+  /// No description provided for @privacyTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Política de Privacidade'**
+  String get privacyTitle;
+
+  /// No description provided for @privacyHeading.
+  ///
+  /// In pt, this message translates to:
+  /// **'AgroBravo Enterprises - Compromisso com sua Privacidade'**
+  String get privacyHeading;
+
+  /// No description provided for @privacyIntro.
+  ///
+  /// In pt, this message translates to:
+  /// **'A AgroBravo Enterprises, com sede em Ames, Iowa (EUA) e filial no Brasil, valoriza a confiança que você deposita em nós. Esta política descreve como tratamos suas informações pessoais.'**
+  String get privacyIntro;
+
+  /// No description provided for @privacyS1Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'1. Coleta de Informações'**
+  String get privacyS1Title;
+
+  /// No description provided for @privacyS1Body.
+  ///
+  /// In pt, this message translates to:
+  /// **'Coletamos informações quando você utiliza nossos serviços, preenche formulários ou participa de nossas missões. Isso inclui nome completo, e-mail, telefone, nome da empresa, informações de pagamento e detalhes necessários para logística de viagens (como passaporte e vistos).'**
+  String get privacyS1Body;
+
+  /// No description provided for @privacyS2Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'2. Uso dos Dados'**
+  String get privacyS2Title;
+
+  /// No description provided for @privacyS2Body.
+  ///
+  /// In pt, this message translates to:
+  /// **'Utilizamos seus dados para:\n• Processar e gerenciar missões técnicas e viagens.\n• Enviar atualizações sobre o mercado e novas oportunidades de negócios.\n• Prestar suporte personalizado durante eventos.\n• Cumprir obrigações legais e regulatórias.'**
+  String get privacyS2Body;
+
+  /// No description provided for @privacyS3Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'3. Compartilhamento e Proteção'**
+  String get privacyS3Title;
+
+  /// No description provided for @privacyS3Body.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não compartilhamos informações com terceiros, exceto quando necessário para a prestação de serviços (parcerias logísticas, hotéis, órgãos governamentais) ou por obrigação legal. Adotamos práticas de criptografia e medidas de segurança para proteger sua privacidade.'**
+  String get privacyS3Body;
+
+  /// No description provided for @privacyS4Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'4. Aplicativo Móvel'**
+  String get privacyS4Title;
+
+  /// No description provided for @privacyS4Body.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nosso aplicativo pode coletar fotos e vídeos fornecidos por você para funcionalidade social e registro de missões. Estes dados não são compartilhados com fins comerciais externos e você pode solicitar a eliminação de sua conta e dados a qualquer momento.'**
+  String get privacyS4Body;
+
+  /// No description provided for @privacyS5Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'5. Seus Direitos'**
+  String get privacyS5Title;
+
+  /// No description provided for @privacyS5Body.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você tem o direito de acessar, retificar ou solicitar a exclusão de seus dados pessoais. Para exercer esses direitos, entre em contato conosco através dos canais de suporte no aplicativo.'**
+  String get privacyS5Body;
+
+  /// No description provided for @privacyLastUpdated.
+  ///
+  /// In pt, this message translates to:
+  /// **'Última atualização: 22 de Abril de 2025'**
+  String get privacyLastUpdated;
+
+  /// No description provided for @aboutTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sobre nós'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutTagline.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conexões que transformam o agro.'**
+  String get aboutTagline;
+
+  /// No description provided for @aboutBody1.
+  ///
+  /// In pt, this message translates to:
+  /// **'A AgroBravo Enterprises é uma plataforma de conexões estratégicas no agronegócio global. Com mais de 12 anos de história e presença em 5 continentes, conectamos o agronegócio entre Brasil, EUA, Ásia, América Latina e Europa.'**
+  String get aboutBody1;
+
+  /// No description provided for @aboutBody2.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nossa visão é construir pontes estratégicas para impulsionar o agronegócio além das fronteiras, proporcionando acesso exclusivo às tecnologias mais avançadas e networking de alto nível.'**
+  String get aboutBody2;
+
+  /// No description provided for @aboutValue1Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conexão Global'**
+  String get aboutValue1Title;
+
+  /// No description provided for @aboutValue1Sub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Presença estratégica na Ásia, Europa, EUA e América Latina.'**
+  String get aboutValue1Sub;
+
+  /// No description provided for @aboutValue2Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'Expertise Técnica'**
+  String get aboutValue2Title;
+
+  /// No description provided for @aboutValue2Sub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conhecimento tático e inteligência de mercado aplicada ao campo.'**
+  String get aboutValue2Sub;
+
+  /// No description provided for @aboutValue3Title.
+  ///
+  /// In pt, this message translates to:
+  /// **'Networking de Alto Nível'**
+  String get aboutValue3Title;
+
+  /// No description provided for @aboutValue3Sub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ecossistema completo de facilitação de negócios internacionais.'**
+  String get aboutValue3Sub;
+
+  /// No description provided for @aboutAppName.
+  ///
+  /// In pt, this message translates to:
+  /// **'AgroBravo Mobile App'**
+  String get aboutAppName;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Versão 1.0.0 (Build 2026)'**
+  String get aboutVersion;
+
+  /// No description provided for @aboutCopyright.
+  ///
+  /// In pt, this message translates to:
+  /// **'© 2026 AgroBravo. Todos os direitos reservados.'**
+  String get aboutCopyright;
+
+  /// No description provided for @pendingDocsBannerTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Documentos pendentes'**
+  String get pendingDocsBannerTitle;
+
+  /// No description provided for @pendingDocsBannerSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você possui documentos exigidos que ainda não foram enviados ou aprovados. Toque aqui para enviar.'**
+  String get pendingDocsBannerSubtitle;
+
+  /// No description provided for @socialProfileTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Perfil Social'**
+  String get socialProfileTitle;
+
+  /// No description provided for @socialProfileMyMissions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Minhas Missões'**
+  String get socialProfileMyMissions;
+
+  /// No description provided for @socialProfileNoMissions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma missão encontrada'**
+  String get socialProfileNoMissions;
+
+  /// No description provided for @socialProfileChangeCover.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterar capa'**
+  String get socialProfileChangeCover;
+
+  /// No description provided for @profileStatsConnections.
+  ///
+  /// In pt, this message translates to:
+  /// **'conexões'**
+  String get profileStatsConnections;
+
+  /// No description provided for @profileStatsPosts.
+  ///
+  /// In pt, this message translates to:
+  /// **'posts'**
+  String get profileStatsPosts;
+
+  /// No description provided for @profileStatsMissions.
+  ///
+  /// In pt, this message translates to:
+  /// **'missões'**
+  String get profileStatsMissions;
+
+  /// No description provided for @profileActionEditProfile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar perfil'**
+  String get profileActionEditProfile;
+
+  /// No description provided for @profileActionCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get profileActionCancel;
+
+  /// No description provided for @profileActionPublish.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar'**
+  String get profileActionPublish;
+
+  /// No description provided for @profileActionConnect.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conectar'**
+  String get profileActionConnect;
+
+  /// No description provided for @profileActionRequested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Solicitado'**
+  String get profileActionRequested;
+
+  /// No description provided for @profileActionAccept.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aceitar'**
+  String get profileActionAccept;
+
+  /// No description provided for @profileActionReject.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recusar'**
+  String get profileActionReject;
+
+  /// No description provided for @profileActionDisconnect.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desconectar'**
+  String get profileActionDisconnect;
+
+  /// No description provided for @userFeedTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicações'**
+  String get userFeedTitle;
+
+  /// No description provided for @userFeedEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma publicação'**
+  String get userFeedEmpty;
+
+  /// No description provided for @userFeedEmptyDescription.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este usuário ainda não fez nenhuma publicação em seu perfil.'**
+  String get userFeedEmptyDescription;
+
+  /// No description provided for @connectionsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conexões'**
+  String get connectionsTitle;
+
+  /// No description provided for @connectionsSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar'**
+  String get connectionsSearch;
+
+  /// No description provided for @connectionsCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} conexões'**
+  String connectionsCount(int count);
+
+  /// No description provided for @connectionRequestsCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} solicitações de conexão'**
+  String connectionRequestsCount(int count);
+
+  /// No description provided for @connectionsNoneFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma conexão encontrada.'**
+  String get connectionsNoneFound;
+
+  /// No description provided for @connectionsNoRequests.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma solicitação pendente.'**
+  String get connectionsNoRequests;
+
+  /// No description provided for @connectionsConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar'**
+  String get connectionsConfirm;
+
+  /// No description provided for @connectionsRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover'**
+  String get connectionsRemove;
+
+  /// No description provided for @connectionsConnect.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conectar-se'**
+  String get connectionsConnect;
 }
 
 class _AppLocalizationsDelegate

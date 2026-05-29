@@ -88,6 +88,8 @@ class GenericEventCard extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           if (showSubtitle)
                             Padding(
@@ -101,6 +103,8 @@ class GenericEventCard extends StatelessWidget {
                                       .onSurface
                                       .withValues(alpha: 0.5),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           if (item.type == ItineraryType.hotel && item.estrelas != null)
@@ -429,6 +433,8 @@ class FlightCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (airlineInfo != null)
                       Padding(
@@ -442,6 +448,8 @@ class FlightCard extends StatelessWidget {
                                 .onSurface
                                 .withValues(alpha: 0.5),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                   ],

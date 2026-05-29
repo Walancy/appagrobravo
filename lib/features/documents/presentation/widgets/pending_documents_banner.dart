@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class PendingDocumentsBanner extends StatelessWidget {
   const PendingDocumentsBanner({super.key});
@@ -38,7 +38,7 @@ class PendingDocumentsBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Documentos pendentes',
+                      context.l10n.pendingDocsBannerTitle,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.orange[800],
@@ -46,7 +46,7 @@ class PendingDocumentsBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Você possui documentos exigidos que ainda não foram enviados ou aprovados. Toque aqui para enviar.',
+                      context.l10n.pendingDocsBannerSubtitle,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),

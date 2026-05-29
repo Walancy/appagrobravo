@@ -77,4 +77,51 @@ extension DocumentsStateX on DocumentsState {
       orElse: () => false,
     );
   }
+
+  /// True when all mandatory documents are uploaded and valid.
+  /// Unlike [hasPendingAction], ignores [isAlertDismissed] — for onboarding gate use.
+  bool get areDocumentsComplete {
+    return maybeWhen(
+      loaded: (documents, _, profile, mission) {
+        if (mission == null) return false;
+
+        bool isUnder18 = false;
+        if (profile?.birthDate != null) {
+          final today = DateTime.now();
+          final birthDate = profile!.birthDate!;
+          int age = (today.year - birthDate.year).toInt();
+          if (today.month < birthDate.month ||
+              (today.month == birthDate.month && today.day < birthDate.day)) {
+            age--;
+          }
+          isUnder18 = age < 18;
+        }
+
+        final mandatoryTypes = [
+          if (mission.passaporteObrigatorio) DocumentType.passaporte,
+          if (mission.vistoObrigatorio) DocumentType.visto,
+          if (mission.vacinaObrigatoria) DocumentType.vacina,
+          if (mission.carteiraObrigatoria) DocumentType.carteiraMotorista,
+          if (mission.autorizacaoObrigatoria && isUnder18)
+            DocumentType.autorizacaoMenores,
+        ];
+
+        if (mandatoryTypes.isEmpty) return true;
+
+        for (final type in mandatoryTypes) {
+          final doc = documents.cast<DocumentEntity?>().firstWhere(
+            (d) => d?.type == type,
+            orElse: () => null,
+          );
+          if (doc == null) return false;
+          if (doc.status == DocumentStatus.recusado ||
+              doc.status == DocumentStatus.expirado) {
+            return false;
+          }
+        }
+        return true;
+      },
+      orElse: () => false,
+    );
+  }
 }

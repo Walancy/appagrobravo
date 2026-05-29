@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class IncompleteProfileBanner extends StatelessWidget {
   const IncompleteProfileBanner({super.key});
@@ -38,7 +39,7 @@ class IncompleteProfileBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Complete seu cadastro',
+                      context.l10n.incompleteProfileTitle,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.error,
@@ -46,7 +47,7 @@ class IncompleteProfileBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Faltam dados importantes na sua conta. Toque aqui para preencher.',
+                      context.l10n.incompleteProfileSubtitle,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),

@@ -274,7 +274,71 @@ class AppLocalizationsEs extends AppLocalizations {
       'Informa alergias, medicamentos o restricciones de salud importantes.';
 
   @override
+  String get onboardingGuideIncompleteTitle =>
+      '¡Casi listo! Completa los pasos';
+
+  @override
+  String get onboardingGuideIncompleteBody =>
+      'Para participar en la misión necesitamos algunos datos tuyos.';
+
+  @override
+  String get onboardingGuideMandatoryDone => 'pasos obligatorios completados';
+
+  @override
+  String get onboardingBadgeRequired => 'Obligatorio';
+
+  @override
+  String get onboardingBadgeOptional => 'Opcional';
+
+  @override
+  String get onboardingBadgeDone => 'Completado';
+
+  @override
+  String get onboardingGuideCompleteHint =>
+      'Completa los elementos obligatorios para continuar';
+
+  @override
   String get profileChangePhoto => 'Cambiar foto de perfil';
+
+  @override
+  String get groupInfoTitle => 'Detalles del grupo';
+
+  @override
+  String get groupInfoSubtitle => 'Ver más detalles';
+
+  @override
+  String groupInfoMission(String mission) {
+    return 'Misión: $mission';
+  }
+
+  @override
+  String groupInfoMembersCount(int count) {
+    return '$count miembros';
+  }
+
+  @override
+  String get groupInfoMediaSection => 'Medios, enlaces y docs';
+
+  @override
+  String get groupInfoYou => ' (tú)';
+
+  @override
+  String get groupInfoGuideLabel => 'Guía';
+
+  @override
+  String get groupInfoPendingSent => 'Pendiente';
+
+  @override
+  String get groupInfoRequested => 'Solicitado';
+
+  @override
+  String get groupInfoErrorPrefix => 'Error: ';
+
+  @override
+  String get groupMediaTitle => 'Medios y archivos';
+
+  @override
+  String get groupMediaSubtitle => 'Ver medios del grupo';
 
   @override
   String get chatCurrentMission => 'MISIÓN ACTUAL';
@@ -746,4 +810,306 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get itineraryOpenMaterialError => 'No se pudo abrir el material';
+
+  @override
+  String get incompleteProfileTitle => 'Completa tu registro';
+
+  @override
+  String get incompleteProfileSubtitle =>
+      'Faltan datos importantes en tu cuenta. Toca aquí para completar.';
+
+  @override
+  String get notificationsConnectionRequests => 'Solicitudes de conexión';
+
+  @override
+  String notificationsAndOthers(int count) {
+    return 'y otras $count personas';
+  }
+
+  @override
+  String get medicalTitle => 'Condiciones médicas';
+
+  @override
+  String get medicalDescription =>
+      'Añade información importante para tu viaje, como condiciones médicas, uso continuo de medicamentos, alergias, restricciones alimentarias, limitaciones de movilidad o fobias.\n\nSi es necesario, lleva medicación extra y una receta médica durante el viaje.';
+
+  @override
+  String get medicalAddInfo => 'Añadir información';
+
+  @override
+  String get medicalSelectCategory => 'Selecciona una categoría';
+
+  @override
+  String get medicalAddDescription => 'Añade la descripción';
+
+  @override
+  String medicalCategory(String category) {
+    return 'Categoría: $category';
+  }
+
+  @override
+  String get medicalDescriptionHint => 'Escribe la descripción...';
+
+  @override
+  String get medicalAddButton => 'Añadir';
+
+  @override
+  String get medicalBackToCategories => 'Volver a categorías';
+
+  @override
+  String get medicalAutoSave => 'Tu información se guarda automáticamente.';
+
+  @override
+  String get medicalCategoryMedical => 'Condición médica';
+
+  @override
+  String get medicalCategoryMedication => 'Uso de medicamento';
+
+  @override
+  String get medicalCategoryAllergy => 'Alergia';
+
+  @override
+  String get medicalCategoryDiet => 'Restricción alimentaria';
+
+  @override
+  String get medicalCategoryMobility => 'Movilidad';
+
+  @override
+  String get medicalCategoryPhobia => 'Fobia';
+
+  @override
+  String get medicalCategoryOther => 'Otro';
+
+  @override
+  String get notifPrefTitle => 'Notificaciones';
+
+  @override
+  String get notifPrefGeneral => 'General';
+
+  @override
+  String get notifPrefAlertTypes => 'Tipos de Alerta';
+
+  @override
+  String get notifPrefPush => 'Notificaciones Push';
+
+  @override
+  String get notifPrefPushSub => 'Recibe alertas en tiempo real en tu teléfono';
+
+  @override
+  String get notifPrefEmail => 'Correos electrónicos';
+
+  @override
+  String get notifPrefEmailSub => 'Informativos y resúmenes de la misión';
+
+  @override
+  String get notifPrefDocuments => 'Documentación';
+
+  @override
+  String get notifPrefDocumentsSub =>
+      'Alertas de pendientes y aprobaciones de documentos';
+
+  @override
+  String get notifPrefMission => 'Actualizaciones de Misión';
+
+  @override
+  String get notifPrefMissionSub =>
+      'Cambios en el itinerario y avisos del guía';
+
+  @override
+  String get notifPrefConnections => 'Nuevas Conexiones';
+
+  @override
+  String get notifPrefConnectionsSub =>
+      'Solicitudes de seguidores y nuevos mensajes';
+
+  @override
+  String get notifPrefAutoSave =>
+      'Tus preferencias se guardan automáticamente.';
+
+  @override
+  String get privacyTitle => 'Política de Privacidad';
+
+  @override
+  String get privacyHeading =>
+      'AgroBravo Enterprises - Compromiso con tu Privacidad';
+
+  @override
+  String get privacyIntro =>
+      'AgroBravo Enterprises, con sede en Ames, Iowa (EE.UU.) y sucursal en Brasil, valora la confianza que depositas en nosotros. Esta política describe cómo tratamos tu información personal.';
+
+  @override
+  String get privacyS1Title => '1. Recopilación de Información';
+
+  @override
+  String get privacyS1Body =>
+      'Recopilamos información cuando utilizas nuestros servicios, completas formularios o participas en nuestras misiones. Esto incluye nombre completo, correo electrónico, teléfono, nombre de empresa, información de pago y detalles necesarios para la logística de viajes (como pasaporte y visados).';
+
+  @override
+  String get privacyS2Title => '2. Uso de los Datos';
+
+  @override
+  String get privacyS2Body =>
+      'Utilizamos tus datos para:\n• Procesar y gestionar misiones técnicas y viajes.\n• Enviar actualizaciones sobre el mercado y nuevas oportunidades de negocio.\n• Brindar soporte personalizado durante eventos.\n• Cumplir con obligaciones legales y regulatorias.';
+
+  @override
+  String get privacyS3Title => '3. Compartición y Protección';
+
+  @override
+  String get privacyS3Body =>
+      'No compartimos información con terceros, excepto cuando es necesario para la prestación de servicios (socios logísticos, hoteles, organismos gubernamentales) o por obligación legal. Adoptamos prácticas de cifrado y medidas de seguridad para proteger tu privacidad.';
+
+  @override
+  String get privacyS4Title => '4. Aplicación Móvil';
+
+  @override
+  String get privacyS4Body =>
+      'Nuestra aplicación puede recopilar fotos y videos proporcionados por ti para funcionalidad social y registro de misiones. Estos datos no se comparten con fines comerciales externos y puedes solicitar la eliminación de tu cuenta y datos en cualquier momento.';
+
+  @override
+  String get privacyS5Title => '5. Tus Derechos';
+
+  @override
+  String get privacyS5Body =>
+      'Tienes derecho a acceder, rectificar o solicitar la eliminación de tus datos personales. Para ejercer estos derechos, contáctanos a través de los canales de soporte en la aplicación.';
+
+  @override
+  String get privacyLastUpdated => 'Última actualización: 22 de abril de 2025';
+
+  @override
+  String get aboutTitle => 'Sobre nosotros';
+
+  @override
+  String get aboutTagline => 'Conexiones que transforman el agro.';
+
+  @override
+  String get aboutBody1 =>
+      'AgroBravo Enterprises es una plataforma de conexiones estratégicas en el agronegocio global. Con más de 12 años de historia y presencia en 5 continentes, conectamos el agronegocio entre Brasil, EE.UU., Asia, América Latina y Europa.';
+
+  @override
+  String get aboutBody2 =>
+      'Nuestra visión es construir puentes estratégicos para impulsar el agronegocio más allá de las fronteras, proporcionando acceso exclusivo a las tecnologías más avanzadas y networking de alto nivel.';
+
+  @override
+  String get aboutValue1Title => 'Conexión Global';
+
+  @override
+  String get aboutValue1Sub =>
+      'Presencia estratégica en Asia, Europa, EE.UU. y América Latina.';
+
+  @override
+  String get aboutValue2Title => 'Experiencia Técnica';
+
+  @override
+  String get aboutValue2Sub =>
+      'Conocimiento táctico e inteligencia de mercado aplicada al campo.';
+
+  @override
+  String get aboutValue3Title => 'Networking de Alto Nivel';
+
+  @override
+  String get aboutValue3Sub =>
+      'Ecosistema completo de facilitación de negocios internacionales.';
+
+  @override
+  String get aboutAppName => 'AgroBravo Mobile App';
+
+  @override
+  String get aboutVersion => 'Versión 1.0.0 (Build 2026)';
+
+  @override
+  String get aboutCopyright =>
+      '© 2026 AgroBravo. Todos los derechos reservados.';
+
+  @override
+  String get pendingDocsBannerTitle => 'Documentos pendientes';
+
+  @override
+  String get pendingDocsBannerSubtitle =>
+      'Tienes documentos requeridos que aún no han sido enviados o aprobados. Toca aquí para enviarlos.';
+
+  @override
+  String get socialProfileTitle => 'Perfil Social';
+
+  @override
+  String get socialProfileMyMissions => 'Mis Misiones';
+
+  @override
+  String get socialProfileNoMissions => 'No se encontraron misiones';
+
+  @override
+  String get socialProfileChangeCover => 'Cambiar portada';
+
+  @override
+  String get profileStatsConnections => 'conexiones';
+
+  @override
+  String get profileStatsPosts => 'publicaciones';
+
+  @override
+  String get profileStatsMissions => 'misiones';
+
+  @override
+  String get profileActionEditProfile => 'Editar perfil';
+
+  @override
+  String get profileActionCancel => 'Cancelar';
+
+  @override
+  String get profileActionPublish => 'Publicar';
+
+  @override
+  String get profileActionConnect => 'Conectar';
+
+  @override
+  String get profileActionRequested => 'Solicitado';
+
+  @override
+  String get profileActionAccept => 'Aceptar';
+
+  @override
+  String get profileActionReject => 'Rechazar';
+
+  @override
+  String get profileActionDisconnect => 'Desconectar';
+
+  @override
+  String get userFeedTitle => 'Publicaciones';
+
+  @override
+  String get userFeedEmpty => 'Sin publicaciones';
+
+  @override
+  String get userFeedEmptyDescription =>
+      'Este usuario aún no ha hecho ninguna publicación en su perfil.';
+
+  @override
+  String get connectionsTitle => 'Conexiones';
+
+  @override
+  String get connectionsSearch => 'Buscar';
+
+  @override
+  String connectionsCount(int count) {
+    return '$count conexiones';
+  }
+
+  @override
+  String connectionRequestsCount(int count) {
+    return '$count solicitudes de conexión';
+  }
+
+  @override
+  String get connectionsNoneFound => 'No se encontraron conexiones.';
+
+  @override
+  String get connectionsNoRequests => 'No hay solicitudes pendientes.';
+
+  @override
+  String get connectionsConfirm => 'Confirmar';
+
+  @override
+  String get connectionsRemove => 'Eliminar';
+
+  @override
+  String get connectionsConnect => 'Conectarse';
 }

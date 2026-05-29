@@ -93,8 +93,38 @@
   "onboardingGuideDocumentsSub": "Sube pasaporte, visado y demás documentos exigidos para el viaje.",
   "onboardingGuideMedicalTitle": "Condiciones médicas",
   "onboardingGuideMedicalSub": "Informa alergias, medicamentos o restricciones de salud importantes.",
+  "onboardingGuideIncompleteTitle": "¡Casi listo! Completa los pasos",
+  "onboardingGuideIncompleteBody": "Para participar en la misión necesitamos algunos datos tuyos.",
+  "onboardingGuideMandatoryDone": "pasos obligatorios completados",
+  "onboardingBadgeRequired": "Obligatorio",
+  "onboardingBadgeOptional": "Opcional",
+  "onboardingBadgeDone": "Completado",
+  "onboardingGuideCompleteHint": "Completa los elementos obligatorios para continuar",
 
   "profileChangePhoto": "Cambiar foto de perfil",
+
+  "groupInfoTitle": "Detalles del grupo",
+  "groupInfoSubtitle": "Ver más detalles",
+  "groupInfoMission": "Misión: {mission}",
+  "@groupInfoMission": {
+    "placeholders": {
+      "mission": { "type": "String" }
+    }
+  },
+  "groupInfoMembersCount": "{count} miembros",
+  "@groupInfoMembersCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "groupInfoMediaSection": "Medios, enlaces y docs",
+  "groupInfoYou": " (tú)",
+  "groupInfoGuideLabel": "Guía",
+  "groupInfoPendingSent": "Pendiente",
+  "groupInfoRequested": "Solicitado",
+  "groupInfoErrorPrefix": "Error: ",
+  "groupMediaTitle": "Medios y archivos",
+  "groupMediaSubtitle": "Ver medios del grupo",
 
   "chatCurrentMission": "MISIÓN ACTUAL",
   "chatGuides": "GUÍAS",
@@ -321,5 +351,128 @@
   "itineraryStarted": "iniciada",
   "itineraryEnded": "finalizada",
   "itineraryNoMaterials": "Ningún material disponible",
-  "itineraryOpenMaterialError": "No se pudo abrir el material"
+  "itineraryOpenMaterialError": "No se pudo abrir el material",
+
+  "incompleteProfileTitle": "Completa tu registro",
+  "incompleteProfileSubtitle": "Faltan datos importantes en tu cuenta. Toca aquí para completar.",
+
+  "notificationsConnectionRequests": "Solicitudes de conexión",
+  "notificationsAndOthers": "y otras {count} personas",
+  "@notificationsAndOthers": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "medicalTitle": "Condiciones médicas",
+  "medicalDescription": "Añade información importante para tu viaje, como condiciones médicas, uso continuo de medicamentos, alergias, restricciones alimentarias, limitaciones de movilidad o fobias.\n\nSi es necesario, lleva medicación extra y una receta médica durante el viaje.",
+  "medicalAddInfo": "Añadir información",
+  "medicalSelectCategory": "Selecciona una categoría",
+  "medicalAddDescription": "Añade la descripción",
+  "medicalCategory": "Categoría: {category}",
+  "@medicalCategory": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "medicalDescriptionHint": "Escribe la descripción...",
+  "medicalAddButton": "Añadir",
+  "medicalBackToCategories": "Volver a categorías",
+  "medicalAutoSave": "Tu información se guarda automáticamente.",
+  "medicalCategoryMedical": "Condición médica",
+  "medicalCategoryMedication": "Uso de medicamento",
+  "medicalCategoryAllergy": "Alergia",
+  "medicalCategoryDiet": "Restricción alimentaria",
+  "medicalCategoryMobility": "Movilidad",
+  "medicalCategoryPhobia": "Fobia",
+  "medicalCategoryOther": "Otro",
+
+  "notifPrefTitle": "Notificaciones",
+  "notifPrefGeneral": "General",
+  "notifPrefAlertTypes": "Tipos de Alerta",
+  "notifPrefPush": "Notificaciones Push",
+  "notifPrefPushSub": "Recibe alertas en tiempo real en tu teléfono",
+  "notifPrefEmail": "Correos electrónicos",
+  "notifPrefEmailSub": "Informativos y resúmenes de la misión",
+  "notifPrefDocuments": "Documentación",
+  "notifPrefDocumentsSub": "Alertas de pendientes y aprobaciones de documentos",
+  "notifPrefMission": "Actualizaciones de Misión",
+  "notifPrefMissionSub": "Cambios en el itinerario y avisos del guía",
+  "notifPrefConnections": "Nuevas Conexiones",
+  "notifPrefConnectionsSub": "Solicitudes de seguidores y nuevos mensajes",
+  "notifPrefAutoSave": "Tus preferencias se guardan automáticamente.",
+
+  "privacyTitle": "Política de Privacidad",
+  "privacyHeading": "AgroBravo Enterprises - Compromiso con tu Privacidad",
+  "privacyIntro": "AgroBravo Enterprises, con sede en Ames, Iowa (EE.UU.) y sucursal en Brasil, valora la confianza que depositas en nosotros. Esta política describe cómo tratamos tu información personal.",
+  "privacyS1Title": "1. Recopilación de Información",
+  "privacyS1Body": "Recopilamos información cuando utilizas nuestros servicios, completas formularios o participas en nuestras misiones. Esto incluye nombre completo, correo electrónico, teléfono, nombre de empresa, información de pago y detalles necesarios para la logística de viajes (como pasaporte y visados).",
+  "privacyS2Title": "2. Uso de los Datos",
+  "privacyS2Body": "Utilizamos tus datos para:\n• Procesar y gestionar misiones técnicas y viajes.\n• Enviar actualizaciones sobre el mercado y nuevas oportunidades de negocio.\n• Brindar soporte personalizado durante eventos.\n• Cumplir con obligaciones legales y regulatorias.",
+  "privacyS3Title": "3. Compartición y Protección",
+  "privacyS3Body": "No compartimos información con terceros, excepto cuando es necesario para la prestación de servicios (socios logísticos, hoteles, organismos gubernamentales) o por obligación legal. Adoptamos prácticas de cifrado y medidas de seguridad para proteger tu privacidad.",
+  "privacyS4Title": "4. Aplicación Móvil",
+  "privacyS4Body": "Nuestra aplicación puede recopilar fotos y videos proporcionados por ti para funcionalidad social y registro de misiones. Estos datos no se comparten con fines comerciales externos y puedes solicitar la eliminación de tu cuenta y datos en cualquier momento.",
+  "privacyS5Title": "5. Tus Derechos",
+  "privacyS5Body": "Tienes derecho a acceder, rectificar o solicitar la eliminación de tus datos personales. Para ejercer estos derechos, contáctanos a través de los canales de soporte en la aplicación.",
+  "privacyLastUpdated": "Última actualización: 22 de abril de 2025",
+
+  "aboutTitle": "Sobre nosotros",
+  "aboutTagline": "Conexiones que transforman el agro.",
+  "aboutBody1": "AgroBravo Enterprises es una plataforma de conexiones estratégicas en el agronegocio global. Con más de 12 años de historia y presencia en 5 continentes, conectamos el agronegocio entre Brasil, EE.UU., Asia, América Latina y Europa.",
+  "aboutBody2": "Nuestra visión es construir puentes estratégicos para impulsar el agronegocio más allá de las fronteras, proporcionando acceso exclusivo a las tecnologías más avanzadas y networking de alto nivel.",
+  "aboutValue1Title": "Conexión Global",
+  "aboutValue1Sub": "Presencia estratégica en Asia, Europa, EE.UU. y América Latina.",
+  "aboutValue2Title": "Experiencia Técnica",
+  "aboutValue2Sub": "Conocimiento táctico e inteligencia de mercado aplicada al campo.",
+  "aboutValue3Title": "Networking de Alto Nivel",
+  "aboutValue3Sub": "Ecosistema completo de facilitación de negocios internacionales.",
+  "aboutAppName": "AgroBravo Mobile App",
+  "aboutVersion": "Versión 1.0.0 (Build 2026)",
+  "aboutCopyright": "© 2026 AgroBravo. Todos los derechos reservados.",
+
+  "pendingDocsBannerTitle": "Documentos pendientes",
+  "pendingDocsBannerSubtitle": "Tienes documentos requeridos que aún no han sido enviados o aprobados. Toca aquí para enviarlos.",
+
+  "socialProfileTitle": "Perfil Social",
+  "socialProfileMyMissions": "Mis Misiones",
+  "socialProfileNoMissions": "No se encontraron misiones",
+  "socialProfileChangeCover": "Cambiar portada",
+
+  "profileStatsConnections": "conexiones",
+  "profileStatsPosts": "publicaciones",
+  "profileStatsMissions": "misiones",
+
+  "profileActionEditProfile": "Editar perfil",
+  "profileActionCancel": "Cancelar",
+  "profileActionPublish": "Publicar",
+  "profileActionConnect": "Conectar",
+  "profileActionRequested": "Solicitado",
+  "profileActionAccept": "Aceptar",
+  "profileActionReject": "Rechazar",
+  "profileActionDisconnect": "Desconectar",
+
+  "userFeedTitle": "Publicaciones",
+  "userFeedEmpty": "Sin publicaciones",
+  "userFeedEmptyDescription": "Este usuario aún no ha hecho ninguna publicación en su perfil.",
+
+  "connectionsTitle": "Conexiones",
+  "connectionsSearch": "Buscar",
+  "connectionsCount": "{count} conexiones",
+  "@connectionsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "connectionRequestsCount": "{count} solicitudes de conexión",
+  "@connectionRequestsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "connectionsNoneFound": "No se encontraron conexiones.",
+  "connectionsNoRequests": "No hay solicitudes pendientes.",
+  "connectionsConfirm": "Confirmar",
+  "connectionsRemove": "Eliminar",
+  "connectionsConnect": "Conectarse"
 }

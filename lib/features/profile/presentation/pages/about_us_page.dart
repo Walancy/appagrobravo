@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -12,7 +13,7 @@ class AboutUsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: const AppHeader(mode: HeaderMode.back, title: 'Sobre nós'),
+      appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.aboutTitle),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -22,7 +23,7 @@ class AboutUsPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               child: Text(
-                'Conexões que transformam o agro.',
+                context.l10n.aboutTagline,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.h2.copyWith(color: AppColors.primary),
               ),
@@ -46,13 +47,13 @@ class AboutUsPage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'A AgroBravo Enterprises é uma plataforma de conexões estratégicas no agronegócio global. Com mais de 12 anos de história e presença em 5 continentes, conectamos o agronegócio entre Brasil, EUA, Ásia, América Latina e Europa.',
+            context.l10n.aboutBody1,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(height: 1.6),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Nossa visão é construir pontes estratégicas para impulsionar o agronegócio além das fronteiras, proporcionando acesso exclusivo às tecnologias mais avançadas e networking de alto nível.',
+            context.l10n.aboutBody2,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(
@@ -75,22 +76,22 @@ class AboutUsPage extends StatelessWidget {
           _buildValueItem(
             context,
             Icons.public,
-            'Conexão Global',
-            'Presença estratégica na Ásia, Europa, EUA e América Latina.',
+            context.l10n.aboutValue1Title,
+            context.l10n.aboutValue1Sub,
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildValueItem(
             context,
             Icons.lightbulb_outline,
-            'Expertise Técnica',
-            'Conhecimento tático e inteligência de mercado aplicada ao campo.',
+            context.l10n.aboutValue2Title,
+            context.l10n.aboutValue2Sub,
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildValueItem(
             context,
             Icons.groups_outlined,
-            'Networking de Alto Nível',
-            'Ecossistema completo de facilitação de negócios internacionais.',
+            context.l10n.aboutValue3Title,
+            context.l10n.aboutValue3Sub,
           ),
         ],
       ),
@@ -138,12 +139,12 @@ class AboutUsPage extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'AgroBravo Mobile App',
+          context.l10n.aboutAppName,
           style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
-          'Versão 1.0.0 (Build 2026)',
+          context.l10n.aboutVersion,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(
               context,
@@ -152,7 +153,7 @@ class AboutUsPage extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
-          '© 2026 AgroBravo. Todos os direitos reservados.',
+          context.l10n.aboutCopyright,
           style: AppTextStyles.bodySmall.copyWith(
             color: Colors.grey[400],
             fontSize: 10,

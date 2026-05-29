@@ -12,6 +12,7 @@ import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/features/chat/presentation/pages/group_media_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:agrobravo/core/components/group_info_shimmer.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class GroupInfoPage extends StatelessWidget {
   final ChatEntity chat;
@@ -34,6 +35,9 @@ class _GroupInfoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Full header height = status bar + 60px content area (same as AppHeader)
+    final headerHeight = MediaQuery.of(context).padding.top + 60.0;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: BlocBuilder<GroupInfoCubit, GroupInfoState>(
@@ -45,7 +49,7 @@ class _GroupInfoView extends StatelessWidget {
                 loading: () => const GroupInfoShimmer(),
                 error: (msg) => Center(
                   child: Text(
-                    'Erro: $msg',
+                    '${context.l10n.groupInfoErrorPrefix}$msg',
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -56,8 +60,8 @@ class _GroupInfoView extends StatelessWidget {
                   return SingleChildScrollView(
                     child: Column(
                       children: [
-                        const HeaderSpacer(),
-                        const SizedBox(height: 20),
+                        // Spacer to push content below the full header height
+                        SizedBox(height: headerHeight + 20),
                         // Header Section
                         Container(
                           width: double.infinity,
@@ -102,7 +106,7 @@ class _GroupInfoView extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Missão: ${chat.subtitle}',
+                                context.l10n.groupInfoMission(chat.subtitle),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface
                                       .withValues(alpha: 0.6),
@@ -111,7 +115,7 @@ class _GroupInfoView extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '${members.length} membros',
+                                context.l10n.groupInfoMembersCount(members.length),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: Colors.grey,
                                 ),
@@ -154,7 +158,7 @@ class _GroupInfoView extends StatelessWidget {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Mídias, links e docs',
+                                        context.l10n.groupInfoMediaSection,
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: Theme.of(context)
                                               .colorScheme
@@ -200,8 +204,8 @@ class _GroupInfoView extends StatelessWidget {
                                           child: Container(
                                             width: 100,
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(
-                                                0.5,
+                                              color: Colors.black.withValues(
+                                                alpha: 0.5,
                                               ),
                                               borderRadius:
                                                   BorderRadius.circular(8),
@@ -280,7 +284,7 @@ class _GroupInfoView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${members.length} membros',
+                                context.l10n.groupInfoMembersCount(members.length),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface
                                       .withValues(alpha: 0.6),
@@ -329,7 +333,7 @@ class _GroupInfoView extends StatelessWidget {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            '${member.name}${member.isMe ? ' (você)' : ''}',
+                                            '${member.name}${member.isMe ? context.l10n.groupInfoYou : ''}',
                                             style: AppTextStyles.bodyMedium,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -344,7 +348,7 @@ class _GroupInfoView extends StatelessWidget {
                                             decoration: BoxDecoration(
                                               color: const Color(
                                                 0xFF00AA6C,
-                                              ).withOpacity(0.1),
+                                              ).withValues(alpha: 0.1),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                               border: Border.all(
@@ -353,7 +357,7 @@ class _GroupInfoView extends StatelessWidget {
                                               ),
                                             ),
                                             child: Text(
-                                              'Guia',
+                                              context.l10n.groupInfoGuideLabel,
                                               style: AppTextStyles.bodySmall
                                                   .copyWith(
                                                     fontSize: 10,
@@ -380,22 +384,11 @@ class _GroupInfoView extends StatelessWidget {
                                             member,
                                             chat.id,
                                           ),
-                                    onTap: () {
-                                      if (member.isGuide) {
-                                        final guide = GuideEntity(
-                                          id: member.id,
-                                          name: member.name,
-                                          role: member.role,
-                                          avatarUrl: member.avatarUrl,
-                                        );
-                                        context.push(
-                                          '/chat/individual',
-                                          extra: guide,
-                                        );
-                                      } else {
-                                        context.push('/profile/${member.id}');
-                                      }
-                                    },
+                                    onTap: member.isMe
+                                        ? null
+                                        : () => context.push(
+                                              '/profile/${member.id}',
+                                            ),
                                   );
                                 },
                               ),
@@ -414,8 +407,8 @@ class _GroupInfoView extends StatelessWidget {
                 right: 0,
                 child: AppHeader(
                   mode: HeaderMode.back,
-                  title: 'Detalhes do grupo',
-                  subtitle: 'Visualize mais detalhes',
+                  title: context.l10n.groupInfoTitle,
+                  subtitle: context.l10n.groupInfoSubtitle,
                 ),
               ),
             ],
@@ -444,14 +437,14 @@ class _GroupInfoView extends StatelessWidget {
         );
       case ConnectionStatus.pendingSent:
         return Text(
-          'Pendente',
+          context.l10n.groupInfoPendingSent,
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
         );
       case ConnectionStatus.pendingReceived:
         return Text(
-          'Solicitou',
+          context.l10n.groupInfoRequested,
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary),
         );
       case ConnectionStatus.none:
@@ -465,6 +458,5 @@ class _GroupInfoView extends StatelessWidget {
           },
         );
     }
-    return const SizedBox.shrink();
   }
 }

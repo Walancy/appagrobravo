@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/core/components/notification_prefs_shimmer.dart';
 
@@ -61,15 +62,15 @@ class _NotificationPreferencesPageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: const AppHeader(mode: HeaderMode.back, title: 'Notificações'),
+      appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.notifPrefTitle),
       body: _isLoading
           ? const NotificationPrefsShimmer()
           : ListView(
               children: [
-                _buildHeader('Geral'),
+                _buildHeader(context.l10n.notifPrefGeneral),
                 _buildSwitchTile(
-                  'Notificações Push',
-                  'Receba alertas em tempo real no seu celular',
+                  context.l10n.notifPrefPush,
+                  context.l10n.notifPrefPushSub,
                   _pushNotifications,
                   (v) {
                     setState(() => _pushNotifications = v);
@@ -77,8 +78,8 @@ class _NotificationPreferencesPageState
                   },
                 ),
                 _buildSwitchTile(
-                  'E-mails',
-                  'Informativos e resumos da missão',
+                  context.l10n.notifPrefEmail,
+                  context.l10n.notifPrefEmailSub,
                   _emailNotifications,
                   (v) {
                     setState(() => _emailNotifications = v);
@@ -86,10 +87,10 @@ class _NotificationPreferencesPageState
                   },
                 ),
                 const Divider(height: 1),
-                _buildHeader('Tipos de Alerta'),
+                _buildHeader(context.l10n.notifPrefAlertTypes),
                 _buildSwitchTile(
-                  'Documentação',
-                  'Alertas de pendências e aprovações de documentos',
+                  context.l10n.notifPrefDocuments,
+                  context.l10n.notifPrefDocumentsSub,
                   _documentAlerts,
                   (v) {
                     setState(() => _documentAlerts = v);
@@ -97,8 +98,8 @@ class _NotificationPreferencesPageState
                   },
                 ),
                 _buildSwitchTile(
-                  'Atualizações da Missão',
-                  'Mudanças no itinerário e avisos do guia',
+                  context.l10n.notifPrefMission,
+                  context.l10n.notifPrefMissionSub,
                   _missionUpdates,
                   (v) {
                     setState(() => _missionUpdates = v);
@@ -106,8 +107,8 @@ class _NotificationPreferencesPageState
                   },
                 ),
                 _buildSwitchTile(
-                  'Novas Conexões',
-                  'Solicitações de seguidores e novas mensagens',
+                  context.l10n.notifPrefConnections,
+                  context.l10n.notifPrefConnectionsSub,
                   _connections,
                   (v) {
                     setState(() => _connections = v);
@@ -118,7 +119,7 @@ class _NotificationPreferencesPageState
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Text(
-                    'Suas preferências são salvas automaticamente.',
+                    context.l10n.notifPrefAutoSave,
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(

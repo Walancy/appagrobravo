@@ -4,6 +4,7 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:agrobravo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
@@ -100,7 +101,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppHeader(mode: HeaderMode.back, title: 'Conexões'),
+      appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.connectionsTitle),
       body: _isLoading
           ? const ConnectionsShimmer()
           : Column(
@@ -122,7 +123,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                       controller: _searchController,
                       style: AppTextStyles.bodyMedium,
                       decoration: InputDecoration(
-                        hintText: 'Pesquisar',
+                        hintText: context.l10n.connectionsSearch,
                         prefixIcon: Icon(
                           Icons.search,
                           color: Theme.of(
@@ -156,8 +157,8 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                       fontWeight: FontWeight.w600,
                     ),
                     tabs: [
-                      Tab(text: '${_connections.length} conexões'),
-                      Tab(text: '${_requests.length} solicitações de conexão'),
+                      Tab(text: context.l10n.connectionsCount(_connections.length)),
+                      Tab(text: context.l10n.connectionRequestsCount(_requests.length)),
                     ],
                   )
                 else
@@ -166,7 +167,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '${_connections.length} conexões',
+                        context.l10n.connectionsCount(_connections.length),
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -181,14 +182,14 @@ class _ConnectionsPageState extends State<ConnectionsPage>
                     children: [
                       _buildList(
                         _filteredConnections,
-                        'Nenhuma conexão encontrada.',
+                        context.l10n.connectionsNoneFound,
                         _isMe,
                         false,
                       ),
                       if (_isMe)
                         _buildList(
                           _filteredRequests,
-                          'Nenhuma solicitação pendente.',
+                          context.l10n.connectionsNoRequests,
                           _isMe,
                           true,
                         ),
@@ -295,7 +296,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildActionButton(
-            label: 'Confirmar',
+            label: context.l10n.connectionsConfirm,
             onPressed: () async {
               await getIt<ProfileRepository>().acceptConnection(user.id);
               _loadData();
@@ -304,7 +305,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
           ),
           const SizedBox(width: 8),
           _buildActionButton(
-            label: 'Excluir',
+            label: context.l10n.connectionsRemove,
             onPressed: () async {
               await getIt<ProfileRepository>().rejectConnection(user.id);
               _loadData();
@@ -317,7 +318,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
 
     if (_isMe) {
       return _buildActionButton(
-        label: 'Remover',
+        label: context.l10n.connectionsRemove,
         onPressed: () async {
           await getIt<ProfileRepository>().removeConnection(user.id);
           _loadData();
@@ -330,7 +331,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
     switch (user.connectionStatus) {
       case ConnectionStatus.none:
         return _buildActionButton(
-          label: 'Conectar-se',
+          label: context.l10n.connectionsConnect,
           onPressed: () async {
             await getIt<ProfileRepository>().requestConnection(user.id);
             _loadData();
@@ -339,7 +340,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
         );
       case ConnectionStatus.pendingSent:
         return _buildActionButton(
-          label: 'Solicitado',
+          label: context.l10n.profileActionRequested,
           onPressed: () async {
             await getIt<ProfileRepository>().cancelConnection(user.id);
             _loadData();
@@ -348,7 +349,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
         );
       case ConnectionStatus.pendingReceived:
         return _buildActionButton(
-          label: 'Aceitar',
+          label: context.l10n.profileActionAccept,
           onPressed: () async {
             await getIt<ProfileRepository>().acceptConnection(user.id);
             _loadData();
@@ -357,7 +358,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>
         );
       case ConnectionStatus.connected:
         return _buildActionButton(
-          label: 'Remover',
+          label: context.l10n.connectionsRemove,
           onPressed: () async {
             await getIt<ProfileRepository>().removeConnection(user.id);
             _loadData();

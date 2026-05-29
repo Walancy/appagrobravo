@@ -389,7 +389,7 @@ class _FollowRequestsSummary extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Solicitações de conexão',
+                        context.l10n.notificationsConnectionRequests,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,
@@ -399,7 +399,7 @@ class _FollowRequestsSummary extends StatelessWidget {
                       Text(
                         followRequests.length == 1
                             ? followRequests[0].userName
-                            : '${followRequests[0].userName} e outras ${followRequests.length - 1} pessoas',
+                            : '${followRequests[0].userName} ${context.l10n.notificationsAndOthers(followRequests.length - 1)}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context)
                               .colorScheme
@@ -472,12 +472,12 @@ class _NotificationItemState extends State<_NotificationItem> {
   String _formatTime(BuildContext context, DateTime date) {
     final diff = DateTime.now().difference(date);
     if (diff.inSeconds < 60) return context.l10n.notificationsJustNow;
-    if (diff.inMinutes < 60) return '${diff.inMinutes}min atrás';
-    if (diff.inHours < 24) return '${diff.inHours}h atrás';
+    if (diff.inMinutes < 60) return context.l10n.notificationsMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return context.l10n.notificationsHoursAgo(diff.inHours);
     if (diff.inDays == 1) return context.l10n.notificationsYesterdayTime;
-    if (diff.inDays < 7) return '${diff.inDays} dias atrás';
+    if (diff.inDays < 7) return context.l10n.notificationsDaysAgo(diff.inDays);
     final weeks = (diff.inDays / 7).floor();
-    return '$weeks semana${weeks > 1 ? 's' : ''} atrás';
+    return context.l10n.notificationsWeeksAgo(weeks, weeks > 1 ? 's' : '');
   }
 
   /// Verifica se o texto transborda além de [_collapsedMaxLines] linhas

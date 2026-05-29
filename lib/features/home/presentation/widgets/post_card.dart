@@ -126,6 +126,8 @@ class _PostCardState extends State<PostCard>
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         if (widget.post.missionName != null)
                           Text(
@@ -136,6 +138,8 @@ class _PostCardState extends State<PostCard>
                               ),
                               fontSize: 11,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                       ],
                     ),

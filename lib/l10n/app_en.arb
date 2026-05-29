@@ -93,8 +93,38 @@
   "onboardingGuideDocumentsSub": "Upload passport, visa and other documents required for the trip.",
   "onboardingGuideMedicalTitle": "Medical Conditions",
   "onboardingGuideMedicalSub": "Inform allergies, medications or important health restrictions.",
+  "onboardingGuideIncompleteTitle": "Almost there! Complete the steps",
+  "onboardingGuideIncompleteBody": "To join the mission, we need some information from you.",
+  "onboardingGuideMandatoryDone": "mandatory steps completed",
+  "onboardingBadgeRequired": "Required",
+  "onboardingBadgeOptional": "Optional",
+  "onboardingBadgeDone": "Done",
+  "onboardingGuideCompleteHint": "Complete the required items to continue",
 
   "profileChangePhoto": "Change profile photo",
+
+  "groupInfoTitle": "Group details",
+  "groupInfoSubtitle": "View more details",
+  "groupInfoMission": "Mission: {mission}",
+  "@groupInfoMission": {
+    "placeholders": {
+      "mission": { "type": "String" }
+    }
+  },
+  "groupInfoMembersCount": "{count} members",
+  "@groupInfoMembersCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "groupInfoMediaSection": "Media, links and docs",
+  "groupInfoYou": " (you)",
+  "groupInfoGuideLabel": "Guide",
+  "groupInfoPendingSent": "Pending",
+  "groupInfoRequested": "Requested",
+  "groupInfoErrorPrefix": "Error: ",
+  "groupMediaTitle": "Media and files",
+  "groupMediaSubtitle": "View group media",
 
   "chatCurrentMission": "CURRENT MISSION",
   "chatGuides": "GUIDES",
@@ -321,5 +351,128 @@
   "itineraryStarted": "started",
   "itineraryEnded": "ended",
   "itineraryNoMaterials": "No materials available",
-  "itineraryOpenMaterialError": "Could not open the material"
+  "itineraryOpenMaterialError": "Could not open the material",
+
+  "incompleteProfileTitle": "Complete your registration",
+  "incompleteProfileSubtitle": "Important data is missing from your account. Tap here to fill it in.",
+
+  "notificationsConnectionRequests": "Connection requests",
+  "notificationsAndOthers": "and {count} others",
+  "@notificationsAndOthers": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "medicalTitle": "Medical conditions",
+  "medicalDescription": "Add important information for your trip, such as medical conditions, ongoing medication use, allergies, dietary restrictions, mobility limitations or phobias.\n\nIf necessary, bring extra medication and a medical prescription during the trip.",
+  "medicalAddInfo": "Add information",
+  "medicalSelectCategory": "Select a category",
+  "medicalAddDescription": "Add the description",
+  "medicalCategory": "Category: {category}",
+  "@medicalCategory": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "medicalDescriptionHint": "Write the description...",
+  "medicalAddButton": "Add",
+  "medicalBackToCategories": "Back to categories",
+  "medicalAutoSave": "Your information is saved automatically.",
+  "medicalCategoryMedical": "Medical condition",
+  "medicalCategoryMedication": "Medication use",
+  "medicalCategoryAllergy": "Allergy",
+  "medicalCategoryDiet": "Dietary restriction",
+  "medicalCategoryMobility": "Mobility",
+  "medicalCategoryPhobia": "Phobia",
+  "medicalCategoryOther": "Other",
+
+  "notifPrefTitle": "Notifications",
+  "notifPrefGeneral": "General",
+  "notifPrefAlertTypes": "Alert Types",
+  "notifPrefPush": "Push Notifications",
+  "notifPrefPushSub": "Receive real-time alerts on your phone",
+  "notifPrefEmail": "Emails",
+  "notifPrefEmailSub": "Mission newsletters and summaries",
+  "notifPrefDocuments": "Documentation",
+  "notifPrefDocumentsSub": "Alerts for document pending items and approvals",
+  "notifPrefMission": "Mission Updates",
+  "notifPrefMissionSub": "Itinerary changes and guide announcements",
+  "notifPrefConnections": "New Connections",
+  "notifPrefConnectionsSub": "Follower requests and new messages",
+  "notifPrefAutoSave": "Your preferences are saved automatically.",
+
+  "privacyTitle": "Privacy Policy",
+  "privacyHeading": "AgroBravo Enterprises - Commitment to Your Privacy",
+  "privacyIntro": "AgroBravo Enterprises, headquartered in Ames, Iowa (USA) with a branch in Brazil, values the trust you place in us. This policy describes how we handle your personal information.",
+  "privacyS1Title": "1. Information Collection",
+  "privacyS1Body": "We collect information when you use our services, fill out forms or participate in our missions. This includes full name, email, phone, company name, payment information and details required for travel logistics (such as passport and visas).",
+  "privacyS2Title": "2. Data Use",
+  "privacyS2Body": "We use your data to:\n• Process and manage technical missions and trips.\n• Send updates about the market and new business opportunities.\n• Provide personalized support during events.\n• Comply with legal and regulatory obligations.",
+  "privacyS3Title": "3. Sharing and Protection",
+  "privacyS3Body": "We do not share information with third parties, except when necessary to provide services (logistics partners, hotels, government agencies) or by legal obligation. We adopt encryption practices and security measures to protect your privacy.",
+  "privacyS4Title": "4. Mobile Application",
+  "privacyS4Body": "Our app may collect photos and videos provided by you for social functionality and mission recording. This data is not shared for external commercial purposes and you can request deletion of your account and data at any time.",
+  "privacyS5Title": "5. Your Rights",
+  "privacyS5Body": "You have the right to access, rectify or request deletion of your personal data. To exercise these rights, contact us through the support channels in the application.",
+  "privacyLastUpdated": "Last updated: April 22, 2025",
+
+  "aboutTitle": "About us",
+  "aboutTagline": "Connections that transform agribusiness.",
+  "aboutBody1": "AgroBravo Enterprises is a strategic connections platform in global agribusiness. With over 12 years of history and presence on 5 continents, we connect agribusiness between Brazil, USA, Asia, Latin America and Europe.",
+  "aboutBody2": "Our vision is to build strategic bridges to boost agribusiness beyond borders, providing exclusive access to the most advanced technologies and high-level networking.",
+  "aboutValue1Title": "Global Connection",
+  "aboutValue1Sub": "Strategic presence in Asia, Europe, USA and Latin America.",
+  "aboutValue2Title": "Technical Expertise",
+  "aboutValue2Sub": "Tactical knowledge and market intelligence applied to the field.",
+  "aboutValue3Title": "High-Level Networking",
+  "aboutValue3Sub": "Complete ecosystem for facilitating international business.",
+  "aboutAppName": "AgroBravo Mobile App",
+  "aboutVersion": "Version 1.0.0 (Build 2026)",
+  "aboutCopyright": "© 2026 AgroBravo. All rights reserved.",
+
+  "pendingDocsBannerTitle": "Pending documents",
+  "pendingDocsBannerSubtitle": "You have required documents that have not yet been submitted or approved. Tap here to send them.",
+
+  "socialProfileTitle": "Social Profile",
+  "socialProfileMyMissions": "My Missions",
+  "socialProfileNoMissions": "No missions found",
+  "socialProfileChangeCover": "Change cover",
+
+  "profileStatsConnections": "connections",
+  "profileStatsPosts": "posts",
+  "profileStatsMissions": "missions",
+
+  "profileActionEditProfile": "Edit profile",
+  "profileActionCancel": "Cancel",
+  "profileActionPublish": "Publish",
+  "profileActionConnect": "Connect",
+  "profileActionRequested": "Requested",
+  "profileActionAccept": "Accept",
+  "profileActionReject": "Decline",
+  "profileActionDisconnect": "Disconnect",
+
+  "userFeedTitle": "Posts",
+  "userFeedEmpty": "No posts",
+  "userFeedEmptyDescription": "This user has not made any posts on their profile yet.",
+
+  "connectionsTitle": "Connections",
+  "connectionsSearch": "Search",
+  "connectionsCount": "{count} connections",
+  "@connectionsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "connectionRequestsCount": "{count} connection requests",
+  "@connectionRequestsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "connectionsNoneFound": "No connections found.",
+  "connectionsNoRequests": "No pending requests.",
+  "connectionsConfirm": "Confirm",
+  "connectionsRemove": "Remove",
+  "connectionsConnect": "Connect"
 }

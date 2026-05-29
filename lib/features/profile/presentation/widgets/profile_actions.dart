@@ -3,6 +3,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileActions extends StatelessWidget {
@@ -42,7 +43,7 @@ class ProfileActions extends StatelessWidget {
           if (isMe) ...[
             Expanded(
               child: _ActionButton(
-                label: isEditing ? 'Cancelar' : 'Editar perfil',
+                label: isEditing ? context.l10n.profileActionCancel : context.l10n.profileActionEditProfile,
                 icon: isEditing ? Icons.close_rounded : Icons.edit_outlined,
                 style: isEditing ? _ActionStyle.outlined : _ActionStyle.filled,
                 onPressed: onEditProfile,
@@ -52,7 +53,7 @@ class ProfileActions extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _ActionButton(
-                  label: 'Publicar',
+                  label: context.l10n.profileActionPublish,
                   icon: Icons.add_circle_outline_rounded,
                   style: _ActionStyle.outlined,
                   onPressed: onPublish,
@@ -71,7 +72,7 @@ class ProfileActions extends StatelessWidget {
     switch (connectionStatus) {
       case ConnectionStatus.none:
         return _ActionButton(
-          label: 'Conectar',
+          label: context.l10n.profileActionConnect,
           icon: Icons.person_add_outlined,
           style: _ActionStyle.filled,
           onPressed: onConnect ?? () {},
@@ -79,7 +80,7 @@ class ProfileActions extends StatelessWidget {
 
       case ConnectionStatus.pendingSent:
         return _ActionButton(
-          label: 'Solicitado',
+          label: context.l10n.profileActionRequested,
           icon: Icons.hourglass_empty_rounded,
           style: _ActionStyle.muted,
           onPressed: onCancelRequest ?? () {},
@@ -90,7 +91,7 @@ class ProfileActions extends StatelessWidget {
           children: [
             Expanded(
               child: _ActionButton(
-                label: 'Aceitar',
+                label: context.l10n.profileActionAccept,
                 icon: Icons.check_rounded,
                 style: _ActionStyle.filled,
                 onPressed: onAccept ?? () {},
@@ -99,7 +100,7 @@ class ProfileActions extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _ActionButton(
-                label: 'Recusar',
+                label: context.l10n.profileActionReject,
                 icon: Icons.close_rounded,
                 style: _ActionStyle.outlined,
                 onPressed: onReject ?? () {},
@@ -127,7 +128,7 @@ class ProfileActions extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _ActionButton(
-                  label: 'Desconectar',
+                  label: context.l10n.profileActionDisconnect,
                   icon: Icons.person_remove_outlined,
                   style: _ActionStyle.outlined,
                   onPressed: onDisconnect ?? () {},
@@ -137,7 +138,7 @@ class ProfileActions extends StatelessWidget {
           );
         }
         return _ActionButton(
-          label: 'Desconectar',
+          label: context.l10n.profileActionDisconnect,
           icon: Icons.person_remove_outlined,
           style: _ActionStyle.outlined,
           onPressed: onDisconnect ?? () {},

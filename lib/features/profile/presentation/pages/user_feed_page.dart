@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
-import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/di/injection.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/empty_state_widget.dart';
@@ -12,6 +11,7 @@ import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
 import 'package:agrobravo/features/home/presentation/cubit/feed_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class UserFeedPage extends StatefulWidget {
   final String userId;
@@ -78,7 +78,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
       create: (context) => getIt<FeedCubit>(),
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppHeader(mode: HeaderMode.back, title: 'Publicações'),
+        appBar: AppHeader(mode: HeaderMode.back, title: context.l10n.userFeedTitle),
         body: _isLoading
             ? const Padding(
                 padding: EdgeInsets.only(top: 130),
@@ -87,11 +87,11 @@ class _UserFeedPageState extends State<UserFeedPage> {
             : _error != null
             ? Center(child: Text(_error!))
             : _posts.isEmpty
-            ? const Center(
+            ? Center(
                 child: EmptyStateWidget(
                   icon: Icons.person_off_outlined,
-                  title: 'Nenhuma publicação',
-                  description: 'Este usuário ainda não fez nenhuma publicação em seu perfil.',
+                  title: context.l10n.userFeedEmpty,
+                  description: context.l10n.userFeedEmptyDescription,
                 ),
               )
             : ListView.builder(

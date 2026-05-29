@@ -1,3 +1,4 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
@@ -127,7 +128,10 @@ class _PhoneFieldState extends State<PhoneField> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_country.flag, style: const TextStyle(fontSize: 20)),
+                      CountryFlag.fromCountryCode(
+                        _country.code,
+                        theme: const ImageTheme(width: 28, height: 18, shape: RoundedRectangle(3)),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         _country.dialCode,
@@ -279,7 +283,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     c.name == widget.selected.name &&
                     c.dialCode == widget.selected.dialCode;
                 return ListTile(
-                  leading: Text(c.flag, style: const TextStyle(fontSize: 24)),
+                  leading: CountryFlag.fromCountryCode(
+                    c.code,
+                    theme: const ImageTheme(width: 36, height: 24, shape: RoundedRectangle(3)),
+                  ),
                   title: Text(
                     c.name,
                     style: TextStyle(

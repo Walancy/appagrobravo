@@ -3,17 +3,19 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: const AppHeader(
+      appBar: AppHeader(
         mode: HeaderMode.back,
-        title: 'Política de Privacidade',
+        title: l.privacyTitle,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -21,14 +23,14 @@ class PrivacyPolicyPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'AgroBravo Enterprises - Compromisso com sua Privacidade',
+              l.privacyHeading,
               style: AppTextStyles.h3.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'A AgroBravo Enterprises, com sede em Ames, Iowa (EUA) e filial no Brasil, valoriza a confiança que você deposita em nós. Esta política descreve como tratamos suas informações pessoais.',
+              l.privacyIntro,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: Theme.of(
                   context,
@@ -37,40 +39,16 @@ class PrivacyPolicyPage extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            _buildSection(
-              context,
-              '1. Coleta de Informações',
-              'Coletamos informações quando você utiliza nossos serviços, preenche formulários ou participa de nossas missões. Isso inclui nome completo, e-mail, telefone, nome da empresa, informações de pagamento e detalhes necessários para logística de viagens (como passaporte e vistos).',
-            ),
-
-            _buildSection(
-              context,
-              '2. Uso dos Dados',
-              'Utilizamos seus dados para:\n• Processar e gerenciar missões técnicas e viagens.\n• Enviar atualizações sobre o mercado e novas oportunidades de negócios.\n• Prestar suporte personalizado durante eventos.\n• Cumprir obrigações legais e regulatórias.',
-            ),
-
-            _buildSection(
-              context,
-              '3. Compartilhamento e Proteção',
-              'Não compartilhamos informações com terceiros, exceto quando necessário para a prestação de serviços (parcerias logísticas, hotéis, órgãos governamentais) ou por obrigação legal. Adotamos práticas de criptografia e medidas de segurança para proteger sua privacidade.',
-            ),
-
-            _buildSection(
-              context,
-              '4. Aplicativo Móvel',
-              'Nosso aplicativo pode coletar fotos e vídeos fornecidos por você para funcionalidade social e registro de missões. Estes dados não são compartilhados com fins comerciais externos e você pode solicitar a eliminação de sua conta e dados a qualquer momento.',
-            ),
-
-            _buildSection(
-              context,
-              '5. Seus Direitos',
-              'Você tem o direito de acessar, retificar ou solicitar a exclusão de seus dados pessoais. Para exercer esses direitos, entre em contato conosco através dos canais de suporte no aplicativo.',
-            ),
+            _buildSection(context, l.privacyS1Title, l.privacyS1Body),
+            _buildSection(context, l.privacyS2Title, l.privacyS2Body),
+            _buildSection(context, l.privacyS3Title, l.privacyS3Body),
+            _buildSection(context, l.privacyS4Title, l.privacyS4Body),
+            _buildSection(context, l.privacyS5Title, l.privacyS5Body),
 
             const SizedBox(height: AppSpacing.xl),
             Center(
               child: Text(
-                'Última atualização: 22 de Abril de 2025',
+                l.privacyLastUpdated,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),

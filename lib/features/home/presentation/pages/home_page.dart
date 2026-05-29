@@ -652,6 +652,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 3),
             AnimatedContainer(

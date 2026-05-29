@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/components/app_header.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class GroupMediaPage extends StatelessWidget {
   final List<String> mediaUrls;
@@ -8,13 +9,16 @@ class GroupMediaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Full header height = status bar + 60px content area (same as AppHeader)
+    final headerHeight = MediaQuery.of(context).padding.top + 60.0;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
           CustomScrollView(
             slivers: [
-              const SliverToBoxAdapter(child: HeaderSpacer()),
+              SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
               SliverPadding(
                 padding: const EdgeInsets.all(2),
                 sliver: SliverGrid(
@@ -54,8 +58,8 @@ class GroupMediaPage extends StatelessWidget {
             right: 0,
             child: AppHeader(
               mode: HeaderMode.back,
-              title: 'Mídia e arquivos',
-              subtitle: 'Visualize as mídias do grupo',
+              title: context.l10n.groupMediaTitle,
+              subtitle: context.l10n.groupMediaSubtitle,
             ),
           ),
         ],
