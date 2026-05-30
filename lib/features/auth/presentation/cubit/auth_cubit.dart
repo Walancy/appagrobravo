@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:dartz/dartz.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
 import 'package:agrobravo/features/itinerary/presentation/cubit/itinerary_cubit.dart';
@@ -275,6 +276,21 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (_) {}
     await _authRepository.signOut();
     emit(const AuthState.unauthenticated());
+  }
+
+  Future<Either<Exception, void>> deleteAccount() async {
+    emit(const AuthState.loading());
+    final result = await _authRepository.deleteAccount();
+    return result.fold(
+      (error) {
+        emit(AuthState.error(error.toString().replaceAll('Exception: ', '')));
+        return Left(error);
+      },
+      (_) async {
+        await logout();
+        return const Right(null);
+      },
+    );
   }
 
   Future<void> _clearUserCache() async {

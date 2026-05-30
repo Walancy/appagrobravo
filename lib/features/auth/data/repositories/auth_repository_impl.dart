@@ -587,4 +587,15 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Stream<AuthChangeEvent> get onAuthStateChange =>
       _supabaseClient.auth.onAuthStateChange.map((data) => data.event);
+
+  @override
+  Future<Either<Exception, void>> deleteAccount() async {
+    try {
+      await _supabaseClient.rpc('delete_user_account');
+      return const Right(null);
+    } catch (e) {
+      log('Erro ao excluir conta: $e');
+      return Left(Exception('Erro ao excluir conta no servidor: $e'));
+    }
+  }
 }

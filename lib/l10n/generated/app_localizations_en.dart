@@ -572,6 +572,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDataSelectPlaceholder => 'Select';
 
   @override
+  String get accountDataDeleteAccount => 'Delete account';
+
+  @override
+  String get accountDataDeleteTitle => 'Delete Account';
+
+  @override
+  String get accountDataDeleteMessage =>
+      'Are you sure you want to permanently delete your account? This action is irreversible and all your data will be erased.';
+
+  @override
+  String get accountDataDeleteConfirm => 'Yes, delete';
+
+  @override
+  String get accountDataDeleteCancel => 'Cancel';
+
+  @override
+  String get accountDataDeleteSuccess =>
+      'Your account has been successfully deleted.';
+
+  @override
+  String get accountDataDeleteError =>
+      'Error deleting account. Please try again.';
+
+  @override
   String get itineraryErrorPrefix => 'Error: ';
 
   @override

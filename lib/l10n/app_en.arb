@@ -223,6 +223,13 @@
   "accountDataSuccessMessage": "Data updated successfully!",
   "accountDataRequiredFieldsError": "Please fill in all required fields.",
   "accountDataSelectPlaceholder": "Select",
+  "accountDataDeleteAccount": "Delete account",
+  "accountDataDeleteTitle": "Delete Account",
+  "accountDataDeleteMessage": "Are you sure you want to permanently delete your account? This action is irreversible and all your data will be erased.",
+  "accountDataDeleteConfirm": "Yes, delete",
+  "accountDataDeleteCancel": "Cancel",
+  "accountDataDeleteSuccess": "Your account has been successfully deleted.",
+  "accountDataDeleteError": "Error deleting account. Please try again.",
 
   "itineraryErrorPrefix": "Error: ",
   "itineraryCurrentMission": "Current Mission",

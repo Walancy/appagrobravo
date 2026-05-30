@@ -571,6 +571,29 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountDataSelectPlaceholder => 'Selecionar';
 
   @override
+  String get accountDataDeleteAccount => 'Excluir conta';
+
+  @override
+  String get accountDataDeleteTitle => 'Excluir Conta';
+
+  @override
+  String get accountDataDeleteMessage =>
+      'Tem certeza de que deseja excluir permanentemente sua conta? Esta ação é irreversível e todos os seus dados serão apagados.';
+
+  @override
+  String get accountDataDeleteConfirm => 'Sim, excluir';
+
+  @override
+  String get accountDataDeleteCancel => 'Cancelar';
+
+  @override
+  String get accountDataDeleteSuccess => 'Sua conta foi excluída com sucesso.';
+
+  @override
+  String get accountDataDeleteError =>
+      'Erro ao excluir conta. Tente novamente.';
+
+  @override
   String get itineraryErrorPrefix => 'Erro: ';
 
   @override

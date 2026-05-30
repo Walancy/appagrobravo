@@ -29,4 +29,5 @@ abstract class AuthRepository {
   Future<Either<Exception, void>> signInWithGoogle();
   Future<Either<Exception, void>> signInWithApple();
   Stream<AuthChangeEvent> get onAuthStateChange;
+  Future<Either<Exception, void>> deleteAccount();
 }

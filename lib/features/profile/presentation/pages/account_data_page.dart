@@ -17,6 +17,7 @@ import 'package:agrobravo/core/utils/phone_countries.dart';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:agrobravo/features/profile/presentation/cubit/profile_state.dart';
+import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:agrobravo/core/components/account_data_shimmer.dart';
 
@@ -932,6 +933,29 @@ class _AccountDataPageState extends State<AccountDataPage> {
                     ),
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          const Divider(),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: TextButton(
+              onPressed: () => _showDeleteAccountDialog(context),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.error,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                ),
+              ),
+              child: Text(
+                context.l10n.accountDataDeleteAccount,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
@@ -946,6 +970,89 @@ class _AccountDataPageState extends State<AccountDataPage> {
         color: AppColors.primary,
       ),
     );
+  }
+
+  Future<void> _showDeleteAccountDialog(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          context.l10n.accountDataDeleteTitle,
+          style: AppTextStyles.bodyLarge.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        content: Text(
+          context.l10n.accountDataDeleteMessage,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              context.l10n.accountDataDeleteCancel,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(
+              context.l10n.accountDataDeleteConfirm,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      // Exibe loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final authCubit = getIt<AuthCubit>();
+      final result = await authCubit.deleteAccount();
+
+      if (context.mounted) {
+        Navigator.pop(context); // Remove o loading
+        result.fold(
+          (error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.accountDataDeleteError),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          },
+          (_) {
+            // AuthCubit.deleteAccount() já fez logout e emitiu unauthenticated.
+            // O roteador do app redireciona para a tela de login automaticamente.
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.accountDataDeleteSuccess),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+          },
+        );
+      }
+    }
   }
 
   Map<String, dynamic> _getCurrentData() {
