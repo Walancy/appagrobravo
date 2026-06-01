@@ -1144,6 +1144,48 @@ abstract class AppLocalizations {
   /// **'Selecionar'**
   String get accountDataSelectPlaceholder;
 
+  /// No description provided for @accountDataDeleteAccount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir conta'**
+  String get accountDataDeleteAccount;
+
+  /// No description provided for @accountDataDeleteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir Conta'**
+  String get accountDataDeleteTitle;
+
+  /// No description provided for @accountDataDeleteMessage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tem certeza de que deseja excluir permanentemente sua conta? Esta ação é irreversível e todos os seus dados serão apagados.'**
+  String get accountDataDeleteMessage;
+
+  /// No description provided for @accountDataDeleteConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sim, excluir'**
+  String get accountDataDeleteConfirm;
+
+  /// No description provided for @accountDataDeleteCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get accountDataDeleteCancel;
+
+  /// No description provided for @accountDataDeleteSuccess.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sua conta foi excluída com sucesso.'**
+  String get accountDataDeleteSuccess;
+
+  /// No description provided for @accountDataDeleteError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Erro ao excluir conta. Tente novamente.'**
+  String get accountDataDeleteError;
+
   /// No description provided for @itineraryErrorPrefix.
   ///
   /// In pt, this message translates to:

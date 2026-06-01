@@ -1,6 +1,8 @@
 import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:agrobravo/core/router/go_router_refresh_stream.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/features/auth/presentation/pages/login_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/home_page.dart';
@@ -30,9 +32,28 @@ import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 /// Rotas que NÃO precisam de autenticação (login, criar conta, esqueceu senha).
 const _publicPaths = <String>{'/', '/reset-password'};
 
+/// Combina múltiplos [Listenable]s em um único, para o GoRouter reagir
+/// a qualquer um deles (OnboardingService + stream de sessão do Supabase).
+class _MultiListenable extends ChangeNotifier {
+  _MultiListenable(List<Listenable> listenables) {
+    for (final l in listenables) {
+      l.addListener(notifyListeners);
+    }
+  }
+}
+
+final _authRefresh = GoRouterRefreshStream(
+  Supabase.instance.client.auth.onAuthStateChange,
+);
+
+final _routerRefresh = _MultiListenable([
+  OnboardingService.instance,
+  _authRefresh,
+]);
+
 final appRouter = GoRouter(
   initialLocation: '/',
-  refreshListenable: OnboardingService.instance,
+  refreshListenable: _routerRefresh,
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final isAuthenticated = session != null;

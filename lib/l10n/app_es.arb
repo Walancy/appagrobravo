@@ -223,6 +223,13 @@
   "accountDataSuccessMessage": "¡Datos actualizados con éxito!",
   "accountDataRequiredFieldsError": "Por favor, completa todos los campos obligatorios.",
   "accountDataSelectPlaceholder": "Seleccionar",
+  "accountDataDeleteAccount": "Eliminar cuenta",
+  "accountDataDeleteTitle": "Eliminar Cuenta",
+  "accountDataDeleteMessage": "¿Está seguro de que desea eliminar permanentemente su cuenta? Esta acción es irreversible y todos sus datos serán eliminados.",
+  "accountDataDeleteConfirm": "Sí, eliminar",
+  "accountDataDeleteCancel": "Cancelar",
+  "accountDataDeleteSuccess": "Su cuenta ha sido eliminada exitosamente.",
+  "accountDataDeleteError": "Error al eliminar la cuenta. Inténtelo de nuevo.",
 
   "itineraryErrorPrefix": "Error: ",
   "itineraryCurrentMission": "Misión actual",
