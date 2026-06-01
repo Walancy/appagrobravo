@@ -44,6 +44,8 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
   bool _showScrollToBottom = false;
   String? _editingMessageId;
   final Set<String> _selectedMessageIds = {};
+  // Mensagens otimistas (enviadas mas ainda não confirmadas pelo servidor)
+  final List<MessageEntity> _pendingMessages = [];
 
   @override
   void initState() {
@@ -293,54 +295,69 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                             if (messages.isEmpty) {
                               return const Center(child: Text('Sem mensagens'));
                             }
+                            // Filtra pendentes já confirmados pelo servidor
+                            final confirmedIds = messages.map((m) => m.id).toSet();
+                            final stillPending = _pendingMessages
+                                .where((p) => !confirmedIds.contains(p.id))
+                                .toList();
+                            final allMessages = [...messages, ...stillPending];
+
                             return ListView.builder(
                               controller: _scrollController,
                               padding: const EdgeInsets.symmetric(vertical: 10),
-                              itemCount: messages.length,
+                              itemCount: allMessages.length,
                               itemBuilder: (context, index) {
-                                final msg = messages[index];
+                                final msg = allMessages[index];
+                                final isPending = _pendingMessages.any((p) => p.id == msg.id);
                                 final isSelected = _selectedMessageIds.contains(
                                   msg.id,
                                 );
-                                return ChatBubble(
-                                  message: msg.text,
-                                  time:
-                                      '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                                  type: _mapMessageType(msg.type),
-                                  userName: msg.userName,
-                                  userAvatarUrl: msg.userAvatarUrl,
-                                  guideRole: msg.guideRole,
-                                  attachmentUrl: msg.attachmentUrl,
-                                  isGroupChat: false,
-                                  showAvatar: false,
-                                  isEdited: msg.isEdited,
-                                  isDeleted: msg.isDeleted,
-                                  isSelected: isSelected,
-                                  onLongPress:
-                                      msg.type == MessageType.me &&
-                                          !msg.isDeleted
-                                      ? () {
-                                          setState(() {
-                                            _selectedMessageIds.add(msg.id);
-                                          });
-                                        }
-                                      : null,
-                                  onTap:
-                                      _selectedMessageIds.isNotEmpty &&
-                                          msg.type == MessageType.me &&
-                                          !msg.isDeleted
-                                      ? () {
-                                          setState(() {
-                                            if (isSelected) {
-                                              _selectedMessageIds.remove(
-                                                msg.id,
-                                              );
-                                            } else {
+                                return Opacity(
+                                  opacity: isPending ? 0.6 : 1.0,
+                                  child: ChatBubble(
+                                    message: msg.text,
+                                    time:
+                                        '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                    type: _mapMessageType(msg.type),
+                                    userName: msg.userName,
+                                    userAvatarUrl: msg.userAvatarUrl,
+                                    guideRole: msg.guideRole,
+                                    attachmentUrl: msg.attachmentUrl,
+                                    audioUrl: msg.audioUrl,
+                                    audioDurationMs: msg.audioDurationMs,
+                                    isGroupChat: false,
+                                    showAvatar: false,
+                                    isEdited: msg.isEdited,
+                                    isDeleted: msg.isDeleted,
+                                    isSelected: isSelected,
+                                    onLongPress:
+                                        msg.type == MessageType.me &&
+                                            !msg.isDeleted &&
+                                            !isPending
+                                        ? () {
+                                            setState(() {
                                               _selectedMessageIds.add(msg.id);
-                                            }
-                                          });
-                                        }
-                                      : null,
+                                            });
+                                          }
+                                        : null,
+                                    onTap:
+                                        _selectedMessageIds.isNotEmpty &&
+                                            msg.type == MessageType.me &&
+                                            !msg.isDeleted &&
+                                            !isPending
+                                        ? () {
+                                            setState(() {
+                                              if (isSelected) {
+                                                _selectedMessageIds.remove(
+                                                  msg.id,
+                                                );
+                                              } else {
+                                                _selectedMessageIds.add(msg.id);
+                                              }
+                                            });
+                                          }
+                                        : null,
+                                  ),
                                 );
                               },
                             );
@@ -389,6 +406,30 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                 },
                 onImagePicked: () => _pickImage(ImageSource.gallery),
                 onCameraPicked: () => _pickImage(ImageSource.camera),
+                onAudioRecorded: (path, durationMs) {
+                  // Feedback otimista para áudio
+                  final tempId = 'pending_audio_${DateTime.now().millisecondsSinceEpoch}';
+                  final pendingMsg = MessageEntity(
+                    id: tempId,
+                    text: '',
+                    timestamp: DateTime.now(),
+                    type: MessageType.me,
+                    audioUrl: path, // usa o path local temporariamente
+                    audioDurationMs: durationMs,
+                    isEdited: false,
+                    isDeleted: false,
+                  );
+                  setState(() => _pendingMessages.add(pendingMsg));
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) { if (mounted) _scrollToBottom(); },
+                  );
+                  context.read<ChatDetailCubit>().sendAudioMessage(
+                    path,
+                    audioDurationMs: durationMs,
+                  ).then((_) {
+                    if (mounted) setState(() => _pendingMessages.remove(pendingMsg));
+                  });
+                },
                 onSendMessage: (text) {
                   if (_editingMessageId != null) {
                     context.read<ChatDetailCubit>().editMessage(
@@ -399,7 +440,23 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                       _editingMessageId = null;
                     });
                   } else {
-                    context.read<ChatDetailCubit>().sendMessage(text);
+                    // Feedback otimista para texto
+                    final tempId = 'pending_${DateTime.now().millisecondsSinceEpoch}';
+                    final pendingMsg = MessageEntity(
+                      id: tempId,
+                      text: text,
+                      timestamp: DateTime.now(),
+                      type: MessageType.me,
+                      isEdited: false,
+                      isDeleted: false,
+                    );
+                    setState(() => _pendingMessages.add(pendingMsg));
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) { if (mounted) _scrollToBottom(); },
+                    );
+                    context.read<ChatDetailCubit>().sendMessage(text).then((_) {
+                      if (mounted) setState(() => _pendingMessages.remove(pendingMsg));
+                    });
                   }
                 },
               ),

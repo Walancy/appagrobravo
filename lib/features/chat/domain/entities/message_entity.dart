@@ -20,6 +20,7 @@ abstract class MessageEntity with _$MessageEntity {
     MessageEntity? repliedToMessage,
     required bool isEdited,
     required bool isDeleted,
+    @Default(false) bool isPending,
   }) = _MessageEntity;
 
   const MessageEntity._();

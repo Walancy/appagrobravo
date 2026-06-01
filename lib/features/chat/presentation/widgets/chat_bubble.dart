@@ -24,6 +24,7 @@ class ChatBubble extends StatelessWidget {
   final bool isSelected;
   final bool isEdited;
   final bool isDeleted;
+  final bool isPending;
   final VoidCallback? onReply;
   final String? repliedMessage;
   final String? repliedUserName;
@@ -48,6 +49,7 @@ class ChatBubble extends StatelessWidget {
     this.isEdited = false,
     this.isDeleted = false,
     this.isSelected = false,
+    this.isPending = false,
     this.onReply,
     this.repliedMessage,
     this.repliedUserName,
@@ -58,7 +60,8 @@ class ChatBubble extends StatelessWidget {
   });
 
   bool get isMe => type == ChatBubbleType.me;
-  bool get _imageOnly => attachmentUrl != null && message.isEmpty && audioUrl == null && !isDeleted;
+  bool get _imageOnly =>
+      attachmentUrl != null && message.isEmpty && audioUrl == null && !isDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +77,8 @@ class ChatBubble extends StatelessWidget {
         ? Colors.white
         : Theme.of(context).colorScheme.onSurface;
 
-    // "Tail" corner: sharp only on first message of a sequence (showAvatar=true)
-    // isMe → tail at top-right; other → tail at top-left
-    final tailRadius = showAvatar ? const Radius.circular(4) : const Radius.circular(16);
+    final tailRadius =
+        showAvatar ? const Radius.circular(4) : const Radius.circular(16);
     final borderRadius = BorderRadius.only(
       topLeft: isMe ? const Radius.circular(16) : tailRadius,
       topRight: isMe ? tailRadius : const Radius.circular(16),
@@ -84,9 +86,8 @@ class ChatBubble extends StatelessWidget {
       bottomRight: const Radius.circular(16),
     );
 
-    // Spacing: to visually align bubbles, add a placeholder on the opposite side
-    // so the max-width constraint works symmetrically.
-    final avatarPlaceholderWidth = (!isMe && showAvatar && isGroupChat) ? 44.0 : 0.0;
+    final avatarPlaceholderWidth =
+        (!isMe && showAvatar && isGroupChat) ? 44.0 : 0.0;
 
     return SwipeTo(
       onRightSwipe: (details) => onReply?.call(),
@@ -96,7 +97,7 @@ class ChatBubble extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.12)
+              ? AppColors.primary.withOpacity(0.12)
               : Colors.transparent,
           padding: EdgeInsets.only(
             top: showAvatar ? 6 : 2,
@@ -133,38 +134,43 @@ class ChatBubble extends StatelessWidget {
 
               // Bubble
               Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.72 -
-                        avatarPlaceholderWidth,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: isMe
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          color: _imageOnly ? Colors.transparent : bgColor,
-                          borderRadius: borderRadius,
-                          boxShadow: _imageOnly
-                              ? null
-                              : [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(
-                                      alpha: isDark ? 0.18 : 0.06,
+                child: Opacity(
+                  opacity: isPending ? 0.65 : 1.0,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.72 -
+                          avatarPlaceholderWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: isMe
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            color: _imageOnly ? Colors.transparent : bgColor,
+                            borderRadius: borderRadius,
+                            boxShadow: _imageOnly
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(
+                                        isDark ? 0.18 : 0.06,
+                                      ),
+                                      blurRadius: 3,
+                                      offset: const Offset(0, 1),
                                     ),
-                                    blurRadius: 3,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
+                                  ],
+                          ),
+                          child: isDeleted
+                              ? _buildDeletedBubble(
+                                  context, textColor, borderRadius)
+                              : _buildContent(
+                                  context, bgColor, textColor, borderRadius, isDark),
                         ),
-                        child: isDeleted
-                            ? _buildDeletedBubble(textColor, borderRadius)
-                            : _buildContent(context, bgColor, textColor, borderRadius, isDark),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -178,19 +184,20 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildDeletedBubble(Color textColor, BorderRadius borderRadius) {
+  Widget _buildDeletedBubble(
+      BuildContext context, Color textColor, BorderRadius borderRadius) {
     return Container(
       decoration: BoxDecoration(borderRadius: borderRadius),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.block, size: 15, color: textColor.withValues(alpha: 0.45)),
+          Icon(Icons.block, size: 15, color: textColor.withOpacity(0.45)),
           const SizedBox(width: 6),
           Text(
             'Mensagem apagada',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: textColor.withValues(alpha: 0.55),
+              color: textColor.withOpacity(0.55),
               fontStyle: FontStyle.italic,
               fontSize: 14,
             ),
@@ -215,7 +222,7 @@ class ChatBubble extends StatelessWidget {
         if (!isMe && isGroupChat && showAvatar)
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-            child: _buildHeader(),
+            child: _buildHeader(context),
           ),
 
         // Reply preview
@@ -239,14 +246,11 @@ class ChatBubble extends StatelessWidget {
         // Message text (caption below attachment or audio, or standalone)
         if (message.isNotEmpty && audioUrl == null)
           _buildMessageText(context, textColor),
-
-        // Time row for image-only (rendered inside the image, see _buildAttachment)
-        // For text messages time is inline — handled inside _buildMessageText
       ],
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -291,11 +295,12 @@ class ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: (isMe ? Colors.white : Theme.of(context).dividerColor)
-              .withValues(alpha: 0.12),
+              .withOpacity(0.12),
           borderRadius: BorderRadius.circular(8),
           border: Border(
             left: BorderSide(
-              color: isMe ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF00AA6C),
+              color:
+                  isMe ? Colors.white.withOpacity(0.8) : const Color(0xFF00AA6C),
               width: 3,
             ),
           ),
@@ -306,9 +311,7 @@ class ChatBubble extends StatelessWidget {
             Text(
               repliedUserName ?? 'Usuário',
               style: AppTextStyles.bodySmall.copyWith(
-                color: isMe
-                    ? Colors.white
-                    : const Color(0xFF00AA6C),
+                color: isMe ? Colors.white : const Color(0xFF00AA6C),
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -319,7 +322,7 @@ class ChatBubble extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.bodySmall.copyWith(
-                color: textColor.withValues(alpha: 0.75),
+                color: textColor.withOpacity(0.75),
                 fontSize: 12,
               ),
             ),
@@ -377,16 +380,16 @@ class ChatBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: Colors.black.withOpacity(0.45),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isEdited) ...[
-                    Text(
+                    const Text(
                       'editado  ',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white70,
                         fontSize: 10,
                         fontStyle: FontStyle.italic,
@@ -420,12 +423,8 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildMessageText(BuildContext context, Color textColor) {
-    // Estimated width for time + "editado" label — always reserve this space
     final timeWidth = (isEdited ? 46.0 : 0.0) + 40.0;
 
-    // Always use Stack so the time is fixed at the bottom-right corner
-    // regardless of message length. A WidgetSpan spacer at the end of the
-    // text ensures the last line never overlaps the timestamp.
     return Padding(
       padding: EdgeInsets.fromLTRB(
         12,
@@ -443,8 +442,7 @@ class ChatBubble extends StatelessWidget {
                 height: 1.4,
               ),
               children: [
-                ..._buildMessageSpans(textColor),
-                // Invisible spacer so the last word never sits under the time
+                ..._buildMessageSpans(context, textColor),
                 WidgetSpan(
                   child: SizedBox(width: timeWidth + 4),
                 ),
@@ -454,27 +452,14 @@ class ChatBubble extends StatelessWidget {
           Positioned(
             bottom: 0,
             right: 0,
-            child: _buildTimeRow(textColor),
+            child: _buildTimeRow(context, textColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLinkifiedText(Color textColor) {
-    return RichText(
-      text: TextSpan(
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: textColor,
-          fontSize: 15,
-          height: 1.4,
-        ),
-        children: _buildMessageSpans(textColor),
-      ),
-    );
-  }
-
-  List<InlineSpan> _buildMessageSpans(Color textColor) {
+  List<InlineSpan> _buildMessageSpans(BuildContext context, Color textColor) {
     final spans = <InlineSpan>[];
     final linkRegex = RegExp(
       r'((?:https?:\/\/|www\.)[^\s<>()]+)',
@@ -531,7 +516,7 @@ class ChatBubble extends StatelessWidget {
     return spans.isEmpty ? [TextSpan(text: message)] : spans;
   }
 
-  Widget _buildTimeRow(Color textColor) {
+  Widget _buildTimeRow(BuildContext context, Color textColor) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -540,20 +525,27 @@ class ChatBubble extends StatelessWidget {
           Text(
             'editado',
             style: AppTextStyles.bodySmall.copyWith(
-              color: textColor.withValues(alpha: 0.5),
+              color: textColor.withOpacity(0.5),
               fontSize: 10,
               fontStyle: FontStyle.italic,
             ),
           ),
           const SizedBox(width: 4),
         ],
-        Text(
-          time,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: textColor.withValues(alpha: 0.65),
-            fontSize: 11,
+        if (isPending)
+          Icon(
+            Icons.access_time_rounded,
+            size: 12,
+            color: textColor.withOpacity(0.55),
+          )
+        else
+          Text(
+            time,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: textColor.withOpacity(0.65),
+              fontSize: 11,
+            ),
           ),
-        ),
       ],
     );
   }
@@ -583,7 +575,7 @@ class ChatBubble extends StatelessWidget {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.45),
+                    .withOpacity(0.45),
                 size: 20,
               ),
             )
@@ -592,7 +584,7 @@ class ChatBubble extends StatelessWidget {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.45),
+                  .withOpacity(0.45),
               size: 20,
             ),
     );
@@ -621,6 +613,10 @@ class ChatBubble extends StatelessWidget {
     return colors[hash.abs() % colors.length];
   }
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Audio Player Widget
+// ─────────────────────────────────────────────────────────────────
 
 class _AudioPlayer extends StatefulWidget {
   final String audioUrl;
@@ -660,7 +656,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
         _isPlaying = state == ap.PlayerState.playing;
         if (state == ap.PlayerState.completed) {
           _position = Duration.zero;
-          _sourceLoaded = false; // allow replay via play() on next tap
+          _sourceLoaded = false;
         }
       });
     });
@@ -672,7 +668,6 @@ class _AudioPlayerState extends State<_AudioPlayer> {
 
     _player.onDurationChanged.listen((dur) {
       if (!mounted) return;
-      // Ignore zero durations — they fire spuriously before metadata loads
       if (dur > Duration.zero) setState(() => _duration = dur);
     });
   }
@@ -692,7 +687,6 @@ class _AudioPlayerState extends State<_AudioPlayer> {
       } else if (_sourceLoaded) {
         await _player.resume();
       } else {
-        // First tap: load and start playback in one call
         await _player.play(ap.UrlSource(widget.audioUrl));
         _sourceLoaded = true;
       }
@@ -720,10 +714,34 @@ class _AudioPlayerState extends State<_AudioPlayer> {
   Widget build(BuildContext context) {
     final color = widget.isMe ? Colors.white : AppColors.primary;
     final subtleColor = widget.isMe
-        ? Colors.white.withValues(alpha: 0.65)
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55);
+        ? Colors.white.withOpacity(0.65)
+        : Theme.of(context).colorScheme.onSurface.withOpacity(0.55);
 
-    // Prefer non-zero live duration; fall back to stored value from DB
+    // Estado de envio — audioUrl ainda não disponível
+    if (widget.audioUrl == 'pending') {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Enviando áudio...',
+              style: TextStyle(color: subtleColor, fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    }
+
     final effectiveDuration =
         (_duration != null && _duration! > Duration.zero)
             ? _duration
@@ -732,10 +750,10 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                 : null);
 
     final totalMs = effectiveDuration?.inMilliseconds ?? 0;
-    final currentMs = _position.inMilliseconds.clamp(0, totalMs > 0 ? totalMs : 1);
+    final currentMs =
+        _position.inMilliseconds.clamp(0, totalMs > 0 ? totalMs : 1);
     final progress = totalMs > 0 ? currentMs / totalMs : 0.0;
 
-    // When paused/stopped show total duration; when playing show current position
     final displayTime = _isPlaying
         ? _fmt(_position)
         : (effectiveDuration != null ? _fmt(effectiveDuration) : '--:--');
@@ -745,7 +763,6 @@ class _AudioPlayerState extends State<_AudioPlayer> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Play/pause button
           GestureDetector(
             onTap: _togglePlay,
             child: Container(
@@ -753,7 +770,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
               height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withValues(alpha: 0.18),
+                color: color.withOpacity(0.18),
               ),
               child: _isLoading
                   ? Padding(
@@ -764,14 +781,15 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                       ),
                     )
                   : Icon(
-                      _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      _isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
                       color: color,
                       size: 22,
                     ),
             ),
           ),
           const SizedBox(width: 6),
-          // Waveform + time row
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,9 +805,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                       overlayRadius: 12,
                     ),
                     activeTrackColor: color,
-                    inactiveTrackColor: color.withValues(alpha: 0.25),
+                    inactiveTrackColor: color.withOpacity(0.25),
                     thumbColor: color,
-                    overlayColor: color.withValues(alpha: 0.12),
+                    overlayColor: color.withOpacity(0.12),
                   ),
                   child: Slider(
                     value: progress.toDouble(),
@@ -801,35 +819,33 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.only(left: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         displayTime,
                         style: TextStyle(
-                          fontSize: 10,
                           color: subtleColor,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (widget.isEdited) ...[
+                          if (widget.isEdited)
                             Text(
-                              'editado',
-                              style: AppTextStyles.bodySmall.copyWith(
+                              'editado  ',
+                              style: TextStyle(
                                 color: subtleColor,
                                 fontSize: 10,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
-                            const SizedBox(width: 4),
-                          ],
                           Text(
                             widget.time,
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: TextStyle(
                               color: subtleColor,
                               fontSize: 11,
                             ),

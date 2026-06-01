@@ -303,12 +303,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                             if (messages.isEmpty) {
                               return const Center(child: Text('Sem mensagens'));
                             }
+
                             return ListView.builder(
                               controller: _scrollController,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               itemCount: messages.length,
                               itemBuilder: (context, index) {
                                 final msg = messages[index];
+                                final isPending = msg.isPending;
                                 final isSelected = _selectedMessageIds.contains(
                                   msg.id,
                                 );
@@ -381,6 +383,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                       isEdited: msg.isEdited,
                                       isDeleted: msg.isDeleted,
                                       isSelected: isSelected,
+                                      isPending: isPending,
                                       repliedMessage: msg.repliedToMessage != null
                                           ? (msg.repliedToMessage!.audioUrl != null &&
                                                   msg.repliedToMessage!.text.isEmpty
@@ -389,7 +392,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                           : null,
                                       repliedUserName:
                                           msg.repliedToMessage?.userName,
-                                      onReply: () {
+                                      onReply: isPending ? null : () {
                                         setState(() {
                                           _replyingToMessage = msg;
                                           _editingMessageId = null;
@@ -397,7 +400,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                       },
                                       onLongPress:
                                           msg.type == MessageType.me &&
-                                              !msg.isDeleted
+                                              !msg.isDeleted &&
+                                              !isPending
                                           ? () {
                                               setState(() {
                                                 _selectedMessageIds.add(msg.id);
@@ -407,7 +411,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                                       onTap:
                                           _selectedMessageIds.isNotEmpty &&
                                               msg.type == MessageType.me &&
-                                              !msg.isDeleted
+                                              !msg.isDeleted &&
+                                              !isPending
                                           ? () {
                                               setState(() {
                                                 if (isSelected) {
@@ -480,12 +485,16 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                 onImagePicked: () => _pickImage(ImageSource.gallery),
                 onCameraPicked: () => _pickImage(ImageSource.camera),
                 onAudioRecorded: (path, durationMs) {
+                  final replyToId = _replyingToMessage?.id;
+                  setState(() => _replyingToMessage = null);
+                  WidgetsBinding.instance.addPostFrameCallback(
+                    (_) { if (mounted) _scrollToBottom(); },
+                  );
                   context.read<ChatDetailCubit>().sendAudioMessage(
                     path,
                     audioDurationMs: durationMs,
-                    replyToId: _replyingToMessage?.id,
+                    replyToId: replyToId,
                   );
-                  setState(() => _replyingToMessage = null);
                 },
                 onSendMessage: (text) {
                   if (_editingMessageId != null) {
@@ -497,13 +506,15 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                       _editingMessageId = null;
                     });
                   } else {
+                    final replyToId = _replyingToMessage?.id;
+                    setState(() => _replyingToMessage = null);
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) { if (mounted) _scrollToBottom(); },
+                    );
                     context.read<ChatDetailCubit>().sendMessage(
                       text,
-                      replyToId: _replyingToMessage?.id,
+                      replyToId: replyToId,
                     );
-                    setState(() {
-                      _replyingToMessage = null;
-                    });
                   }
                 },
               ),

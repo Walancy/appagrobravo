@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MessageEntity {
 
- String get id; String get text; DateTime get timestamp; MessageType get type; String? get userName; String? get userAvatarUrl; String? get guideRole; String? get attachmentUrl; String? get audioUrl; int? get audioDurationMs; MessageEntity? get repliedToMessage; bool get isEdited; bool get isDeleted;
+ String get id; String get text; DateTime get timestamp; MessageType get type; String? get userName; String? get userAvatarUrl; String? get guideRole; String? get attachmentUrl; String? get audioUrl; int? get audioDurationMs; MessageEntity? get repliedToMessage; bool get isEdited; bool get isDeleted; bool get isPending;
 /// Create a copy of MessageEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $MessageEntityCopyWith<MessageEntity> get copyWith => _$MessageEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.text, text) || other.text == text)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatarUrl, userAvatarUrl) || other.userAvatarUrl == userAvatarUrl)&&(identical(other.guideRole, guideRole) || other.guideRole == guideRole)&&(identical(other.attachmentUrl, attachmentUrl) || other.attachmentUrl == attachmentUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.audioDurationMs, audioDurationMs) || other.audioDurationMs == audioDurationMs)&&(identical(other.repliedToMessage, repliedToMessage) || other.repliedToMessage == repliedToMessage)&&(identical(other.isEdited, isEdited) || other.isEdited == isEdited)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.text, text) || other.text == text)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatarUrl, userAvatarUrl) || other.userAvatarUrl == userAvatarUrl)&&(identical(other.guideRole, guideRole) || other.guideRole == guideRole)&&(identical(other.attachmentUrl, attachmentUrl) || other.attachmentUrl == attachmentUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.audioDurationMs, audioDurationMs) || other.audioDurationMs == audioDurationMs)&&(identical(other.repliedToMessage, repliedToMessage) || other.repliedToMessage == repliedToMessage)&&(identical(other.isEdited, isEdited) || other.isEdited == isEdited)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.isPending, isPending) || other.isPending == isPending));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,text,timestamp,type,userName,userAvatarUrl,guideRole,attachmentUrl,audioUrl,audioDurationMs,repliedToMessage,isEdited,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,text,timestamp,type,userName,userAvatarUrl,guideRole,attachmentUrl,audioUrl,audioDurationMs,repliedToMessage,isEdited,isDeleted,isPending);
 
 @override
 String toString() {
-  return 'MessageEntity(id: $id, text: $text, timestamp: $timestamp, type: $type, userName: $userName, userAvatarUrl: $userAvatarUrl, guideRole: $guideRole, attachmentUrl: $attachmentUrl, audioUrl: $audioUrl, audioDurationMs: $audioDurationMs, repliedToMessage: $repliedToMessage, isEdited: $isEdited, isDeleted: $isDeleted)';
+  return 'MessageEntity(id: $id, text: $text, timestamp: $timestamp, type: $type, userName: $userName, userAvatarUrl: $userAvatarUrl, guideRole: $guideRole, attachmentUrl: $attachmentUrl, audioUrl: $audioUrl, audioDurationMs: $audioDurationMs, repliedToMessage: $repliedToMessage, isEdited: $isEdited, isDeleted: $isDeleted, isPending: $isPending)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $MessageEntityCopyWith<$Res>  {
   factory $MessageEntityCopyWith(MessageEntity value, $Res Function(MessageEntity) _then) = _$MessageEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String text, DateTime timestamp, MessageType type, String? userName, String? userAvatarUrl, String? guideRole, String? attachmentUrl, String? audioUrl, int? audioDurationMs, MessageEntity? repliedToMessage, bool isEdited, bool isDeleted
+ String id, String text, DateTime timestamp, MessageType type, String? userName, String? userAvatarUrl, String? guideRole, String? attachmentUrl, String? audioUrl, int? audioDurationMs, MessageEntity? repliedToMessage, bool isEdited, bool isDeleted, bool isPending
 });
 
 
@@ -62,7 +62,7 @@ class _$MessageEntityCopyWithImpl<$Res>
 
 /// Create a copy of MessageEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? text = null,Object? timestamp = null,Object? type = null,Object? userName = freezed,Object? userAvatarUrl = freezed,Object? guideRole = freezed,Object? attachmentUrl = freezed,Object? audioUrl = freezed,Object? audioDurationMs = freezed,Object? repliedToMessage = freezed,Object? isEdited = null,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? text = null,Object? timestamp = null,Object? type = null,Object? userName = freezed,Object? userAvatarUrl = freezed,Object? guideRole = freezed,Object? attachmentUrl = freezed,Object? audioUrl = freezed,Object? audioDurationMs = freezed,Object? repliedToMessage = freezed,Object? isEdited = null,Object? isDeleted = null,Object? isPending = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
@@ -77,6 +77,7 @@ as String?,audioDurationMs: freezed == audioDurationMs ? _self.audioDurationMs :
 as int?,repliedToMessage: freezed == repliedToMessage ? _self.repliedToMessage : repliedToMessage // ignore: cast_nullable_to_non_nullable
 as MessageEntity?,isEdited: null == isEdited ? _self.isEdited : isEdited // ignore: cast_nullable_to_non_nullable
 as bool,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,isPending: null == isPending ? _self.isPending : isPending // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -174,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted,  bool isPending)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MessageEntity() when $default != null:
-return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted);case _:
+return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted,_that.isPending);case _:
   return orElse();
 
 }
@@ -195,10 +196,10 @@ return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted,  bool isPending)  $default,) {final _that = this;
 switch (_that) {
 case _MessageEntity():
-return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted);case _:
+return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted,_that.isPending);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +216,10 @@ return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String text,  DateTime timestamp,  MessageType type,  String? userName,  String? userAvatarUrl,  String? guideRole,  String? attachmentUrl,  String? audioUrl,  int? audioDurationMs,  MessageEntity? repliedToMessage,  bool isEdited,  bool isDeleted,  bool isPending)?  $default,) {final _that = this;
 switch (_that) {
 case _MessageEntity() when $default != null:
-return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted);case _:
+return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_that.userAvatarUrl,_that.guideRole,_that.attachmentUrl,_that.audioUrl,_that.audioDurationMs,_that.repliedToMessage,_that.isEdited,_that.isDeleted,_that.isPending);case _:
   return null;
 
 }
@@ -230,8 +231,8 @@ return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_t
 
 
 class _MessageEntity extends MessageEntity {
-  const _MessageEntity({required this.id, required this.text, required this.timestamp, required this.type, this.userName, this.userAvatarUrl, this.guideRole, this.attachmentUrl, this.audioUrl, this.audioDurationMs, this.repliedToMessage, required this.isEdited, required this.isDeleted}): super._();
-  
+  const _MessageEntity({required this.id, required this.text, required this.timestamp, required this.type, this.userName, this.userAvatarUrl, this.guideRole, this.attachmentUrl, this.audioUrl, this.audioDurationMs, this.repliedToMessage, required this.isEdited, required this.isDeleted, this.isPending = false}): super._();
+
 
 @override final  String id;
 @override final  String text;
@@ -246,6 +247,7 @@ class _MessageEntity extends MessageEntity {
 @override final  MessageEntity? repliedToMessage;
 @override final  bool isEdited;
 @override final  bool isDeleted;
+@override@JsonKey() final  bool isPending;
 
 /// Create a copy of MessageEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -257,16 +259,16 @@ _$MessageEntityCopyWith<_MessageEntity> get copyWith => __$MessageEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.text, text) || other.text == text)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatarUrl, userAvatarUrl) || other.userAvatarUrl == userAvatarUrl)&&(identical(other.guideRole, guideRole) || other.guideRole == guideRole)&&(identical(other.attachmentUrl, attachmentUrl) || other.attachmentUrl == attachmentUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.audioDurationMs, audioDurationMs) || other.audioDurationMs == audioDurationMs)&&(identical(other.repliedToMessage, repliedToMessage) || other.repliedToMessage == repliedToMessage)&&(identical(other.isEdited, isEdited) || other.isEdited == isEdited)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.text, text) || other.text == text)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatarUrl, userAvatarUrl) || other.userAvatarUrl == userAvatarUrl)&&(identical(other.guideRole, guideRole) || other.guideRole == guideRole)&&(identical(other.attachmentUrl, attachmentUrl) || other.attachmentUrl == attachmentUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.audioDurationMs, audioDurationMs) || other.audioDurationMs == audioDurationMs)&&(identical(other.repliedToMessage, repliedToMessage) || other.repliedToMessage == repliedToMessage)&&(identical(other.isEdited, isEdited) || other.isEdited == isEdited)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.isPending, isPending) || other.isPending == isPending));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,text,timestamp,type,userName,userAvatarUrl,guideRole,attachmentUrl,audioUrl,audioDurationMs,repliedToMessage,isEdited,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,text,timestamp,type,userName,userAvatarUrl,guideRole,attachmentUrl,audioUrl,audioDurationMs,repliedToMessage,isEdited,isDeleted,isPending);
 
 @override
 String toString() {
-  return 'MessageEntity(id: $id, text: $text, timestamp: $timestamp, type: $type, userName: $userName, userAvatarUrl: $userAvatarUrl, guideRole: $guideRole, attachmentUrl: $attachmentUrl, audioUrl: $audioUrl, audioDurationMs: $audioDurationMs, repliedToMessage: $repliedToMessage, isEdited: $isEdited, isDeleted: $isDeleted)';
+  return 'MessageEntity(id: $id, text: $text, timestamp: $timestamp, type: $type, userName: $userName, userAvatarUrl: $userAvatarUrl, guideRole: $guideRole, attachmentUrl: $attachmentUrl, audioUrl: $audioUrl, audioDurationMs: $audioDurationMs, repliedToMessage: $repliedToMessage, isEdited: $isEdited, isDeleted: $isDeleted, isPending: $isPending)';
 }
 
 
@@ -277,7 +279,7 @@ abstract mixin class _$MessageEntityCopyWith<$Res> implements $MessageEntityCopy
   factory _$MessageEntityCopyWith(_MessageEntity value, $Res Function(_MessageEntity) _then) = __$MessageEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String text, DateTime timestamp, MessageType type, String? userName, String? userAvatarUrl, String? guideRole, String? attachmentUrl, String? audioUrl, int? audioDurationMs, MessageEntity? repliedToMessage, bool isEdited, bool isDeleted
+ String id, String text, DateTime timestamp, MessageType type, String? userName, String? userAvatarUrl, String? guideRole, String? attachmentUrl, String? audioUrl, int? audioDurationMs, MessageEntity? repliedToMessage, bool isEdited, bool isDeleted, bool isPending
 });
 
 
@@ -294,7 +296,7 @@ class __$MessageEntityCopyWithImpl<$Res>
 
 /// Create a copy of MessageEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? text = null,Object? timestamp = null,Object? type = null,Object? userName = freezed,Object? userAvatarUrl = freezed,Object? guideRole = freezed,Object? attachmentUrl = freezed,Object? audioUrl = freezed,Object? audioDurationMs = freezed,Object? repliedToMessage = freezed,Object? isEdited = null,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? text = null,Object? timestamp = null,Object? type = null,Object? userName = freezed,Object? userAvatarUrl = freezed,Object? guideRole = freezed,Object? attachmentUrl = freezed,Object? audioUrl = freezed,Object? audioDurationMs = freezed,Object? repliedToMessage = freezed,Object? isEdited = null,Object? isDeleted = null,Object? isPending = null,}) {
   return _then(_MessageEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
@@ -309,6 +311,7 @@ as String?,audioDurationMs: freezed == audioDurationMs ? _self.audioDurationMs :
 as int?,repliedToMessage: freezed == repliedToMessage ? _self.repliedToMessage : repliedToMessage // ignore: cast_nullable_to_non_nullable
 as MessageEntity?,isEdited: null == isEdited ? _self.isEdited : isEdited // ignore: cast_nullable_to_non_nullable
 as bool,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,isPending: null == isPending ? _self.isPending : isPending // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
