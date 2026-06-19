@@ -154,6 +154,9 @@ class _LoginFormState extends State<LoginForm> {
     if (lower.contains('password should be at least')) {
       return 'A senha deve ter pelo menos 6 caracteres.';
     }
+    if (lower.contains('user not found')) {
+      return 'Usuário ou e-mail não encontrado.';
+    }
     if (lower.contains('email rate limit exceeded')) {
       return 'Muitas tentativas. Tente novamente mais tarde.';
     }
@@ -195,7 +198,7 @@ class _LoginFormState extends State<LoginForm> {
                   const SizedBox(height: AppSpacing.xs),
                   TextButton(
                     onPressed: () {
-                      final email = _emailController.text.trim().toLowerCase();
+                      final email = _emailController.text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
                       if (email.isNotEmpty) {
                         widget.onResendConfirmationAction?.call(email);
                       }
@@ -253,6 +256,10 @@ class _LoginFormState extends State<LoginForm> {
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        enableSuggestions: false,
+        autofillHints: const [AutofillHints.email],
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
@@ -311,7 +318,7 @@ class _LoginFormState extends State<LoginForm> {
         label: 'Entrar',
         onPressed: () {
           widget.onLoginAction?.call(
-            _emailController.text.trim().toLowerCase(),
+            _emailController.text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ''),
             _passwordController.text,
             _rememberMe,
           );
@@ -336,6 +343,10 @@ class _LoginFormState extends State<LoginForm> {
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        enableSuggestions: false,
+        autofillHints: const [AutofillHints.email],
       ),
       const SizedBox(height: AppSpacing.sm),
       AppTextField(
@@ -402,7 +413,7 @@ class _LoginFormState extends State<LoginForm> {
           }
           widget.onRegisterAction?.call(
             _nameController.text,
-            _emailController.text.trim().toLowerCase(),
+            _emailController.text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ''),
             _passwordController.text,
             _confirmPasswordController.text,
           );
@@ -427,12 +438,16 @@ class _LoginFormState extends State<LoginForm> {
         label: 'E-mail:',
         hint: 'example@gmail.com',
         controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        autocorrect: false,
+        enableSuggestions: false,
+        autofillHints: const [AutofillHints.email],
       ),
       const SizedBox(height: AppSpacing.md),
       PrimaryButton(
         label: 'Enviar',
         onPressed: () {
-          widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase());
+          widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ''));
         },
       ),
     ];
@@ -485,7 +500,7 @@ class _LoginFormState extends State<LoginForm> {
           onPressed: () {
             if (needsEmail) {
               // Reenvia OTP usando o email digitado no campo
-              widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase());
+              widget.onRecoverPasswordAction?.call(_emailController.text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ''));
             } else {
               widget.onResendOtpAction?.call();
             }

@@ -48,7 +48,7 @@ class AuthCubit extends Cubit<AuthState> {
     String password, {
     bool rememberMe = false,
   }) async {
-    final normalizedEmail = email.trim().toLowerCase();
+    final normalizedEmail = email.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
     emit(const AuthState.loading());
 
     final prefs = await SharedPreferences.getInstance();
@@ -66,6 +66,7 @@ class AuthCubit extends Cubit<AuthState> {
     await result.fold(
       (error) async {
         final errorStr = error.toString().replaceAll('Exception: ', '');
+
         if (errorStr == 'email_not_confirmed') {
           emit(const AuthState.error('E-mail não confirmado. Verifique sua caixa de entrada.'));
         } else {

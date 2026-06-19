@@ -13,6 +13,10 @@ class AppTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final bool hasError;
   final TextInputType? keyboardType;
+  final bool autocorrect;
+  final bool enableSuggestions;
+  final TextCapitalization textCapitalization;
+  final Iterable<String>? autofillHints;
 
   const AppTextField({
     super.key,
@@ -25,6 +29,10 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.hasError = false,
     this.keyboardType,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.textCapitalization = TextCapitalization.none,
+    this.autofillHints,
   });
 
   @override
@@ -52,6 +60,10 @@ class AppTextField extends StatelessWidget {
             validator: validator,
             onChanged: onChanged,
             keyboardType: keyboardType,
+            autocorrect: autocorrect,
+            enableSuggestions: enableSuggestions,
+            textCapitalization: textCapitalization,
+            autofillHints: autofillHints,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.surface,
             ), // Fonte interna ajustada
