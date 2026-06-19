@@ -431,9 +431,11 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   Widget _buildThemeTile(BuildContext context, ThemeMode mode) {
-    final isDark = mode == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      onTap: () => context.read<ThemeCubit>().toggleTheme(),
+      onTap: () {
+        context.read<ThemeCubit>().setThemeMode(isDark ? ThemeMode.light : ThemeMode.dark);
+      },
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       leading: Container(
         width: 36,
