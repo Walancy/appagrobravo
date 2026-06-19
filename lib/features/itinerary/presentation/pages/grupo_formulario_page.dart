@@ -1,30 +1,28 @@
-import 'dart:convert';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
-import 'package:agrobravo/features/itinerary/domain/entities/form_field_entity.dart';
-import 'package:agrobravo/features/itinerary/domain/entities/mission_material.dart';
 import 'package:agrobravo/features/itinerary/domain/repositories/itinerary_repository.dart';
+import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
-class FormPage extends StatefulWidget {
-  final MissionMaterialEntity material;
+/// Page for filling out a GrupoFormulario (non-onboarding) from the admin panel.
+/// Supports text, yes_no, and checkbox question types.
+class GrupoFormularioPage extends StatefulWidget {
+  final GrupoFormularioModel formulario;
 
-  const FormPage({super.key, required this.material});
+  const GrupoFormularioPage({super.key, required this.formulario});
 
   @override
-  State<FormPage> createState() => _FormPageState();
+  State<GrupoFormularioPage> createState() => _GrupoFormularioPageState();
 }
 
-class _FormPageState extends State<FormPage> {
+class _GrupoFormularioPageState extends State<GrupoFormularioPage> {
   late final ItineraryRepository _repository;
+  final Map<String, dynamic> _answers = {};
 
-  List<FormFieldEntity> _fields = [];
-  Map<String, String?> _responses = {};
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _alreadyAnswered = false;
   bool _submitted = false;
   bool _showValidation = false;
   String? _error;
@@ -33,61 +31,68 @@ class _FormPageState extends State<FormPage> {
   void initState() {
     super.initState();
     _repository = GetIt.I<ItineraryRepository>();
-    _loadForm();
+    _loadExistingResponses();
   }
 
-  Future<void> _loadForm() async {
+  Future<void> _loadExistingResponses() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
-    final fieldsResult = await _repository.getFormFields(widget.material.id);
-    final responsesResult = await _repository.getFormResponses(widget.material.id);
+    final result =
+        await _repository.getGrupoFormularioRespostas(widget.formulario.id);
 
     setState(() {
       _isLoading = false;
-      fieldsResult.fold(
+      result.fold(
         (e) => _error = e.toString().replaceAll('Exception: ', ''),
-        (fields) => _fields = fields,
-      );
-      responsesResult.fold(
-        (_) {},
-        (resps) {
-          _responses = Map.from(resps);
-          _alreadyAnswered = resps.isNotEmpty;
-        },
+        (respostas) => _answers.addAll(respostas),
       );
     });
   }
 
-  int get _answeredCount =>
-      _fields.where((f) => (_responses[f.id]?.isNotEmpty ?? false)).length;
+  int get _answeredCount {
+    return widget.formulario.perguntas.where((p) {
+      final answer = _answers[p.id];
+      if (answer == null) return false;
+      if (answer is String) return answer.trim().isNotEmpty;
+      if (answer is List) return answer.isNotEmpty;
+      return true; // bool
+    }).length;
+  }
 
   bool get _canSubmit {
-    for (final field in _fields) {
-      if (field.obrigatorio) {
-        final val = _responses[field.id];
-        if (val == null || val.isEmpty) return false;
+    for (final p in widget.formulario.perguntas) {
+      if (p.required) {
+        final answer = _answers[p.id];
+        if (answer == null) return false;
+        if (answer is String && answer.trim().isEmpty) return false;
+        if (answer is List && answer.isEmpty) return false;
       }
     }
-    return _fields.isNotEmpty;
+    return widget.formulario.perguntas.isNotEmpty;
   }
 
   int get _missingRequiredCount {
     int count = 0;
-    for (final field in _fields) {
-      if (!field.obrigatorio) continue;
-      final val = _responses[field.id];
-      if (val == null || val.isEmpty) count++;
+    for (final p in widget.formulario.perguntas) {
+      if (!p.required) continue;
+      final answer = _answers[p.id];
+      if (answer == null) { count++; continue; }
+      if (answer is String && answer.trim().isEmpty) { count++; continue; }
+      if (answer is List && answer.isEmpty) { count++; continue; }
     }
     return count;
   }
 
-  bool _isFieldMissing(FormFieldEntity field) {
-    if (!field.obrigatorio) return false;
-    final val = _responses[field.id];
-    return val == null || val.isEmpty;
+  bool _isMissingAnswer(PerguntaModel p) {
+    if (!p.required) return false;
+    final answer = _answers[p.id];
+    if (answer == null) return true;
+    if (answer is String && answer.trim().isEmpty) return true;
+    if (answer is List && answer.isEmpty) return true;
+    return false;
   }
 
   Future<void> _submit() async {
@@ -97,20 +102,17 @@ class _FormPageState extends State<FormPage> {
     }
 
     setState(() => _isSaving = true);
-    final rows = _fields.map((f) => {
-          'campoId': f.id,
-          'valor': _responses[f.id] ?? '',
-        }).toList();
 
-    final result = await _repository.saveFormResponses(widget.material.id, rows);
+    final result = await _repository.saveGrupoFormularioRespostas(
+      widget.formulario.id,
+      _answers,
+    );
+
     setState(() => _isSaving = false);
 
     result.fold(
       (e) => _showError(e.toString().replaceAll('Exception: ', '')),
-      (_) => setState(() {
-        _submitted = true;
-        _alreadyAnswered = true;
-      }),
+      (_) => setState(() => _submitted = true),
     );
   }
 
@@ -130,56 +132,58 @@ class _FormPageState extends State<FormPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        body: CustomScrollView(
-          slivers: [
-            _FormAppBar(
-              title: widget.material.name,
-              answered: _answeredCount,
-              total: _fields.length,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: CustomScrollView(
+        slivers: [
+          _FormAppBar(
+            title: widget.formulario.titulo,
+            answered: _answeredCount,
+            total: widget.formulario.perguntas.length,
+          ),
+          if (_isLoading)
+            const SliverFillRemaining(child: _FormLoading())
+          else if (_error != null)
+            SliverFillRemaining(
+              child: _FormError(error: _error!, onRetry: _loadExistingResponses),
+            )
+          else if (_submitted)
+            const SliverFillRemaining(child: _FormSuccess())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md, AppSpacing.md, AppSpacing.md, 120,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final pergunta = widget.formulario.perguntas[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _PerguntaCard(
+                        pergunta: pergunta,
+                        index: index,
+                        answer: _answers[pergunta.id],
+                        showMissing: _showValidation && _isMissingAnswer(pergunta),
+                        onChanged: (val) =>
+                            setState(() => _answers[pergunta.id] = val),
+                      ),
+                    );
+                  },
+                  childCount: widget.formulario.perguntas.length,
+                ),
+              ),
             ),
-            if (_isLoading)
-              const SliverFillRemaining(child: _FormLoading())
-            else if (_error != null)
-              SliverFillRemaining(child: _FormError(error: _error!, onRetry: _loadForm))
-            else if (_submitted)
-              const SliverFillRemaining(child: _FormSuccess())
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md, AppSpacing.md, AppSpacing.md, 120,
-                ),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final field = _fields[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: _FieldCard(
-                          field: field,
-                          index: index,
-                          value: _responses[field.id],
-                          showMissing: _showValidation && _isFieldMissing(field),
-                          onChanged: (val) =>
-                              setState(() => _responses[field.id] = val),
-                        ),
-                      );
-                    },
-                    childCount: _fields.length,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        bottomNavigationBar: (_isLoading || _error != null || _submitted)
-            ? null
-            : _SubmitBar(
-                canSubmit: _canSubmit,
-                isSaving: _isSaving,
-                alreadyAnswered: _alreadyAnswered,
-                onSubmit: _submit,
-                missingCount: _showValidation ? _missingRequiredCount : 0,
-              ),
+        ],
+      ),
+      bottomNavigationBar: (_isLoading || _error != null || _submitted)
+          ? null
+          : _SubmitBar(
+              canSubmit: _canSubmit,
+              isSaving: _isSaving,
+              alreadyAnswered: widget.formulario.hasUserResponse,
+              onSubmit: _submit,
+              missingCount: _showValidation ? _missingRequiredCount : 0,
+            ),
       ),
     );
   }
@@ -211,7 +215,8 @@ class _FormAppBar extends StatelessWidget {
       elevation: 0,
       backgroundColor: AppColors.primary,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+            color: Colors.white, size: 20),
         onPressed: () => Navigator.of(context).pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -271,8 +276,10 @@ class _FormAppBar extends StatelessWidget {
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 4,
-                            backgroundColor: Colors.white.withValues(alpha: 0.25),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.25),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                Colors.white),
                           ),
                         ),
                       ),
@@ -308,23 +315,30 @@ class _FormAppBar extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Field Card
+// Pergunta Card (supports text, yes_no, checkbox)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _FieldCard extends StatelessWidget {
-  final FormFieldEntity field;
+class _PerguntaCard extends StatelessWidget {
+  final PerguntaModel pergunta;
   final int index;
-  final String? value;
+  final dynamic answer;
   final bool showMissing;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<dynamic> onChanged;
 
-  const _FieldCard({
-    required this.field,
+  const _PerguntaCard({
+    required this.pergunta,
     required this.index,
-    required this.value,
+    required this.answer,
     this.showMissing = false,
     required this.onChanged,
   });
+
+  bool get _hasAnswer {
+    if (answer == null) return false;
+    if (answer is String) return (answer as String).trim().isNotEmpty;
+    if (answer is List) return (answer as List).isNotEmpty;
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,10 +351,13 @@ class _FieldCard extends StatelessWidget {
         border: Border.all(
           color: showMissing
               ? const Color(0xFFD32F2F).withValues(alpha: 0.6)
-              : (value?.isNotEmpty ?? false)
+              : _hasAnswer
                   ? AppColors.primary.withValues(alpha: 0.3)
-                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
-          width: showMissing || (value?.isNotEmpty ?? false) ? 1.5 : 1,
+                  : Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.08),
+          width: showMissing || _hasAnswer ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -377,14 +394,14 @@ class _FieldCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          field.label,
+                          pergunta.title,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      if (field.obrigatorio)
+                      if (pergunta.required)
                         const Text(
                           ' *',
                           style: TextStyle(
@@ -398,6 +415,24 @@ class _FieldCard extends StatelessWidget {
               ],
             ),
           ),
+          // Descrição opcional
+          if (pergunta.descricao != null &&
+              pergunta.descricao!.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm,
+              ),
+              child: Text(
+                pergunta.descricao!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.55),
+                  height: 1.4,
+                ),
+              ),
+            ),
           const Divider(height: 1, thickness: 1),
           // Input
           Padding(
@@ -410,49 +445,51 @@ class _FieldCard extends StatelessWidget {
   }
 
   Widget _buildInput(BuildContext context) {
-    switch (field.tipo) {
-      case 'texto_curto':
-        return _TextCurto(value: value, onChanged: onChanged);
-      case 'texto_longo':
-        return _TextoLongo(value: value, onChanged: onChanged);
-      case 'multipla_escolha':
-        return _MultiplaEscolha(
-          opcoes: field.opcoes,
-          value: value,
+    switch (pergunta.type) {
+      case FormQuestionType.text:
+        return _TextInput(
+          value: answer as String?,
           onChanged: onChanged,
         );
-      case 'checkbox':
-        return _CheckboxField(
-          opcoes: field.opcoes,
-          value: value,
+      case FormQuestionType.yesNo:
+        return _YesNoInput(
+          value: answer as bool?,
           onChanged: onChanged,
         );
-      case 'nota':
-        return _NotaField(value: value, onChanged: onChanged);
-      default:
+      case FormQuestionType.checkbox:
+        return _CheckboxInput(
+          opcoes: pergunta.options,
+          value: answer as String?,
+          onChanged: onChanged,
+        );
+      case FormQuestionType.unknown:
         return const SizedBox.shrink();
     }
   }
 
   IconData get _fieldIcon {
-    switch (field.tipo) {
-      case 'texto_curto': return Icons.short_text_rounded;
-      case 'texto_longo': return Icons.subject_rounded;
-      case 'multipla_escolha': return Icons.radio_button_checked_rounded;
-      case 'checkbox': return Icons.check_box_rounded;
-      case 'nota': return Icons.star_rounded;
-      default: return Icons.help_outline;
+    switch (pergunta.type) {
+      case FormQuestionType.text:
+        return Icons.short_text_rounded;
+      case FormQuestionType.yesNo:
+        return Icons.check_circle_outline_rounded;
+      case FormQuestionType.checkbox:
+        return Icons.check_box_rounded;
+      case FormQuestionType.unknown:
+        return Icons.help_outline;
     }
   }
 
   Color get _fieldColor {
-    switch (field.tipo) {
-      case 'texto_curto': return const Color(0xFF2196F3);
-      case 'texto_longo': return const Color(0xFF9C27B0);
-      case 'multipla_escolha': return const Color(0xFF4CAF50);
-      case 'checkbox': return const Color(0xFFFF9800);
-      case 'nota': return const Color(0xFFFFC107);
-      default: return AppColors.primary;
+    switch (pergunta.type) {
+      case FormQuestionType.text:
+        return const Color(0xFF2196F3);
+      case FormQuestionType.yesNo:
+        return const Color(0xFF4CAF50);
+      case FormQuestionType.checkbox:
+        return const Color(0xFFFF9800);
+      case FormQuestionType.unknown:
+        return AppColors.primary;
     }
   }
 }
@@ -461,16 +498,16 @@ class _FieldCard extends StatelessWidget {
 // Input Widgets
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TextCurto extends StatefulWidget {
+class _TextInput extends StatefulWidget {
   final String? value;
-  final ValueChanged<String?> onChanged;
-  const _TextCurto({required this.value, required this.onChanged});
+  final ValueChanged<dynamic> onChanged;
+  const _TextInput({required this.value, required this.onChanged});
 
   @override
-  State<_TextCurto> createState() => _TextCurtoState();
+  State<_TextInput> createState() => _TextInputState();
 }
 
-class _TextCurtoState extends State<_TextCurto> {
+class _TextInputState extends State<_TextInput> {
   late final TextEditingController _ctrl;
 
   @override
@@ -489,82 +526,57 @@ class _TextCurtoState extends State<_TextCurto> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _ctrl,
-      onChanged: widget.onChanged,
+      onChanged: (v) => widget.onChanged(v),
+      maxLines: 4,
       style: AppTextStyles.bodyMedium,
       decoration: InputDecoration(
         hintText: 'Digite sua resposta...',
         hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
+          color: Theme.of(context)
+              .colorScheme
+              .onSurface
+              .withValues(alpha: 0.35),
         ),
         filled: true,
-        fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
+        fillColor:
+            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + 2,
-        ),
+        contentPadding: const EdgeInsets.all(AppSpacing.md),
       ),
     );
   }
 }
 
-class _TextoLongo extends StatefulWidget {
-  final String? value;
-  final ValueChanged<String?> onChanged;
-  const _TextoLongo({required this.value, required this.onChanged});
+class _YesNoInput extends StatelessWidget {
+  final bool? value;
+  final ValueChanged<dynamic> onChanged;
 
-  @override
-  State<_TextoLongo> createState() => _TextoLongoState();
-}
-
-class _TextoLongoState extends State<_TextoLongo> {
-  late final TextEditingController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = TextEditingController(text: widget.value ?? '');
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
+  const _YesNoInput({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Row(
       children: [
-        TextField(
-          controller: _ctrl,
-          onChanged: widget.onChanged,
-          maxLines: 4,
-          style: AppTextStyles.bodyMedium,
-          decoration: InputDecoration(
-            hintText: 'Digite sua resposta...',
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
-            ),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.all(AppSpacing.md),
+        Expanded(
+          child: _OptionTile(
+            label: 'Sim',
+            icon: Icons.check_rounded,
+            selected: value == true,
+            color: const Color(0xFF4CAF50),
+            onTap: () => onChanged(true),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          '${_ctrl.text.length} caracteres',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
-            fontSize: 11,
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: _OptionTile(
+            label: 'Não',
+            icon: Icons.close_rounded,
+            selected: value == false,
+            color: const Color(0xFFD32F2F),
+            onTap: () => onChanged(false),
           ),
         ),
       ],
@@ -572,12 +584,71 @@ class _TextoLongoState extends State<_TextoLongo> {
   }
 }
 
-class _MultiplaEscolha extends StatelessWidget {
+class _OptionTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _OptionTile({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm + 4,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.1)
+              : Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(
+            color: selected ? color.withValues(alpha: 0.5) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: selected ? color : Colors.grey),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: selected
+                    ? color
+                    : Theme.of(context).colorScheme.onSurface,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckboxInput extends StatelessWidget {
   final List<String> opcoes;
   final String? value;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<dynamic> onChanged;
 
-  const _MultiplaEscolha({
+  const _CheckboxInput({
     required this.opcoes,
     required this.value,
     required this.onChanged,
@@ -589,7 +660,7 @@ class _MultiplaEscolha extends StatelessWidget {
       children: opcoes.map((opcao) {
         final isSelected = value == opcao;
         return InkWell(
-          onTap: () => onChanged(opcao),
+          onTap: () => onChanged(isSelected ? null : opcao),
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
@@ -601,7 +672,10 @@ class _MultiplaEscolha extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary.withValues(alpha: 0.08)
-                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
+                  : Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
               border: Border.all(
                 color: isSelected
@@ -620,7 +694,10 @@ class _MultiplaEscolha extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.3),
                       width: isSelected ? 5 : 2,
                     ),
                   ),
@@ -632,7 +709,8 @@ class _MultiplaEscolha extends StatelessWidget {
                     color: isSelected
                         ? AppColors.primary
                         : Theme.of(context).colorScheme.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ],
@@ -641,164 +719,6 @@ class _MultiplaEscolha extends StatelessWidget {
         );
       }).toList(),
     );
-  }
-}
-
-class _CheckboxField extends StatelessWidget {
-  final List<String> opcoes;
-  final String? value;
-  final ValueChanged<String?> onChanged;
-
-  const _CheckboxField({
-    required this.opcoes,
-    required this.value,
-    required this.onChanged,
-  });
-
-  Set<String> get _selected {
-    if (value == null || value!.isEmpty) return {};
-    try {
-      final list = jsonDecode(value!) as List;
-      return list.map((e) => e.toString()).toSet();
-    } catch (_) {
-      return {};
-    }
-  }
-
-  void _toggle(String opcao) {
-    final sel = Set<String>.from(_selected);
-    if (sel.contains(opcao)) {
-      sel.remove(opcao);
-    } else {
-      sel.add(opcao);
-    }
-    onChanged(jsonEncode(sel.toList()));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final selected = _selected;
-    return Column(
-      children: opcoes.map((opcao) {
-        final isChecked = selected.contains(opcao);
-        return InkWell(
-          onTap: () => _toggle(opcao),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm + 2,
-            ),
-            decoration: BoxDecoration(
-              color: isChecked
-                  ? const Color(0xFFFF9800).withValues(alpha: 0.08)
-                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.all(
-                color: isChecked
-                    ? const Color(0xFFFF9800).withValues(alpha: 0.5)
-                    : Colors.transparent,
-              ),
-            ),
-            child: Row(
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: isChecked ? const Color(0xFFFF9800) : Colors.transparent,
-                    border: Border.all(
-                      color: isChecked
-                          ? const Color(0xFFFF9800)
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: isChecked
-                      ? const Icon(Icons.check, size: 12, color: Colors.white)
-                      : null,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  opcao,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: isChecked
-                        ? const Color(0xFFFF9800)
-                        : Theme.of(context).colorScheme.onSurface,
-                    fontWeight: isChecked ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _NotaField extends StatelessWidget {
-  final String? value;
-  final ValueChanged<String?> onChanged;
-
-  const _NotaField({required this.value, required this.onChanged});
-
-  int get _current => int.tryParse(value ?? '0') ?? 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (i) {
-            final star = i + 1;
-            final isActive = star <= _current;
-            return GestureDetector(
-              onTap: () => onChanged(star.toString()),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(
-                  isActive ? Icons.star_rounded : Icons.star_outline_rounded,
-                  size: 38,
-                  color: isActive ? const Color(0xFFFFC107) : Colors.grey.shade300,
-                ),
-              ),
-            );
-          }),
-        ),
-        if (_current > 0)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Center(
-              child: Text(
-                _ratingLabel(_current),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: const Color(0xFFFFC107),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  String _ratingLabel(int v) {
-    switch (v) {
-      case 1: return '⭐ Muito ruim';
-      case 2: return '⭐⭐ Ruim';
-      case 3: return '⭐⭐⭐ Regular';
-      case 4: return '⭐⭐⭐⭐ Bom';
-      case 5: return '⭐⭐⭐⭐⭐ Excelente!';
-      default: return '';
-    }
   }
 }
 
@@ -836,9 +756,9 @@ class _SubmitBar extends StatelessWidget {
       ),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
-        AppSpacing.sm,
         AppSpacing.md,
-        AppSpacing.md + MediaQuery.of(context).padding.bottom,
+        AppSpacing.md,
+        MediaQuery.of(context).padding.bottom + AppSpacing.md,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -846,7 +766,7 @@ class _SubmitBar extends StatelessWidget {
           // Warning: missing required fields
           if (missingCount > 0)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -871,8 +791,8 @@ class _SubmitBar extends StatelessWidget {
                     Expanded(
                       child: Text(
                         missingCount == 1
-                            ? 'Preencha 1 campo obrigatório (*) para enviar.'
-                            : 'Preencha $missingCount campos obrigatórios (*) para enviar.',
+                            ? 'Preencha 1 pergunta obrigatória (*) para enviar.'
+                            : 'Preencha $missingCount perguntas obrigatórias (*) para enviar.',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: const Color(0xFFD32F2F),
                           fontWeight: FontWeight.w600,
@@ -886,20 +806,29 @@ class _SubmitBar extends StatelessWidget {
             ),
           if (alreadyAnswered && missingCount == 0)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline, size: 14, color: AppColors.primary),
-                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 14,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(width: 6),
                   Flexible(
                     child: Text(
                       'Você já respondeu este formulário. Enviar novamente atualizará suas respostas.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
                         fontSize: 11,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -907,39 +836,34 @@ class _SubmitBar extends StatelessWidget {
             ),
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: 48,
             child: ElevatedButton(
+              onPressed: !isSaving ? onSubmit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                elevation: 0,
+                disabledBackgroundColor:
+                    AppColors.primary.withValues(alpha: 0.3),
+                disabledForegroundColor: Colors.white70,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
               ),
-              onPressed: !isSaving ? onSubmit : null,
               child: isSaving
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        color: Colors.white,
                       ),
                     )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.send_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          alreadyAnswered ? 'Atualizar respostas' : 'Enviar respostas',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                  : Text(
+                      alreadyAnswered ? 'Atualizar Respostas' : 'Enviar',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
             ),
           ),
@@ -950,7 +874,7 @@ class _SubmitBar extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// States
+// Loading / Error / Success states
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _FormLoading extends StatelessWidget {
@@ -958,22 +882,8 @@ class _FormLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Carregando formulário...',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
-            ),
-          ),
-        ],
-      ),
+    return const Center(
+      child: CircularProgressIndicator(color: AppColors.primary),
     );
   }
 }
@@ -988,36 +898,31 @@ class _FormError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.error_outline_rounded,
               size: 48,
               color: Colors.red.shade300,
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 16),
             Text(
               error,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            ElevatedButton.icon(
+            const SizedBox(height: 20),
+            TextButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded, size: 18),
+              icon: const Icon(Icons.refresh),
               label: const Text('Tentar novamente'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                ),
-              ),
             ),
           ],
         ),
@@ -1033,55 +938,48 @@ class _FormSuccess extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.check_circle_rounded,
-                size: 48,
                 color: Color(0xFF4CAF50),
+                size: 40,
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: 20),
             Text(
-              'Respostas enviadas!',
+              'Respostas enviadas com sucesso!',
+              textAlign: TextAlign.center,
               style: AppTextStyles.h3.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 8),
             Text(
-              'Suas respostas foram salvas com sucesso.',
+              'Suas respostas foram registradas.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => Navigator.of(context).pop(true),
-                icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text('Voltar'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
-                ),
-              ),
+            const SizedBox(height: 32),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(true),
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text('Voltar'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
           ],
         ),

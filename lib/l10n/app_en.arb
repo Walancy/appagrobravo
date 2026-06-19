@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-
   "commonCancel": "Cancel",
   "commonConfirm": "Confirm",
   "commonSave": "Save",
@@ -16,12 +15,10 @@
   "commonNo": "No",
   "commonError": "Error",
   "commonSearch": "Search...",
-
   "navItinerary": "Itinerary",
   "navChat": "Chat",
   "navCommunity": "Community",
   "navMyData": "My data",
-
   "settingsTitle": "Settings",
   "settingsSectionAccount": "ACCOUNT",
   "settingsMyDocuments": "My documents",
@@ -38,13 +35,11 @@
   "settingsSignOut": "Sign out",
   "settingsSignOutDialogTitle": "Sign out",
   "settingsSignOutDialogContent": "Are you sure you want to sign out?",
-
   "languagePickerTitle": "Select language",
   "languageSystem": "System default",
   "languagePortuguese": "Portuguese",
   "languageEnglish": "English",
   "languageSpanish": "Spanish",
-
   "homeWelcomeTitle": "Welcome!",
   "homeWelcomeContent": "To make the most of your trip, complete your profile with personal data, dietary restrictions and emergency contact.",
   "homeCompleteProfile": "Complete profile",
@@ -54,7 +49,6 @@
   "homeSelectMission": "Select Mission",
   "homeDeletePostTitle": "Delete Post",
   "homeDeletePostConfirm": "Are you sure you want to delete this post?",
-
   "onboardingWelcomeTitle": "Welcome to the mission!",
   "onboardingWelcomeBody": "You have been added to this mission. Before confirming your participation, please read the following information carefully. This process takes only a few minutes.",
   "onboardingStart": "Start",
@@ -62,31 +56,25 @@
   "onboardingSkipForNow": "Skip for now",
   "onboardingAllDone": "All set!",
   "onboardingParticipationConfirmed": "Your participation has been confirmed.\nTo ensure a smooth trip, complete the steps below.",
-
   "onboardingQ1Title": "Travel Documents",
   "onboardingQ1Description": "Confirm that you are aware of the documents required for this mission.",
   "onboardingQ1OptionA": "I confirm that I have read and am aware of all necessary documents (passport, visas, vaccines, etc.) and I know it is my responsibility to obtain them within the deadline.",
-
   "onboardingQ2Title": "Family Travelers",
   "onboardingQ2Description": "If there are other members of your family group participating in this mission, please enter their names below.",
   "onboardingQ2Hint": "E.g.: Maria Silva, João Silva... (leave blank if none)",
-
   "onboardingQ3Title": "Particularities",
   "onboardingQ3Description": "Inform the organizing team of any particularities they should know about for this trip.",
   "onboardingQ3Hint": "E.g.: special needs, dietary restrictions, relevant health conditions... (optional)",
-
   "onboardingQ4Title": "Image Use Authorization",
   "onboardingQ4Description": "Do you authorize the use of your image in photos and videos produced during the mission for institutional purposes?",
   "onboardingQ4OptionA": "I authorize the use of my image for institutional and promotional purposes.",
   "onboardingQ4OptionB": "I do not authorize the use of my image.",
-
   "onboardingQ5Title": "Participation Declaration",
   "onboardingQ5Description": "To conclude, confirm your agreement with the terms of this mission.",
   "onboardingQ5OptionA": "I agree — I declare that I have read and agree with all the information and rules of this mission, committing to follow the guidelines of the organizing team.",
   "onboardingQ5OptionB": "I disagree.",
   "onboardingQ5Warning": "You must agree to confirm your participation in this mission.",
   "onboardingQ5Error": "Submission error. Check your connection and try again.",
-
   "onboardingGuidePersonalDataTitle": "Personal Data",
   "onboardingGuidePersonalDataSub": "Complete your profile with name, photo and contact information.",
   "onboardingGuideDocumentsTitle": "Documents",
@@ -100,21 +88,23 @@
   "onboardingBadgeOptional": "Optional",
   "onboardingBadgeDone": "Done",
   "onboardingGuideCompleteHint": "Complete the required items to continue",
-
   "profileChangePhoto": "Change profile photo",
-
   "groupInfoTitle": "Group details",
   "groupInfoSubtitle": "View more details",
   "groupInfoMission": "Mission: {mission}",
   "@groupInfoMission": {
     "placeholders": {
-      "mission": { "type": "String" }
+      "mission": {
+        "type": "String"
+      }
     }
   },
   "groupInfoMembersCount": "{count} members",
   "@groupInfoMembersCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupInfoMediaSection": "Media, links and docs",
@@ -125,7 +115,6 @@
   "groupInfoErrorPrefix": "Error: ",
   "groupMediaTitle": "Media and files",
   "groupMediaSubtitle": "View group media",
-
   "chatCurrentMission": "CURRENT MISSION",
   "chatGuides": "GUIDES",
   "chatHistory": "History",
@@ -136,7 +125,6 @@
   "chatPrevious": "PREVIOUS",
   "chatNoHistory": "No history found",
   "chatYesterday": "Yesterday",
-
   "notificationsTitle": "Notifications",
   "notificationsMarkAllRead": "Mark read",
   "notificationsClearAll": "Clear all",
@@ -158,30 +146,39 @@
   "notificationsMinutesAgo": "{minutes}min ago",
   "@notificationsMinutesAgo": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "notificationsHoursAgo": "{hours}h ago",
   "@notificationsHoursAgo": {
     "placeholders": {
-      "hours": { "type": "int" }
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "notificationsYesterdayTime": "yesterday",
   "notificationsDaysAgo": "{days} days ago",
   "@notificationsDaysAgo": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "notificationsWeeksAgo": "{weeks} week{plural} ago",
   "@notificationsWeeksAgo": {
     "placeholders": {
-      "weeks": { "type": "int" },
-      "plural": { "type": "String" }
+      "weeks": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
     }
   },
-
   "documentsTitle": "My documents",
   "documentsAddOrView": "Add / View documents",
   "documentsPendingUpload": "Pending upload",
@@ -189,7 +186,6 @@
   "documentsValid": "Document up to date",
   "documentsRejected": "Rejected - Click to resubmit",
   "documentsExpired": "Expired - Click to update",
-
   "accountDataTitle": "Account data",
   "accountDataSaveReminder": "Don't forget to save your changes",
   "accountDataFullName": "Full name",
@@ -230,18 +226,18 @@
   "accountDataDeleteCancel": "Cancel",
   "accountDataDeleteSuccess": "Your account has been successfully deleted.",
   "accountDataDeleteError": "Error deleting account. Please try again.",
-
   "itineraryErrorPrefix": "Error: ",
   "itineraryCurrentMission": "Current Mission",
   "itineraryFiltersActive": "{count} filters applied",
   "@itineraryFiltersActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryFiltersNone": "No filters applied",
   "itineraryFilterButton": "Filter",
-
   "itineraryMissionEnded": "Mission ended",
   "itineraryEmptyFiltered": "No events match the filters.",
   "itineraryStatusNow": "Happening now",
@@ -279,7 +275,9 @@
   "itineraryEmergencyLocation": "Current location: {country}",
   "@itineraryEmergencyLocation": {
     "placeholders": {
-      "country": { "type": "String" }
+      "country": {
+        "type": "String"
+      }
     }
   },
   "itineraryEmergencyPolice": "Police",
@@ -290,7 +288,9 @@
   "itineraryEmergencyLoadError": "Error loading contacts: {error}",
   "@itineraryEmergencyLoadError": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "itineraryViewOnMap": "View on Map",
@@ -302,46 +302,62 @@
   "itineraryDelayedWithTime": "DELAYED {delay}",
   "@itineraryDelayedWithTime": {
     "placeholders": {
-      "delay": { "type": "String" }
+      "delay": {
+        "type": "String"
+      }
     }
   },
   "itineraryFromCity": "from {city}",
   "@itineraryFromCity": {
     "placeholders": {
-      "city": { "type": "String" }
+      "city": {
+        "type": "String"
+      }
     }
   },
   "itineraryToCity": "to {city}",
   "@itineraryToCity": {
     "placeholders": {
-      "city": { "type": "String" }
+      "city": {
+        "type": "String"
+      }
     }
   },
   "itineraryConnectionsTitle": "Connections ({count})",
   "@itineraryConnectionsTitle": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryConnectionsCount": "{count} stop{plural}",
   "@itineraryConnectionsCount": {
     "placeholders": {
-      "count": { "type": "int" },
-      "plural": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
     }
   },
   "itineraryDirectFlight": "Direct flight",
   "itineraryConnectionTime": "Connection time: {time}",
   "@itineraryConnectionTime": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "itineraryNextDay": "Next day",
   "itineraryTravelTime": "Travel time: {duration}",
   "@itineraryTravelTime": {
     "placeholders": {
-      "duration": { "type": "String" }
+      "duration": {
+        "type": "String"
+      }
     }
   },
   "itineraryChecklistTitle": "Mission checklist",
@@ -353,7 +369,9 @@
   "itineraryInDays": "in {count} days",
   "@itineraryInDays": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryTomorrow": "tomorrow",
@@ -362,18 +380,17 @@
   "itineraryEnded": "ended",
   "itineraryNoMaterials": "No materials available",
   "itineraryOpenMaterialError": "Could not open the material",
-
   "incompleteProfileTitle": "Complete your registration",
   "incompleteProfileSubtitle": "Important data is missing from your account. Tap here to fill it in.",
-
   "notificationsConnectionRequests": "Connection requests",
   "notificationsAndOthers": "and {count} others",
   "@notificationsAndOthers": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "medicalTitle": "Medical conditions",
   "medicalDescription": "Add important information for your trip, such as medical conditions, ongoing medication use, allergies, dietary restrictions, mobility limitations or phobias.\n\nIf necessary, bring extra medication and a medical prescription during the trip.",
   "medicalAddInfo": "Add information",
@@ -382,7 +399,9 @@
   "medicalCategory": "Category: {category}",
   "@medicalCategory": {
     "placeholders": {
-      "category": { "type": "String" }
+      "category": {
+        "type": "String"
+      }
     }
   },
   "medicalDescriptionHint": "Write the description...",
@@ -396,7 +415,6 @@
   "medicalCategoryMobility": "Mobility",
   "medicalCategoryPhobia": "Phobia",
   "medicalCategoryOther": "Other",
-
   "notifPrefTitle": "Notifications",
   "notifPrefGeneral": "General",
   "notifPrefAlertTypes": "Alert Types",
@@ -411,7 +429,6 @@
   "notifPrefConnections": "New Connections",
   "notifPrefConnectionsSub": "Follower requests and new messages",
   "notifPrefAutoSave": "Your preferences are saved automatically.",
-
   "privacyTitle": "Privacy Policy",
   "privacyHeading": "AgroBravo Enterprises - Commitment to Your Privacy",
   "privacyIntro": "AgroBravo Enterprises, headquartered in Ames, Iowa (USA) with a branch in Brazil, values the trust you place in us. This policy describes how we handle your personal information.",
@@ -426,7 +443,6 @@
   "privacyS5Title": "5. Your Rights",
   "privacyS5Body": "You have the right to access, rectify or request deletion of your personal data. To exercise these rights, contact us through the support channels in the application.",
   "privacyLastUpdated": "Last updated: April 22, 2025",
-
   "aboutTitle": "About us",
   "aboutTagline": "Connections that transform agribusiness.",
   "aboutBody1": "AgroBravo Enterprises is a strategic connections platform in global agribusiness. With over 12 years of history and presence on 5 continents, we connect agribusiness between Brazil, USA, Asia, Latin America and Europe.",
@@ -440,19 +456,15 @@
   "aboutAppName": "AgroBravo Mobile App",
   "aboutVersion": "Version 1.0.0 (Build 2026)",
   "aboutCopyright": "© 2026 AgroBravo. All rights reserved.",
-
   "pendingDocsBannerTitle": "Pending documents",
   "pendingDocsBannerSubtitle": "You have required documents that have not yet been submitted or approved. Tap here to send them.",
-
   "socialProfileTitle": "Social Profile",
   "socialProfileMyMissions": "My Missions",
   "socialProfileNoMissions": "No missions found",
   "socialProfileChangeCover": "Change cover",
-
   "profileStatsConnections": "connections",
   "profileStatsPosts": "posts",
   "profileStatsMissions": "missions",
-
   "profileActionEditProfile": "Edit profile",
   "profileActionCancel": "Cancel",
   "profileActionPublish": "Publish",
@@ -461,28 +473,31 @@
   "profileActionAccept": "Accept",
   "profileActionReject": "Decline",
   "profileActionDisconnect": "Disconnect",
-
   "userFeedTitle": "Posts",
   "userFeedEmpty": "No posts",
   "userFeedEmptyDescription": "This user has not made any posts on their profile yet.",
-
   "connectionsTitle": "Connections",
   "connectionsSearch": "Search",
   "connectionsCount": "{count} connections",
   "@connectionsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "connectionRequestsCount": "{count} connection requests",
   "@connectionRequestsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "connectionsNoneFound": "No connections found.",
   "connectionsNoRequests": "No pending requests.",
   "connectionsConfirm": "Confirm",
   "connectionsRemove": "Remove",
-  "connectionsConnect": "Connect"
+  "connectionsConnect": "Connect",
+  "itineraryTravelGuide": "Travel guide"
 }

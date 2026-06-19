@@ -12,6 +12,7 @@ import 'package:agrobravo/features/itinerary/presentation/widgets/itinerary_filt
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/itinerary_shimmer.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/travel_data_page.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/travel_guide_page.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/mission_header_card.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
@@ -176,6 +177,13 @@ class _ItineraryContentState extends State<_ItineraryContent> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => TravelDataPage(group: widget.group),
+                  ),
+                );
+              },
+              onTravelGuideTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TravelGuidePage(group: widget.group),
                   ),
                 );
               },

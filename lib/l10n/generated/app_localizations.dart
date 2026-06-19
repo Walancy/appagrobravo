@@ -2175,6 +2175,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Conectar-se'**
   String get connectionsConnect;
+
+  /// No description provided for @itineraryTravelGuide.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guia de viagem'**
+  String get itineraryTravelGuide;
 }
 
 class _AppLocalizationsDelegate

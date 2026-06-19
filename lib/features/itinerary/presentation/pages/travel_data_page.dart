@@ -8,10 +8,13 @@ import 'package:agrobravo/features/itinerary/domain/entities/itinerary_group.dar
 import 'package:agrobravo/features/itinerary/domain/entities/mission_material.dart';
 import 'package:agrobravo/features/itinerary/domain/repositories/itinerary_repository.dart';
 import 'package:agrobravo/features/itinerary/presentation/pages/form_page.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/grupo_formulario_page.dart';
+import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model.dart';
 import 'package:dartz/dartz.dart' show Either;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TravelDataPage extends StatefulWidget {
@@ -27,6 +30,12 @@ class _TravelDataPageState extends State<TravelDataPage> {
   late final ItineraryRepository _repository;
   late Future<Either<Exception, List<MissionMaterialEntity>>> _materialsFuture;
   late Future<Either<Exception, List<ChecklistItemEntity>>> _checklistFuture;
+  late Future<Either<Exception, List<GrupoFormularioModel>>> _formulariosFuture;
+
+  // Realtime subscriptions
+  RealtimeChannel? _materiaisSubscription;
+  RealtimeChannel? _checklistSubscription;
+  RealtimeChannel? _formularioSubscription;
 
   @override
   void initState() {
@@ -34,16 +43,81 @@ class _TravelDataPageState extends State<TravelDataPage> {
     _repository = GetIt.I<ItineraryRepository>();
     _materialsFuture = _repository.getMissionMaterials(widget.group.id);
     _checklistFuture = _repository.getChecklist(widget.group.id);
+    _formulariosFuture = _repository.getGrupoFormularios(widget.group.id);
+    _subscribeToRealtimeChanges();
+  }
+
+  @override
+  void dispose() {
+    _materiaisSubscription?.unsubscribe();
+    _checklistSubscription?.unsubscribe();
+    _formularioSubscription?.unsubscribe();
+    super.dispose();
+  }
+
+  void _subscribeToRealtimeChanges() {
+    final supabase = Supabase.instance.client;
+    final groupId = widget.group.id;
+
+    // Listen for changes to materiais (documents & form materials)
+    _materiaisSubscription = supabase
+        .channel('travel_data:materiais:$groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'materiais',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'grupo_id',
+            value: groupId,
+          ),
+          callback: (_) => _refresh(),
+        )
+        .subscribe();
+
+    // Listen for changes to grupoChecklist
+    _checklistSubscription = supabase
+        .channel('travel_data:checklist:$groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'grupoChecklist',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'grupo_id',
+            value: groupId,
+          ),
+          callback: (_) => _refresh(),
+        )
+        .subscribe();
+
+    // Listen for changes to grupoFormulario (forms from admin panel)
+    _formularioSubscription = supabase
+        .channel('travel_data:formulario:$groupId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'grupoFormulario',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'grupo_id',
+            value: groupId,
+          ),
+          callback: (_) => _refresh(),
+        )
+        .subscribe();
   }
 
   Future<void> _refresh() async {
     final matFuture = _repository.getMissionMaterials(widget.group.id);
     final checkFuture = _repository.getChecklist(widget.group.id);
+    final formFuture = _repository.getGrupoFormularios(widget.group.id);
     setState(() {
       _materialsFuture = matFuture;
       _checklistFuture = checkFuture;
+      _formulariosFuture = formFuture;
     });
-    await Future.wait([matFuture, checkFuture]);
+    await Future.wait([matFuture, checkFuture, formFuture]);
   }
 
   @override
@@ -123,6 +197,56 @@ class _TravelDataPageState extends State<TravelDataPage> {
                   },
                 ),
 
+                // GrupoFormulario section (forms from admin panel)
+                FutureBuilder<Either<Exception, List<GrupoFormularioModel>>>(
+                  future: _formulariosFuture,
+                  builder: (context, formSnap) {
+                    final formResult = formSnap.data;
+                    final formularios = formResult?.fold(
+                          (_) => <GrupoFormularioModel>[],
+                          (items) => items,
+                        ) ??
+                        <GrupoFormularioModel>[];
+                    final isLoadingForms =
+                        formSnap.connectionState == ConnectionState.waiting;
+
+                    if (isLoadingForms || formularios.isNotEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Formulários',
+                            style: AppTextStyles.h3.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          if (isLoadingForms)
+                            const _MaterialsLoading()
+                          else
+                            ...formularios.map((form) => _GrupoFormularioTile(
+                                  formulario: form,
+                                  onTap: () async {
+                                    final answered = await Navigator.of(context)
+                                        .push<bool>(
+                                      MaterialPageRoute(
+                                        builder: (_) => GrupoFormularioPage(
+                                          formulario: form,
+                                        ),
+                                      ),
+                                    );
+                                    if (answered == true) _refresh();
+                                  },
+                                )),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
                 Text(
                   context.l10n.itineraryDocumentsTitle,
                   style: AppTextStyles.h3.copyWith(
@@ -160,6 +284,7 @@ class _TravelDataPageState extends State<TravelDataPage> {
     );
   }
 }
+
 
 class _TripSummary extends StatelessWidget {
   final ItineraryGroupEntity group;
@@ -891,3 +1016,150 @@ class _FormMaterialTile extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// GrupoFormulario Tile (forms from admin panel)
+// ---------------------------------------------------------------------------
+
+class _GrupoFormularioTile extends StatelessWidget {
+  final GrupoFormularioModel formulario;
+  final VoidCallback onTap;
+
+  const _GrupoFormularioTile({required this.formulario, required this.onTap});
+
+  static const _green = Color(0xFF4CAF50);
+  static const _orange = Color(0xFFFF9800);
+
+  @override
+  Widget build(BuildContext context) {
+    final responded = formulario.hasUserResponse;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(
+                color: responded
+                    ? _green.withValues(alpha: 0.25)
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.08),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: _green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_outlined,
+                    color: _green,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                // Title + badges
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        formulario.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${formulario.perguntas.length} pergunta${formulario.perguntas.length == 1 ? '' : 's'}',
+                              style: const TextStyle(
+                                color: _green,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Badge respondido/pendente
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: responded
+                                  ? _green.withValues(alpha: 0.08)
+                                  : _orange.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  responded
+                                      ? Icons.check_circle_outline
+                                      : Icons.pending_outlined,
+                                  size: 10,
+                                  color: responded ? _green : _orange,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  responded ? 'Respondido' : 'Pendente',
+                                  style: TextStyle(
+                                    color: responded ? _green : _orange,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.38),
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

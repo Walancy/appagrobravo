@@ -11,6 +11,7 @@ class MissionHeaderCard extends StatelessWidget {
   final DateTime startDate;
   final DateTime endDate;
   final VoidCallback? onTravelDataTap;
+  final VoidCallback? onTravelGuideTap;
   final List<ItineraryGroupEntity> allGroups;
   final ValueChanged<ItineraryGroupEntity>? onGroupSelected;
 
@@ -21,6 +22,7 @@ class MissionHeaderCard extends StatelessWidget {
     required this.startDate,
     required this.endDate,
     this.onTravelDataTap,
+    this.onTravelGuideTap,
     this.allGroups = const [],
     this.onGroupSelected,
   });
@@ -177,31 +179,67 @@ class MissionHeaderCard extends StatelessWidget {
                 ),
             ],
           ),
-          if (onTravelDataTap != null) ...[
+          if (onTravelDataTap != null || onTravelGuideTap != null) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              height: 38,
-              child: TextButton.icon(
-                onPressed: onTravelDataTap,
-                icon: const Icon(Icons.info_outline_rounded, size: 18),
-                label: Text(
-                  context.l10n.itineraryTravelData,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.08),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Row(
+              children: [
+                if (onTravelDataTap != null)
+                  Expanded(
+                    child: SizedBox(
+                      height: 38,
+                      child: TextButton.icon(
+                        onPressed: onTravelDataTap,
+                        icon: const Icon(Icons.info_outline_rounded, size: 18),
+                        label: Text(
+                          context.l10n.itineraryTravelData,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          textStyle: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  textStyle: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                if (onTravelDataTap != null && onTravelGuideTap != null)
+                  const SizedBox(width: 8),
+                if (onTravelGuideTap != null)
+                  Expanded(
+                    child: SizedBox(
+                      height: 38,
+                      child: TextButton.icon(
+                        onPressed: onTravelGuideTap,
+                        icon: const Icon(Icons.menu_book_rounded, size: 18),
+                        label: Text(
+                          context.l10n.itineraryTravelGuide,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          textStyle: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+              ],
             ),
           ],
         ],

@@ -66,6 +66,7 @@ class GrupoFormularioModel {
   final String? descricao;
   final List<PerguntaModel> perguntas;
   final String status;
+  final bool hasUserResponse;
 
   const GrupoFormularioModel({
     required this.id,
@@ -74,6 +75,7 @@ class GrupoFormularioModel {
     this.descricao,
     required this.perguntas,
     required this.status,
+    this.hasUserResponse = false,
   });
 
   factory GrupoFormularioModel.fromJson(Map<String, dynamic> json) {
@@ -93,6 +95,18 @@ class GrupoFormularioModel {
       descricao: json['descricao'] as String?,
       perguntas: perguntas,
       status: json['status'] as String? ?? '',
+    );
+  }
+
+  GrupoFormularioModel copyWith({bool? hasUserResponse}) {
+    return GrupoFormularioModel(
+      id: id,
+      grupoId: grupoId,
+      titulo: titulo,
+      descricao: descricao,
+      perguntas: perguntas,
+      status: status,
+      hasUserResponse: hasUserResponse ?? this.hasUserResponse,
     );
   }
 

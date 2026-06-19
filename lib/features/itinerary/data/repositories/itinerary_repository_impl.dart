@@ -15,6 +15,7 @@ import '../../domain/entities/checklist_item.dart';
 import '../../domain/entities/form_field_entity.dart';
 import '../models/itinerary_group_dto.dart';
 import '../models/itinerary_item_dto.dart';
+import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model.dart';
 
 @LazySingleton(as: ItineraryRepository)
 class ItineraryRepositoryImpl implements ItineraryRepository {
@@ -832,6 +833,116 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       return const Right(null);
     } catch (e) {
       return Left(Exception('Erro ao salvar respostas: $e'));
+    }
+  }
+
+  // ── GrupoFormulario methods (forms from admin panel) ─────────────────────
+
+  @override
+  Future<Either<Exception, List<GrupoFormularioModel>>> getGrupoFormularios(
+    String groupId,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+
+      // Fetch all visible formularios for this group, excluding Onboarding
+      final response = await _supabaseClient
+          .from('grupoFormulario')
+          .select()
+          .eq('grupo_id', groupId)
+          .eq('status', 'Visivel')
+          .neq('titulo', 'Onboarding')
+          .order('created_at', ascending: false);
+
+      final data = response as List<dynamic>;
+      var formularios = data
+          .map((json) => GrupoFormularioModel.fromJson(
+                Map<String, dynamic>.from(json as Map),
+              ))
+          .where((f) => f.perguntas.isNotEmpty)
+          .toList();
+
+      // Check which formularios the user has already responded to
+      if (userId != null && formularios.isNotEmpty) {
+        final formIds = formularios.map((f) => f.id).toList();
+        try {
+          final respostas = await _supabaseClient
+              .from('respostasGrupoFormulario')
+              .select('formulario_id')
+              .eq('user_id', userId)
+              .inFilter('formulario_id', formIds);
+          final respondedIds = (respostas as List<dynamic>)
+              .map((r) => r['formulario_id']?.toString())
+              .whereType<String>()
+              .toSet();
+          formularios = formularios
+              .map((f) => f.copyWith(
+                    hasUserResponse: respondedIds.contains(f.id),
+                  ))
+              .toList();
+        } catch (e) {
+          debugPrint('Erro ao verificar respostas dos formulários: $e');
+        }
+      }
+
+      return Right(formularios);
+    } catch (e) {
+      return Left(Exception('Erro ao buscar formulários do grupo: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Map<String, dynamic>>> getGrupoFormularioRespostas(
+    String formularioId,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return const Right({});
+
+      final response = await _supabaseClient
+          .from('respostasGrupoFormulario')
+          .select('respostas')
+          .eq('formulario_id', formularioId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response == null) return const Right({});
+
+      final respostas = response['respostas'];
+      if (respostas is Map) {
+        return Right(Map<String, dynamic>.from(respostas));
+      }
+      return const Right({});
+    } catch (e) {
+      return Left(Exception('Erro ao buscar respostas do formulário: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> saveGrupoFormularioRespostas(
+    String formularioId,
+    Map<String, dynamic> respostas,
+  ) async {
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return Left(Exception('Usuário não autenticado'));
+
+      // Delete any existing response, then insert fresh
+      await _supabaseClient
+          .from('respostasGrupoFormulario')
+          .delete()
+          .eq('formulario_id', formularioId)
+          .eq('user_id', userId);
+
+      await _supabaseClient.from('respostasGrupoFormulario').insert({
+        'formulario_id': formularioId,
+        'user_id': userId,
+        'respostas': respostas,
+      });
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Exception('Erro ao salvar respostas do formulário: $e'));
     }
   }
 }

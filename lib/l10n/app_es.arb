@@ -1,6 +1,5 @@
 {
   "@@locale": "es",
-
   "commonCancel": "Cancelar",
   "commonConfirm": "Confirmar",
   "commonSave": "Guardar",
@@ -16,12 +15,10 @@
   "commonNo": "No",
   "commonError": "Error",
   "commonSearch": "Buscar...",
-
   "navItinerary": "Itinerario",
   "navChat": "Chat",
   "navCommunity": "Comunidad",
   "navMyData": "Mis datos",
-
   "settingsTitle": "Configuración",
   "settingsSectionAccount": "CUENTA",
   "settingsMyDocuments": "Mis documentos",
@@ -38,13 +35,11 @@
   "settingsSignOut": "Cerrar sesión",
   "settingsSignOutDialogTitle": "Cerrar sesión",
   "settingsSignOutDialogContent": "¿Estás seguro de que quieres cerrar sesión?",
-
   "languagePickerTitle": "Seleccionar idioma",
   "languageSystem": "Predeterminado del sistema",
   "languagePortuguese": "Portugués",
   "languageEnglish": "Inglés",
   "languageSpanish": "Español",
-
   "homeWelcomeTitle": "¡Bienvenido/a!",
   "homeWelcomeContent": "Para aprovechar al máximo tu viaje, completa tu perfil con datos personales, restricciones alimentarias y contacto de emergencia.",
   "homeCompleteProfile": "Completar perfil",
@@ -54,7 +49,6 @@
   "homeSelectMission": "Seleccionar Misión",
   "homeDeletePostTitle": "Eliminar publicación",
   "homeDeletePostConfirm": "¿Estás seguro de que quieres eliminar esta publicación?",
-
   "onboardingWelcomeTitle": "¡Bienvenido a la misión!",
   "onboardingWelcomeBody": "Has sido añadido a esta misión. Antes de confirmar tu participación, lee detenidamente la siguiente información. Este proceso lleva solo unos minutos.",
   "onboardingStart": "Iniciar",
@@ -62,31 +56,25 @@
   "onboardingSkipForNow": "Omitir por ahora",
   "onboardingAllDone": "¡Todo listo!",
   "onboardingParticipationConfirmed": "Tu participación ha sido confirmada.\nPara garantizar un viaje tranquilo, completa los pasos a continuación.",
-
   "onboardingQ1Title": "Documentos de viaje",
   "onboardingQ1Description": "Confirma que estás al tanto de los documentos necesarios para esta misión.",
   "onboardingQ1OptionA": "Confirmo que he leído y estoy al tanto de todos los documentos necesarios (pasaporte, visados, vacunas, etc.) y sé que es mi responsabilidad obtenerlos dentro del plazo.",
-
   "onboardingQ2Title": "Viajeros familiares",
   "onboardingQ2Description": "Si hay otros miembros de tu grupo familiar participando en esta misión, indica sus nombres a continuación.",
   "onboardingQ2Hint": "Ej: María Silva, Juan Silva... (dejar en blanco si no hay)",
-
   "onboardingQ3Title": "Particularidades",
   "onboardingQ3Description": "Informa al equipo organizador de cualquier particularidad que deban conocer para este viaje.",
   "onboardingQ3Hint": "Ej: necesidades especiales, restricciones alimentarias, condiciones de salud relevantes... (opcional)",
-
   "onboardingQ4Title": "Autorización de uso de imagen",
   "onboardingQ4Description": "¿Autorizas el uso de tu imagen en fotos y videos producidos durante la misión con fines institucionales?",
   "onboardingQ4OptionA": "Autorizo el uso de mi imagen con fines institucionales y de divulgación.",
   "onboardingQ4OptionB": "No autorizo el uso de mi imagen.",
-
   "onboardingQ5Title": "Declaración de participación",
   "onboardingQ5Description": "Para finalizar, confirma tu acuerdo con los términos de esta misión.",
   "onboardingQ5OptionA": "De acuerdo — declaro que he leído y estoy conforme con toda la información y reglas de esta misión, comprometiéndome a seguir las orientaciones del equipo organizador.",
   "onboardingQ5OptionB": "No estoy de acuerdo.",
   "onboardingQ5Warning": "Es necesario estar de acuerdo para confirmar tu participación en esta misión.",
   "onboardingQ5Error": "Error al enviar. Verifica tu conexión e intenta de nuevo.",
-
   "onboardingGuidePersonalDataTitle": "Datos personales",
   "onboardingGuidePersonalDataSub": "Completa tu perfil con nombre, foto e información de contacto.",
   "onboardingGuideDocumentsTitle": "Documentos",
@@ -100,21 +88,23 @@
   "onboardingBadgeOptional": "Opcional",
   "onboardingBadgeDone": "Completado",
   "onboardingGuideCompleteHint": "Completa los elementos obligatorios para continuar",
-
   "profileChangePhoto": "Cambiar foto de perfil",
-
   "groupInfoTitle": "Detalles del grupo",
   "groupInfoSubtitle": "Ver más detalles",
   "groupInfoMission": "Misión: {mission}",
   "@groupInfoMission": {
     "placeholders": {
-      "mission": { "type": "String" }
+      "mission": {
+        "type": "String"
+      }
     }
   },
   "groupInfoMembersCount": "{count} miembros",
   "@groupInfoMembersCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupInfoMediaSection": "Medios, enlaces y docs",
@@ -125,7 +115,6 @@
   "groupInfoErrorPrefix": "Error: ",
   "groupMediaTitle": "Medios y archivos",
   "groupMediaSubtitle": "Ver medios del grupo",
-
   "chatCurrentMission": "MISIÓN ACTUAL",
   "chatGuides": "GUÍAS",
   "chatHistory": "Historial",
@@ -136,7 +125,6 @@
   "chatPrevious": "ANTERIORES",
   "chatNoHistory": "No se encontró historial",
   "chatYesterday": "Ayer",
-
   "notificationsTitle": "Notificaciones",
   "notificationsMarkAllRead": "Leídas",
   "notificationsClearAll": "Borrar todo",
@@ -158,30 +146,39 @@
   "notificationsMinutesAgo": "hace {minutes}min",
   "@notificationsMinutesAgo": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "notificationsHoursAgo": "hace {hours}h",
   "@notificationsHoursAgo": {
     "placeholders": {
-      "hours": { "type": "int" }
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "notificationsYesterdayTime": "ayer",
   "notificationsDaysAgo": "hace {days} días",
   "@notificationsDaysAgo": {
     "placeholders": {
-      "days": { "type": "int" }
+      "days": {
+        "type": "int"
+      }
     }
   },
   "notificationsWeeksAgo": "hace {weeks} semana{plural}",
   "@notificationsWeeksAgo": {
     "placeholders": {
-      "weeks": { "type": "int" },
-      "plural": { "type": "String" }
+      "weeks": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
     }
   },
-
   "documentsTitle": "Mis documentos",
   "documentsAddOrView": "Agregar / Ver documentos",
   "documentsPendingUpload": "Pendiente de envío",
@@ -189,7 +186,6 @@
   "documentsValid": "Documento al día",
   "documentsRejected": "Rechazado - Haz clic para reenviar",
   "documentsExpired": "Expirado - Haz clic para actualizar",
-
   "accountDataTitle": "Datos de cuenta",
   "accountDataSaveReminder": "No olvides guardar tus cambios",
   "accountDataFullName": "Nombre completo",
@@ -230,18 +226,18 @@
   "accountDataDeleteCancel": "Cancelar",
   "accountDataDeleteSuccess": "Su cuenta ha sido eliminada exitosamente.",
   "accountDataDeleteError": "Error al eliminar la cuenta. Inténtelo de nuevo.",
-
   "itineraryErrorPrefix": "Error: ",
   "itineraryCurrentMission": "Misión actual",
   "itineraryFiltersActive": "{count} filtros aplicados",
   "@itineraryFiltersActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryFiltersNone": "Sin filtros aplicados",
   "itineraryFilterButton": "Filtrar",
-
   "itineraryMissionEnded": "Misión finalizada",
   "itineraryEmptyFiltered": "Ningún evento coincide con los filtros.",
   "itineraryStatusNow": "Ocurriendo ahora",
@@ -279,7 +275,9 @@
   "itineraryEmergencyLocation": "Ubicación actual: {country}",
   "@itineraryEmergencyLocation": {
     "placeholders": {
-      "country": { "type": "String" }
+      "country": {
+        "type": "String"
+      }
     }
   },
   "itineraryEmergencyPolice": "Policía",
@@ -290,7 +288,9 @@
   "itineraryEmergencyLoadError": "Error al cargar contactos: {error}",
   "@itineraryEmergencyLoadError": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "itineraryViewOnMap": "Ver en el mapa",
@@ -302,46 +302,62 @@
   "itineraryDelayedWithTime": "DEMORADO {delay}",
   "@itineraryDelayedWithTime": {
     "placeholders": {
-      "delay": { "type": "String" }
+      "delay": {
+        "type": "String"
+      }
     }
   },
   "itineraryFromCity": "de {city}",
   "@itineraryFromCity": {
     "placeholders": {
-      "city": { "type": "String" }
+      "city": {
+        "type": "String"
+      }
     }
   },
   "itineraryToCity": "a {city}",
   "@itineraryToCity": {
     "placeholders": {
-      "city": { "type": "String" }
+      "city": {
+        "type": "String"
+      }
     }
   },
   "itineraryConnectionsTitle": "Escalas ({count})",
   "@itineraryConnectionsTitle": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryConnectionsCount": "{count} escala{plural}",
   "@itineraryConnectionsCount": {
     "placeholders": {
-      "count": { "type": "int" },
-      "plural": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
     }
   },
   "itineraryDirectFlight": "Vuelo directo",
   "itineraryConnectionTime": "Tiempo de conexión: {time}",
   "@itineraryConnectionTime": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "itineraryNextDay": "Día siguiente",
   "itineraryTravelTime": "Tiempo de desplazamiento: {duration}",
   "@itineraryTravelTime": {
     "placeholders": {
-      "duration": { "type": "String" }
+      "duration": {
+        "type": "String"
+      }
     }
   },
   "itineraryChecklistTitle": "Checklist de la misión",
@@ -353,7 +369,9 @@
   "itineraryInDays": "en {count} días",
   "@itineraryInDays": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "itineraryTomorrow": "mañana",
@@ -362,18 +380,17 @@
   "itineraryEnded": "finalizada",
   "itineraryNoMaterials": "Ningún material disponible",
   "itineraryOpenMaterialError": "No se pudo abrir el material",
-
   "incompleteProfileTitle": "Completa tu registro",
   "incompleteProfileSubtitle": "Faltan datos importantes en tu cuenta. Toca aquí para completar.",
-
   "notificationsConnectionRequests": "Solicitudes de conexión",
   "notificationsAndOthers": "y otras {count} personas",
   "@notificationsAndOthers": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "medicalTitle": "Condiciones médicas",
   "medicalDescription": "Añade información importante para tu viaje, como condiciones médicas, uso continuo de medicamentos, alergias, restricciones alimentarias, limitaciones de movilidad o fobias.\n\nSi es necesario, lleva medicación extra y una receta médica durante el viaje.",
   "medicalAddInfo": "Añadir información",
@@ -382,7 +399,9 @@
   "medicalCategory": "Categoría: {category}",
   "@medicalCategory": {
     "placeholders": {
-      "category": { "type": "String" }
+      "category": {
+        "type": "String"
+      }
     }
   },
   "medicalDescriptionHint": "Escribe la descripción...",
@@ -396,7 +415,6 @@
   "medicalCategoryMobility": "Movilidad",
   "medicalCategoryPhobia": "Fobia",
   "medicalCategoryOther": "Otro",
-
   "notifPrefTitle": "Notificaciones",
   "notifPrefGeneral": "General",
   "notifPrefAlertTypes": "Tipos de Alerta",
@@ -411,7 +429,6 @@
   "notifPrefConnections": "Nuevas Conexiones",
   "notifPrefConnectionsSub": "Solicitudes de seguidores y nuevos mensajes",
   "notifPrefAutoSave": "Tus preferencias se guardan automáticamente.",
-
   "privacyTitle": "Política de Privacidad",
   "privacyHeading": "AgroBravo Enterprises - Compromiso con tu Privacidad",
   "privacyIntro": "AgroBravo Enterprises, con sede en Ames, Iowa (EE.UU.) y sucursal en Brasil, valora la confianza que depositas en nosotros. Esta política describe cómo tratamos tu información personal.",
@@ -426,7 +443,6 @@
   "privacyS5Title": "5. Tus Derechos",
   "privacyS5Body": "Tienes derecho a acceder, rectificar o solicitar la eliminación de tus datos personales. Para ejercer estos derechos, contáctanos a través de los canales de soporte en la aplicación.",
   "privacyLastUpdated": "Última actualización: 22 de abril de 2025",
-
   "aboutTitle": "Sobre nosotros",
   "aboutTagline": "Conexiones que transforman el agro.",
   "aboutBody1": "AgroBravo Enterprises es una plataforma de conexiones estratégicas en el agronegocio global. Con más de 12 años de historia y presencia en 5 continentes, conectamos el agronegocio entre Brasil, EE.UU., Asia, América Latina y Europa.",
@@ -440,19 +456,15 @@
   "aboutAppName": "AgroBravo Mobile App",
   "aboutVersion": "Versión 1.0.0 (Build 2026)",
   "aboutCopyright": "© 2026 AgroBravo. Todos los derechos reservados.",
-
   "pendingDocsBannerTitle": "Documentos pendientes",
   "pendingDocsBannerSubtitle": "Tienes documentos requeridos que aún no han sido enviados o aprobados. Toca aquí para enviarlos.",
-
   "socialProfileTitle": "Perfil Social",
   "socialProfileMyMissions": "Mis Misiones",
   "socialProfileNoMissions": "No se encontraron misiones",
   "socialProfileChangeCover": "Cambiar portada",
-
   "profileStatsConnections": "conexiones",
   "profileStatsPosts": "publicaciones",
   "profileStatsMissions": "misiones",
-
   "profileActionEditProfile": "Editar perfil",
   "profileActionCancel": "Cancelar",
   "profileActionPublish": "Publicar",
@@ -461,28 +473,31 @@
   "profileActionAccept": "Aceptar",
   "profileActionReject": "Rechazar",
   "profileActionDisconnect": "Desconectar",
-
   "userFeedTitle": "Publicaciones",
   "userFeedEmpty": "Sin publicaciones",
   "userFeedEmptyDescription": "Este usuario aún no ha hecho ninguna publicación en su perfil.",
-
   "connectionsTitle": "Conexiones",
   "connectionsSearch": "Buscar",
   "connectionsCount": "{count} conexiones",
   "@connectionsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "connectionRequestsCount": "{count} solicitudes de conexión",
   "@connectionRequestsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "connectionsNoneFound": "No se encontraron conexiones.",
   "connectionsNoRequests": "No hay solicitudes pendientes.",
   "connectionsConfirm": "Confirmar",
   "connectionsRemove": "Eliminar",
-  "connectionsConnect": "Conectarse"
+  "connectionsConnect": "Conectarse",
+  "itineraryTravelGuide": "Guía de viaje"
 }

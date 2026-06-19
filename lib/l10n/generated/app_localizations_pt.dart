@@ -1141,4 +1141,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get connectionsConnect => 'Conectar-se';
+
+  @override
+  String get itineraryTravelGuide => 'Guia de viagem';
 }
