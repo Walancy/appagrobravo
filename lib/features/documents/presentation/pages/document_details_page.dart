@@ -40,6 +40,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   bool _isUploading = false;
   bool _isProcessingOcr = false;
   String? _ocrError;
+  bool _fieldsModified = false;
 
   @override
   void initState() {
@@ -48,6 +49,16 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       _numberController.text = widget.currentDocument!.documentNumber ?? '';
       _nameController.text = widget.currentDocument!.title ?? '';
       _selectedDate = widget.currentDocument!.expiryDate;
+    }
+    _numberController.addListener(_onFieldChanged);
+    _nameController.addListener(_onFieldChanged);
+  }
+
+  void _onFieldChanged() {
+    if (!_fieldsModified) {
+      setState(() {
+        _fieldsModified = true;
+      });
     }
   }
 
@@ -157,6 +168,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                         onPressed: () {
                           setState(() {
                             _selectedDate = tempDate;
+                            _fieldsModified = true;
                           });
                           Navigator.pop(context);
                         },
@@ -381,7 +393,8 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   }
 
   Future<void> _onSave(BuildContext context) async {
-    if (_selectedFile == null && widget.currentDocument?.imageUrl == null) {
+    // For new documents, a file is required
+    if (_selectedFile == null && widget.currentDocument == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Selecione um PDF ou imagem do documento.'),
@@ -390,33 +403,19 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       return;
     }
 
-    if (_selectedFile == null && widget.currentDocument != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Escolha um novo arquivo para atualizar o documento.'),
-        ),
-      );
-      return;
-    }
-
     setState(() => _isUploading = true);
 
-    // Using the cubit from context. In the router we'll need to make sure
-    // it's either provided or we use a static method.
-    // Actually, it's better to use getIt or provide it.
     final cubit = widget.cubit ?? getIt<DocumentsCubit>();
 
     try {
-      if (_selectedFile != null) {
-        await cubit.uploadDocument(
-          id: widget.currentDocument?.id,
-          type: widget.type,
-          file: _selectedFile!,
-          documentNumber: _numberController.text,
-          expiryDate: _selectedDate,
-          documentName: _nameController.text,
-        );
-      }
+      await cubit.uploadDocument(
+        id: widget.currentDocument?.id,
+        type: widget.type,
+        file: _selectedFile, // null is OK for existing documents (metadata-only update)
+        documentNumber: _numberController.text,
+        expiryDate: _selectedDate,
+        documentName: _nameController.text,
+      );
 
       if (mounted) {
         Navigator.pop(context, true); // Signal success
@@ -436,7 +435,11 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   Widget build(BuildContext context) {
     final selectedFileName = _selectedFile?.path.split('/').last;
     final hasCurrentDocument = widget.currentDocument?.imageUrl != null;
-    final canSubmit = _selectedFile != null && !_isUploading;
+    // For new documents: require a file. For existing documents: allow submit if file or fields changed.
+    final isEditing = widget.currentDocument != null;
+    final canSubmit = !_isUploading && !_isProcessingOcr && (
+      _selectedFile != null || (isEditing && _fieldsModified)
+    );
 
     return Scaffold(
       appBar: AppHeader(mode: HeaderMode.back, title: widget.type.label),

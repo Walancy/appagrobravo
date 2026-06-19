@@ -74,7 +74,7 @@ class DocumentsCubit extends Cubit<DocumentsState> {
   Future<void> uploadDocument({
     String? id,
     required DocumentType type,
-    required File file,
+    File? file,
     String? documentNumber,
     DateTime? expiryDate,
     String? documentName,
