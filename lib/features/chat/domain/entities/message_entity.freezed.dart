@@ -232,7 +232,7 @@ return $default(_that.id,_that.text,_that.timestamp,_that.type,_that.userName,_t
 
 class _MessageEntity extends MessageEntity {
   const _MessageEntity({required this.id, required this.text, required this.timestamp, required this.type, this.userName, this.userAvatarUrl, this.guideRole, this.attachmentUrl, this.audioUrl, this.audioDurationMs, this.repliedToMessage, required this.isEdited, required this.isDeleted, this.isPending = false}): super._();
-
+  
 
 @override final  String id;
 @override final  String text;

@@ -619,6 +619,7 @@ as Map<String, String>,lastMessageTimes: null == lastMessageTimes ? _self.lastMe
 as Map<String, DateTime>,
   ));
 }
+
 }
 
 
@@ -757,7 +758,7 @@ return $default(_that.currentMissions,_that.guides,_that.history,_that.lastMessa
 
 class _ChatData implements ChatData {
   const _ChatData({final  List<ChatEntity> currentMissions = const [], final  List<GuideEntity> guides = const [], final  List<ChatEntity> history = const [], final  Map<String, String> lastMessages = const {}, final  Map<String, DateTime> lastMessageTimes = const {}}): _currentMissions = currentMissions,_guides = guides,_history = history,_lastMessages = lastMessages,_lastMessageTimes = lastMessageTimes;
-
+  
 
  final  List<ChatEntity> _currentMissions;
 @override@JsonKey() List<ChatEntity> get currentMissions {
@@ -852,6 +853,8 @@ as Map<String, String>,lastMessageTimes: null == lastMessageTimes ? _self._lastM
 as Map<String, DateTime>,
   ));
 }
+
+
 }
 
 /// @nodoc
