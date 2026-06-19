@@ -581,14 +581,12 @@ class _DynamicQuestionStepState extends State<_DynamicQuestionStep> {
         );
 
       case FormQuestionType.checkbox:
-        final selected = List<String>.from(
-          widget.answer is List ? widget.answer as List : [],
-        );
+        final selectedValue = widget.answer as String?;
         return Column(
           children: widget.pergunta.options.asMap().entries.map((entry) {
             final idx = entry.key;
             final option = entry.value;
-            final isSelected = selected.contains(option);
+            final isSelected = selectedValue == option;
             final letter =
                 String.fromCharCode('A'.codeUnitAt(0) + idx);
             return Padding(
@@ -598,13 +596,8 @@ class _DynamicQuestionStepState extends State<_DynamicQuestionStep> {
                 label: option,
                 selected: isSelected,
                 onTap: () {
-                  final updated = List<String>.from(selected);
-                  if (isSelected) {
-                    updated.remove(option);
-                  } else {
-                    updated.add(option);
-                  }
-                  widget.onAnswerChanged(updated);
+                  // Single-select: set selected option or deselect if already selected
+                  widget.onAnswerChanged(isSelected ? null : option);
                 },
               ),
             );
