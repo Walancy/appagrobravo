@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationModel {
 
- String get id;@JsonKey(name: 'created_at') DateTime get createdAt; String? get mensagem; bool? get lido;@JsonKey(name: 'user_id') String? get userId; String? get assunto;@JsonKey(name: 'missao_id') String? get missionId;@JsonKey(name: 'post_id') String? get postId;@JsonKey(name: 'solicitacao_user_id') String? get solicitacaoUserId;@JsonKey(name: 'solicitacaorespondida') bool? get solicitacaoRespondida;@JsonKey(name: 'doc_id') String? get docId; String? get titulo; String? get icone; String? get tipo;@JsonKey(name: 'grupo_id') String? get grupoId;@JsonKey(name: 'batepapo_id') String? get batepapoId;// Joined data from users table (if any)
+ String get id;@JsonKey(name: 'created_at') DateTime get createdAt; String? get mensagem; bool? get lido;@JsonKey(name: 'user_id') String? get userId; String? get assunto;@JsonKey(name: 'missao_id') String? get missionId;@JsonKey(name: 'post_id') String? get postId;@JsonKey(name: 'solicitacao_user_id') String? get solicitacaoUserId;@JsonKey(name: 'solicitacaorespondida') bool? get solicitacaoRespondida;@JsonKey(name: 'doc_id') String? get docId; String? get titulo; String? get icone; String? get tipo;@JsonKey(name: 'grupo_id') String? get grupoId;@JsonKey(name: 'batepapo_id') String? get batepapoId;@JsonKey(name: 'target_route') String? get targetRoute;// Joined data from users table (if any)
 @JsonKey(ignore: true) String? get userName;@JsonKey(ignore: true) String? get userAvatar;
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
@@ -29,16 +29,16 @@ $NotificationModelCopyWith<NotificationModel> get copyWith => _$NotificationMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.mensagem, mensagem) || other.mensagem == mensagem)&&(identical(other.lido, lido) || other.lido == lido)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.assunto, assunto) || other.assunto == assunto)&&(identical(other.missionId, missionId) || other.missionId == missionId)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.solicitacaoRespondida, solicitacaoRespondida) || other.solicitacaoRespondida == solicitacaoRespondida)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.icone, icone) || other.icone == icone)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.mensagem, mensagem) || other.mensagem == mensagem)&&(identical(other.lido, lido) || other.lido == lido)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.assunto, assunto) || other.assunto == assunto)&&(identical(other.missionId, missionId) || other.missionId == missionId)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.solicitacaoRespondida, solicitacaoRespondida) || other.solicitacaoRespondida == solicitacaoRespondida)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.icone, icone) || other.icone == icone)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.targetRoute, targetRoute) || other.targetRoute == targetRoute)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,mensagem,lido,userId,assunto,missionId,postId,solicitacaoUserId,solicitacaoRespondida,docId,titulo,icone,tipo,grupoId,batepapoId,userName,userAvatar);
+int get hashCode => Object.hashAll([runtimeType,id,createdAt,mensagem,lido,userId,assunto,missionId,postId,solicitacaoUserId,solicitacaoRespondida,docId,titulo,icone,tipo,grupoId,batepapoId,targetRoute,userName,userAvatar]);
 
 @override
 String toString() {
-  return 'NotificationModel(id: $id, createdAt: $createdAt, mensagem: $mensagem, lido: $lido, userId: $userId, assunto: $assunto, missionId: $missionId, postId: $postId, solicitacaoUserId: $solicitacaoUserId, solicitacaoRespondida: $solicitacaoRespondida, docId: $docId, titulo: $titulo, icone: $icone, tipo: $tipo, grupoId: $grupoId, batepapoId: $batepapoId, userName: $userName, userAvatar: $userAvatar)';
+  return 'NotificationModel(id: $id, createdAt: $createdAt, mensagem: $mensagem, lido: $lido, userId: $userId, assunto: $assunto, missionId: $missionId, postId: $postId, solicitacaoUserId: $solicitacaoUserId, solicitacaoRespondida: $solicitacaoRespondida, docId: $docId, titulo: $titulo, icone: $icone, tipo: $tipo, grupoId: $grupoId, batepapoId: $batepapoId, targetRoute: $targetRoute, userName: $userName, userAvatar: $userAvatar)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $NotificationModelCopyWith<$Res>  {
   factory $NotificationModelCopyWith(NotificationModel value, $Res Function(NotificationModel) _then) = _$NotificationModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'created_at') DateTime createdAt, String? mensagem, bool? lido,@JsonKey(name: 'user_id') String? userId, String? assunto,@JsonKey(name: 'missao_id') String? missionId,@JsonKey(name: 'post_id') String? postId,@JsonKey(name: 'solicitacao_user_id') String? solicitacaoUserId,@JsonKey(name: 'solicitacaorespondida') bool? solicitacaoRespondida,@JsonKey(name: 'doc_id') String? docId, String? titulo, String? icone, String? tipo,@JsonKey(name: 'grupo_id') String? grupoId,@JsonKey(name: 'batepapo_id') String? batepapoId,@JsonKey(ignore: true) String? userName,@JsonKey(ignore: true) String? userAvatar
+ String id,@JsonKey(name: 'created_at') DateTime createdAt, String? mensagem, bool? lido,@JsonKey(name: 'user_id') String? userId, String? assunto,@JsonKey(name: 'missao_id') String? missionId,@JsonKey(name: 'post_id') String? postId,@JsonKey(name: 'solicitacao_user_id') String? solicitacaoUserId,@JsonKey(name: 'solicitacaorespondida') bool? solicitacaoRespondida,@JsonKey(name: 'doc_id') String? docId, String? titulo, String? icone, String? tipo,@JsonKey(name: 'grupo_id') String? grupoId,@JsonKey(name: 'batepapo_id') String? batepapoId,@JsonKey(name: 'target_route') String? targetRoute,@JsonKey(ignore: true) String? userName,@JsonKey(ignore: true) String? userAvatar
 });
 
 
@@ -66,7 +66,7 @@ class _$NotificationModelCopyWithImpl<$Res>
 
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdAt = null,Object? mensagem = freezed,Object? lido = freezed,Object? userId = freezed,Object? assunto = freezed,Object? missionId = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? solicitacaoRespondida = freezed,Object? docId = freezed,Object? titulo = freezed,Object? icone = freezed,Object? tipo = freezed,Object? grupoId = freezed,Object? batepapoId = freezed,Object? userName = freezed,Object? userAvatar = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdAt = null,Object? mensagem = freezed,Object? lido = freezed,Object? userId = freezed,Object? assunto = freezed,Object? missionId = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? solicitacaoRespondida = freezed,Object? docId = freezed,Object? titulo = freezed,Object? icone = freezed,Object? tipo = freezed,Object? grupoId = freezed,Object? batepapoId = freezed,Object? targetRoute = freezed,Object? userName = freezed,Object? userAvatar = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -84,6 +84,7 @@ as String?,icone: freezed == icone ? _self.icone : icone // ignore: cast_nullabl
 as String?,tipo: freezed == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
 as String?,grupoId: freezed == grupoId ? _self.grupoId : grupoId // ignore: cast_nullable_to_non_nullable
 as String?,batepapoId: freezed == batepapoId ? _self.batepapoId : batepapoId // ignore: cast_nullable_to_non_nullable
+as String?,targetRoute: freezed == targetRoute ? _self.targetRoute : targetRoute // ignore: cast_nullable_to_non_nullable
 as String?,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userAvatar: freezed == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -171,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(name: 'target_route')  String? targetRoute, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NotificationModel() when $default != null:
-return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.userName,_that.userAvatar);case _:
+return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.targetRoute,_that.userName,_that.userAvatar);case _:
   return orElse();
 
 }
@@ -192,10 +193,10 @@ return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(name: 'target_route')  String? targetRoute, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)  $default,) {final _that = this;
 switch (_that) {
 case _NotificationModel():
-return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.userName,_that.userAvatar);case _:
+return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.targetRoute,_that.userName,_that.userAvatar);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +213,10 @@ return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'created_at')  DateTime createdAt,  String? mensagem,  bool? lido, @JsonKey(name: 'user_id')  String? userId,  String? assunto, @JsonKey(name: 'missao_id')  String? missionId, @JsonKey(name: 'post_id')  String? postId, @JsonKey(name: 'solicitacao_user_id')  String? solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida')  bool? solicitacaoRespondida, @JsonKey(name: 'doc_id')  String? docId,  String? titulo,  String? icone,  String? tipo, @JsonKey(name: 'grupo_id')  String? grupoId, @JsonKey(name: 'batepapo_id')  String? batepapoId, @JsonKey(name: 'target_route')  String? targetRoute, @JsonKey(ignore: true)  String? userName, @JsonKey(ignore: true)  String? userAvatar)?  $default,) {final _that = this;
 switch (_that) {
 case _NotificationModel() when $default != null:
-return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.userName,_that.userAvatar);case _:
+return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,_that.assunto,_that.missionId,_that.postId,_that.solicitacaoUserId,_that.solicitacaoRespondida,_that.docId,_that.titulo,_that.icone,_that.tipo,_that.grupoId,_that.batepapoId,_that.targetRoute,_that.userName,_that.userAvatar);case _:
   return null;
 
 }
@@ -227,7 +228,7 @@ return $default(_that.id,_that.createdAt,_that.mensagem,_that.lido,_that.userId,
 @JsonSerializable()
 
 class _NotificationModel extends NotificationModel {
-  const _NotificationModel({required this.id, @JsonKey(name: 'created_at') required this.createdAt, required this.mensagem, required this.lido, @JsonKey(name: 'user_id') required this.userId, this.assunto, @JsonKey(name: 'missao_id') this.missionId, @JsonKey(name: 'post_id') this.postId, @JsonKey(name: 'solicitacao_user_id') this.solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida') this.solicitacaoRespondida, @JsonKey(name: 'doc_id') this.docId, this.titulo, this.icone, this.tipo, @JsonKey(name: 'grupo_id') this.grupoId, @JsonKey(name: 'batepapo_id') this.batepapoId, @JsonKey(ignore: true) this.userName, @JsonKey(ignore: true) this.userAvatar}): super._();
+  const _NotificationModel({required this.id, @JsonKey(name: 'created_at') required this.createdAt, required this.mensagem, required this.lido, @JsonKey(name: 'user_id') required this.userId, this.assunto, @JsonKey(name: 'missao_id') this.missionId, @JsonKey(name: 'post_id') this.postId, @JsonKey(name: 'solicitacao_user_id') this.solicitacaoUserId, @JsonKey(name: 'solicitacaorespondida') this.solicitacaoRespondida, @JsonKey(name: 'doc_id') this.docId, this.titulo, this.icone, this.tipo, @JsonKey(name: 'grupo_id') this.grupoId, @JsonKey(name: 'batepapo_id') this.batepapoId, @JsonKey(name: 'target_route') this.targetRoute, @JsonKey(ignore: true) this.userName, @JsonKey(ignore: true) this.userAvatar}): super._();
   factory _NotificationModel.fromJson(Map<String, dynamic> json) => _$NotificationModelFromJson(json);
 
 @override final  String id;
@@ -246,6 +247,7 @@ class _NotificationModel extends NotificationModel {
 @override final  String? tipo;
 @override@JsonKey(name: 'grupo_id') final  String? grupoId;
 @override@JsonKey(name: 'batepapo_id') final  String? batepapoId;
+@override@JsonKey(name: 'target_route') final  String? targetRoute;
 // Joined data from users table (if any)
 @override@JsonKey(ignore: true) final  String? userName;
 @override@JsonKey(ignore: true) final  String? userAvatar;
@@ -263,16 +265,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.mensagem, mensagem) || other.mensagem == mensagem)&&(identical(other.lido, lido) || other.lido == lido)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.assunto, assunto) || other.assunto == assunto)&&(identical(other.missionId, missionId) || other.missionId == missionId)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.solicitacaoRespondida, solicitacaoRespondida) || other.solicitacaoRespondida == solicitacaoRespondida)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.icone, icone) || other.icone == icone)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.mensagem, mensagem) || other.mensagem == mensagem)&&(identical(other.lido, lido) || other.lido == lido)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.assunto, assunto) || other.assunto == assunto)&&(identical(other.missionId, missionId) || other.missionId == missionId)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.solicitacaoRespondida, solicitacaoRespondida) || other.solicitacaoRespondida == solicitacaoRespondida)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.icone, icone) || other.icone == icone)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.targetRoute, targetRoute) || other.targetRoute == targetRoute)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,mensagem,lido,userId,assunto,missionId,postId,solicitacaoUserId,solicitacaoRespondida,docId,titulo,icone,tipo,grupoId,batepapoId,userName,userAvatar);
+int get hashCode => Object.hashAll([runtimeType,id,createdAt,mensagem,lido,userId,assunto,missionId,postId,solicitacaoUserId,solicitacaoRespondida,docId,titulo,icone,tipo,grupoId,batepapoId,targetRoute,userName,userAvatar]);
 
 @override
 String toString() {
-  return 'NotificationModel(id: $id, createdAt: $createdAt, mensagem: $mensagem, lido: $lido, userId: $userId, assunto: $assunto, missionId: $missionId, postId: $postId, solicitacaoUserId: $solicitacaoUserId, solicitacaoRespondida: $solicitacaoRespondida, docId: $docId, titulo: $titulo, icone: $icone, tipo: $tipo, grupoId: $grupoId, batepapoId: $batepapoId, userName: $userName, userAvatar: $userAvatar)';
+  return 'NotificationModel(id: $id, createdAt: $createdAt, mensagem: $mensagem, lido: $lido, userId: $userId, assunto: $assunto, missionId: $missionId, postId: $postId, solicitacaoUserId: $solicitacaoUserId, solicitacaoRespondida: $solicitacaoRespondida, docId: $docId, titulo: $titulo, icone: $icone, tipo: $tipo, grupoId: $grupoId, batepapoId: $batepapoId, targetRoute: $targetRoute, userName: $userName, userAvatar: $userAvatar)';
 }
 
 
@@ -283,7 +285,7 @@ abstract mixin class _$NotificationModelCopyWith<$Res> implements $NotificationM
   factory _$NotificationModelCopyWith(_NotificationModel value, $Res Function(_NotificationModel) _then) = __$NotificationModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'created_at') DateTime createdAt, String? mensagem, bool? lido,@JsonKey(name: 'user_id') String? userId, String? assunto,@JsonKey(name: 'missao_id') String? missionId,@JsonKey(name: 'post_id') String? postId,@JsonKey(name: 'solicitacao_user_id') String? solicitacaoUserId,@JsonKey(name: 'solicitacaorespondida') bool? solicitacaoRespondida,@JsonKey(name: 'doc_id') String? docId, String? titulo, String? icone, String? tipo,@JsonKey(name: 'grupo_id') String? grupoId,@JsonKey(name: 'batepapo_id') String? batepapoId,@JsonKey(ignore: true) String? userName,@JsonKey(ignore: true) String? userAvatar
+ String id,@JsonKey(name: 'created_at') DateTime createdAt, String? mensagem, bool? lido,@JsonKey(name: 'user_id') String? userId, String? assunto,@JsonKey(name: 'missao_id') String? missionId,@JsonKey(name: 'post_id') String? postId,@JsonKey(name: 'solicitacao_user_id') String? solicitacaoUserId,@JsonKey(name: 'solicitacaorespondida') bool? solicitacaoRespondida,@JsonKey(name: 'doc_id') String? docId, String? titulo, String? icone, String? tipo,@JsonKey(name: 'grupo_id') String? grupoId,@JsonKey(name: 'batepapo_id') String? batepapoId,@JsonKey(name: 'target_route') String? targetRoute,@JsonKey(ignore: true) String? userName,@JsonKey(ignore: true) String? userAvatar
 });
 
 
@@ -300,7 +302,7 @@ class __$NotificationModelCopyWithImpl<$Res>
 
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdAt = null,Object? mensagem = freezed,Object? lido = freezed,Object? userId = freezed,Object? assunto = freezed,Object? missionId = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? solicitacaoRespondida = freezed,Object? docId = freezed,Object? titulo = freezed,Object? icone = freezed,Object? tipo = freezed,Object? grupoId = freezed,Object? batepapoId = freezed,Object? userName = freezed,Object? userAvatar = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdAt = null,Object? mensagem = freezed,Object? lido = freezed,Object? userId = freezed,Object? assunto = freezed,Object? missionId = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? solicitacaoRespondida = freezed,Object? docId = freezed,Object? titulo = freezed,Object? icone = freezed,Object? tipo = freezed,Object? grupoId = freezed,Object? batepapoId = freezed,Object? targetRoute = freezed,Object? userName = freezed,Object? userAvatar = freezed,}) {
   return _then(_NotificationModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -318,6 +320,7 @@ as String?,icone: freezed == icone ? _self.icone : icone // ignore: cast_nullabl
 as String?,tipo: freezed == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
 as String?,grupoId: freezed == grupoId ? _self.grupoId : grupoId // ignore: cast_nullable_to_non_nullable
 as String?,batepapoId: freezed == batepapoId ? _self.batepapoId : batepapoId // ignore: cast_nullable_to_non_nullable
+as String?,targetRoute: freezed == targetRoute ? _self.targetRoute : targetRoute // ignore: cast_nullable_to_non_nullable
 as String?,userName: freezed == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String?,userAvatar: freezed == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String?,

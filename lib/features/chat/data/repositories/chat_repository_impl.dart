@@ -923,6 +923,9 @@ class ChatRepositoryImpl implements ChatRepository {
               'batepapo_id': realChatId,
               'grupo_id': isGroup ? chatId : null,
               'lido': false,
+              'target_route': isGroup
+                  ? '/chat-group/$realChatId'
+                  : '/chat-direct/$realChatId',
             },
           )
           .toList();

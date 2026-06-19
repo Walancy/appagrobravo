@@ -28,6 +28,8 @@ import 'package:agrobravo/features/profile/presentation/pages/privacy_policy_pag
 import 'package:agrobravo/features/profile/presentation/pages/about_us_page.dart';
 import 'package:agrobravo/features/profile/presentation/pages/social_profile_page.dart';
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
+import 'package:agrobravo/features/chat/presentation/pages/chat_group_route_page.dart';
+import 'package:agrobravo/features/chat/presentation/pages/chat_direct_route_page.dart';
 
 /// Rotas que NÃO precisam de autenticação (login, criar conta, esqueceu senha).
 const _publicPaths = <String>{'/', '/reset-password'};
@@ -74,10 +76,19 @@ final appRouter = GoRouter(
 
     // Onboarding gate: avaliado ANTES do redirect para /home para que o
     // onboarding sempre vença a corrida de navegação no login/app start.
-    // Bloqueia todas as rotas até o onboarding ser concluído.
+    // Bloqueia todas as rotas até o onboarding ser concluído, EXCETO as
+    // sub-páginas acessíveis a partir do guide step do onboarding.
+    const onboardingAllowedPaths = <String>{
+      '/onboarding',
+      '/account-data',
+      '/documents',
+      '/document-details',
+      '/document-history',
+      '/medical-restrictions',
+    };
     if (isAuthenticated &&
         OnboardingService.instance.needsOnboarding &&
-        currentPath != '/onboarding') {
+        !onboardingAllowedPaths.contains(currentPath)) {
       return '/onboarding';
     }
 
@@ -246,6 +257,24 @@ final appRouter = GoRouter(
       path: '/onboarding',
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: OnboardingPage()),
+    ),
+    GoRoute(
+      path: '/chat-group/:groupId',
+      pageBuilder: (context, state) {
+        final groupId = state.pathParameters['groupId']!;
+        return NoTransitionPage(
+          child: ChatGroupRoutePage(groupId: groupId),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/chat-direct/:guideId',
+      pageBuilder: (context, state) {
+        final guideId = state.pathParameters['guideId']!;
+        return NoTransitionPage(
+          child: ChatDirectRoutePage(guideId: guideId),
+        );
+      },
     ),
   ],
 );

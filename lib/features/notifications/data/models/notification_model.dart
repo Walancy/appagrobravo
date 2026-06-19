@@ -25,6 +25,7 @@ abstract class NotificationModel with _$NotificationModel {
     String? tipo,
     @JsonKey(name: 'grupo_id') String? grupoId,
     @JsonKey(name: 'batepapo_id') String? batepapoId,
+    @JsonKey(name: 'target_route') String? targetRoute,
     // Joined data from users table (if any)
     @JsonKey(ignore: true) String? userName,
     @JsonKey(ignore: true) String? userAvatar,
@@ -138,6 +139,37 @@ abstract class NotificationModel with _$NotificationModel {
       }
     }
 
+    // Generate fallback target_route when not set in DB (backward compatibility)
+    String? resolvedRoute = targetRoute;
+    if (resolvedRoute == null || resolvedRoute.isEmpty) {
+      switch (type) {
+        case NotificationType.like:
+        case NotificationType.comment:
+        case NotificationType.mention:
+          // Will be resolved in repository with postOwnerId
+          break;
+        case NotificationType.follow:
+          // Will be resolved in repository with current user ID
+          break;
+        case NotificationType.missionUpdate:
+        case NotificationType.guideAlert:
+          if (grupoId != null) resolvedRoute = '/itinerary/$grupoId';
+          break;
+        case NotificationType.documentApproved:
+        case NotificationType.documentRejected:
+        case NotificationType.documentPending:
+          resolvedRoute = '/documents';
+          break;
+        case NotificationType.chatMessage:
+          if (grupoId != null) {
+            resolvedRoute = '/chat-group/$grupoId';
+          } else if (batepapoId != null) {
+            resolvedRoute = '/chat-direct/$batepapoId';
+          }
+          break;
+      }
+    }
+
     return NotificationEntity(
       id: id,
       userName: finalUserName,
@@ -153,6 +185,7 @@ abstract class NotificationModel with _$NotificationModel {
       message: finalMessage,
       createdAt: createdAt,
       isRead: (lido ?? false) || (solicitacaoRespondida ?? false),
+      targetRoute: resolvedRoute,
     );
   }
 }

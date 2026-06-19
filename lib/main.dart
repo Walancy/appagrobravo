@@ -24,6 +24,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:agrobravo/core/services/notification_navigation_service.dart';
 
 /// Handler de mensagens em background (precisa ser top-level)
 @pragma('vm:entry-point')
@@ -158,6 +159,7 @@ void main() async {
   if (isFirebaseSupported) {
     try {
       setupFCM();
+      NotificationNavigationService.initialize();
     } catch (e) {
       log('Erro ao configurar FCM: $e');
     }
@@ -175,8 +177,21 @@ void main() async {
   );
 }
 
-class AgroBravoApp extends StatelessWidget {
+class AgroBravoApp extends StatefulWidget {
   const AgroBravoApp({super.key});
+
+  @override
+  State<AgroBravoApp> createState() => _AgroBravoAppState();
+}
+
+class _AgroBravoAppState extends State<AgroBravoApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationNavigationService.markRouterReady();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

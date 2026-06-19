@@ -13,6 +13,38 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
   NotificationsRepositoryImpl(this._supabaseClient);
 
+  /// Resolves the targetRoute for notifications whose route depends on
+  /// runtime data (postOwnerId, currentUserId) that is not available at
+  /// insert time in the model's toEntity().
+  String? _resolveTargetRoute(
+    NotificationEntity entity,
+    String? postOwnerId,
+    String? currentUserId,
+  ) {
+    // If already resolved (either from DB or model fallback), keep it
+    if (entity.targetRoute != null && entity.targetRoute!.isNotEmpty) {
+      return entity.targetRoute;
+    }
+
+    switch (entity.type) {
+      case NotificationType.like:
+      case NotificationType.comment:
+      case NotificationType.mention:
+        if (entity.postId != null && postOwnerId != null) {
+          return '/user-feed/$postOwnerId?postId=${entity.postId}';
+        }
+        break;
+      case NotificationType.follow:
+        if (currentUserId != null) {
+          return '/connections/$currentUserId?initialIndex=1';
+        }
+        break;
+      default:
+        break;
+    }
+    return entity.targetRoute;
+  }
+
   Future<void> _saveNotificationsToCache(List<NotificationEntity> list) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -33,6 +65,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
               'message': e.message,
               'createdAt': e.createdAt.toIso8601String(),
               'isRead': e.isRead,
+              'targetRoute': e.targetRoute,
             },
           )
           .toList();
@@ -64,6 +97,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
             message: json['message'],
             createdAt: DateTime.parse(json['createdAt']),
             isRead: json['isRead'] ?? false,
+            targetRoute: json['targetRoute'],
           );
         }).toList();
       }
@@ -149,7 +183,15 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         return model
             .copyWith(userName: profile?['nome'], userAvatar: profile?['foto'])
             .toEntity()
-            .copyWith(postImage: postThumbnail, postOwnerId: postOwnerId);
+            .copyWith(
+              postImage: postThumbnail,
+              postOwnerId: postOwnerId,
+              targetRoute: _resolveTargetRoute(
+                model.toEntity().copyWith(postOwnerId: postOwnerId),
+                postOwnerId,
+                userId,
+              ),
+            );
       }).toList();
 
       // Cache

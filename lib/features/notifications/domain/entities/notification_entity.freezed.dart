@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationEntity {
 
- String get id; String get userName; String? get userAvatar; NotificationType get type; String? get postImage; String? get postId; String? get solicitacaoUserId; String? get docId; String? get postOwnerId; String? get batepapoId; String? get grupoId; String get message; DateTime get createdAt; bool get isRead;
+ String get id; String get userName; String? get userAvatar; NotificationType get type; String? get postImage; String? get postId; String? get solicitacaoUserId; String? get docId; String? get postOwnerId; String? get batepapoId; String? get grupoId; String get message; DateTime get createdAt; bool get isRead; String? get targetRoute;
 /// Create a copy of NotificationEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $NotificationEntityCopyWith<NotificationEntity> get copyWith => _$NotificationEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.type, type) || other.type == type)&&(identical(other.postImage, postImage) || other.postImage == postImage)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.postOwnerId, postOwnerId) || other.postOwnerId == postOwnerId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.type, type) || other.type == type)&&(identical(other.postImage, postImage) || other.postImage == postImage)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.postOwnerId, postOwnerId) || other.postOwnerId == postOwnerId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.targetRoute, targetRoute) || other.targetRoute == targetRoute));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,userName,userAvatar,type,postImage,postId,solicitacaoUserId,docId,postOwnerId,batepapoId,grupoId,message,createdAt,isRead);
+int get hashCode => Object.hash(runtimeType,id,userName,userAvatar,type,postImage,postId,solicitacaoUserId,docId,postOwnerId,batepapoId,grupoId,message,createdAt,isRead,targetRoute);
 
 @override
 String toString() {
-  return 'NotificationEntity(id: $id, userName: $userName, userAvatar: $userAvatar, type: $type, postImage: $postImage, postId: $postId, solicitacaoUserId: $solicitacaoUserId, docId: $docId, postOwnerId: $postOwnerId, batepapoId: $batepapoId, grupoId: $grupoId, message: $message, createdAt: $createdAt, isRead: $isRead)';
+  return 'NotificationEntity(id: $id, userName: $userName, userAvatar: $userAvatar, type: $type, postImage: $postImage, postId: $postId, solicitacaoUserId: $solicitacaoUserId, docId: $docId, postOwnerId: $postOwnerId, batepapoId: $batepapoId, grupoId: $grupoId, message: $message, createdAt: $createdAt, isRead: $isRead, targetRoute: $targetRoute)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $NotificationEntityCopyWith<$Res>  {
   factory $NotificationEntityCopyWith(NotificationEntity value, $Res Function(NotificationEntity) _then) = _$NotificationEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String userName, String? userAvatar, NotificationType type, String? postImage, String? postId, String? solicitacaoUserId, String? docId, String? postOwnerId, String? batepapoId, String? grupoId, String message, DateTime createdAt, bool isRead
+ String id, String userName, String? userAvatar, NotificationType type, String? postImage, String? postId, String? solicitacaoUserId, String? docId, String? postOwnerId, String? batepapoId, String? grupoId, String message, DateTime createdAt, bool isRead, String? targetRoute
 });
 
 
@@ -62,7 +62,7 @@ class _$NotificationEntityCopyWithImpl<$Res>
 
 /// Create a copy of NotificationEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userName = null,Object? userAvatar = freezed,Object? type = null,Object? postImage = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? docId = freezed,Object? postOwnerId = freezed,Object? batepapoId = freezed,Object? grupoId = freezed,Object? message = null,Object? createdAt = null,Object? isRead = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userName = null,Object? userAvatar = freezed,Object? type = null,Object? postImage = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? docId = freezed,Object? postOwnerId = freezed,Object? batepapoId = freezed,Object? grupoId = freezed,Object? message = null,Object? createdAt = null,Object? isRead = null,Object? targetRoute = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
@@ -78,7 +78,8 @@ as String?,grupoId: freezed == grupoId ? _self.grupoId : grupoId // ignore: cast
 as String?,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,targetRoute: freezed == targetRoute ? _self.targetRoute : targetRoute // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead,  String? targetRoute)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NotificationEntity() when $default != null:
-return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead,_that.targetRoute);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postIm
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead,  String? targetRoute)  $default,) {final _that = this;
 switch (_that) {
 case _NotificationEntity():
-return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead,_that.targetRoute);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postIm
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userName,  String? userAvatar,  NotificationType type,  String? postImage,  String? postId,  String? solicitacaoUserId,  String? docId,  String? postOwnerId,  String? batepapoId,  String? grupoId,  String message,  DateTime createdAt,  bool isRead,  String? targetRoute)?  $default,) {final _that = this;
 switch (_that) {
 case _NotificationEntity() when $default != null:
-return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postImage,_that.postId,_that.solicitacaoUserId,_that.docId,_that.postOwnerId,_that.batepapoId,_that.grupoId,_that.message,_that.createdAt,_that.isRead,_that.targetRoute);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.id,_that.userName,_that.userAvatar,_that.type,_that.postIm
 
 
 class _NotificationEntity implements NotificationEntity {
-  const _NotificationEntity({required this.id, required this.userName, this.userAvatar, required this.type, this.postImage, this.postId, this.solicitacaoUserId, this.docId, this.postOwnerId, this.batepapoId, this.grupoId, required this.message, required this.createdAt, this.isRead = false});
+  const _NotificationEntity({required this.id, required this.userName, this.userAvatar, required this.type, this.postImage, this.postId, this.solicitacaoUserId, this.docId, this.postOwnerId, this.batepapoId, this.grupoId, required this.message, required this.createdAt, this.isRead = false, this.targetRoute});
   
 
 @override final  String id;
@@ -236,6 +237,7 @@ class _NotificationEntity implements NotificationEntity {
 @override final  String message;
 @override final  DateTime createdAt;
 @override@JsonKey() final  bool isRead;
+@override final  String? targetRoute;
 
 /// Create a copy of NotificationEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +249,16 @@ _$NotificationEntityCopyWith<_NotificationEntity> get copyWith => __$Notificatio
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.type, type) || other.type == type)&&(identical(other.postImage, postImage) || other.postImage == postImage)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.postOwnerId, postOwnerId) || other.postOwnerId == postOwnerId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.type, type) || other.type == type)&&(identical(other.postImage, postImage) || other.postImage == postImage)&&(identical(other.postId, postId) || other.postId == postId)&&(identical(other.solicitacaoUserId, solicitacaoUserId) || other.solicitacaoUserId == solicitacaoUserId)&&(identical(other.docId, docId) || other.docId == docId)&&(identical(other.postOwnerId, postOwnerId) || other.postOwnerId == postOwnerId)&&(identical(other.batepapoId, batepapoId) || other.batepapoId == batepapoId)&&(identical(other.grupoId, grupoId) || other.grupoId == grupoId)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.targetRoute, targetRoute) || other.targetRoute == targetRoute));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,userName,userAvatar,type,postImage,postId,solicitacaoUserId,docId,postOwnerId,batepapoId,grupoId,message,createdAt,isRead);
+int get hashCode => Object.hash(runtimeType,id,userName,userAvatar,type,postImage,postId,solicitacaoUserId,docId,postOwnerId,batepapoId,grupoId,message,createdAt,isRead,targetRoute);
 
 @override
 String toString() {
-  return 'NotificationEntity(id: $id, userName: $userName, userAvatar: $userAvatar, type: $type, postImage: $postImage, postId: $postId, solicitacaoUserId: $solicitacaoUserId, docId: $docId, postOwnerId: $postOwnerId, batepapoId: $batepapoId, grupoId: $grupoId, message: $message, createdAt: $createdAt, isRead: $isRead)';
+  return 'NotificationEntity(id: $id, userName: $userName, userAvatar: $userAvatar, type: $type, postImage: $postImage, postId: $postId, solicitacaoUserId: $solicitacaoUserId, docId: $docId, postOwnerId: $postOwnerId, batepapoId: $batepapoId, grupoId: $grupoId, message: $message, createdAt: $createdAt, isRead: $isRead, targetRoute: $targetRoute)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$NotificationEntityCopyWith<$Res> implements $Notification
   factory _$NotificationEntityCopyWith(_NotificationEntity value, $Res Function(_NotificationEntity) _then) = __$NotificationEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userName, String? userAvatar, NotificationType type, String? postImage, String? postId, String? solicitacaoUserId, String? docId, String? postOwnerId, String? batepapoId, String? grupoId, String message, DateTime createdAt, bool isRead
+ String id, String userName, String? userAvatar, NotificationType type, String? postImage, String? postId, String? solicitacaoUserId, String? docId, String? postOwnerId, String? batepapoId, String? grupoId, String message, DateTime createdAt, bool isRead, String? targetRoute
 });
 
 
@@ -284,7 +286,7 @@ class __$NotificationEntityCopyWithImpl<$Res>
 
 /// Create a copy of NotificationEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userName = null,Object? userAvatar = freezed,Object? type = null,Object? postImage = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? docId = freezed,Object? postOwnerId = freezed,Object? batepapoId = freezed,Object? grupoId = freezed,Object? message = null,Object? createdAt = null,Object? isRead = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userName = null,Object? userAvatar = freezed,Object? type = null,Object? postImage = freezed,Object? postId = freezed,Object? solicitacaoUserId = freezed,Object? docId = freezed,Object? postOwnerId = freezed,Object? batepapoId = freezed,Object? grupoId = freezed,Object? message = null,Object? createdAt = null,Object? isRead = null,Object? targetRoute = freezed,}) {
   return _then(_NotificationEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
@@ -300,7 +302,8 @@ as String?,grupoId: freezed == grupoId ? _self.grupoId : grupoId // ignore: cast
 as String?,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,targetRoute: freezed == targetRoute ? _self.targetRoute : targetRoute // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -332,7 +332,7 @@ class _FollowRequestsSummary extends StatelessWidget {
             final currentUserId =
                 getIt<FeedRepository>().getCurrentUserId();
             if (currentUserId != null) {
-              context.push('/connections/$currentUserId?initialIndex=1');
+              context.go('/connections/$currentUserId?initialIndex=1');
             }
           },
           child: Padding(
@@ -463,16 +463,30 @@ class _NotificationItem extends StatefulWidget {
 }
 
 class _NotificationItemState extends State<_NotificationItem> {
-
   bool _expanded = false;
   bool _hasOverflow = false;
 
   static const int _collapsedMaxLines = 3;
 
+  void _pushRoute(BuildContext context, String route) {
+    final uri = Uri.tryParse(route.trim());
+    final normalizedRoute = uri != null && uri.path.isNotEmpty && uri.path.startsWith('/')
+        ? uri.toString()
+        : '/notifications';
+
+    try {
+      context.go(normalizedRoute);
+    } catch (_) {
+      context.go('/notifications');
+    }
+  }
+
   String _formatTime(BuildContext context, DateTime date) {
     final diff = DateTime.now().difference(date);
     if (diff.inSeconds < 60) return context.l10n.notificationsJustNow;
-    if (diff.inMinutes < 60) return context.l10n.notificationsMinutesAgo(diff.inMinutes);
+    if (diff.inMinutes < 60) {
+      return context.l10n.notificationsMinutesAgo(diff.inMinutes);
+    }
     if (diff.inHours < 24) return context.l10n.notificationsHoursAgo(diff.inHours);
     if (diff.inDays == 1) return context.l10n.notificationsYesterdayTime;
     if (diff.inDays < 7) return context.l10n.notificationsDaysAgo(diff.inDays);
@@ -551,23 +565,44 @@ class _NotificationItemState extends State<_NotificationItem> {
               context.read<NotificationsCubit>().markAsRead(notification.id);
             }
 
+            // Use targetRoute from DB/push when available
+            if (notification.targetRoute != null &&
+                notification.targetRoute!.isNotEmpty) {
+              _pushRoute(context, notification.targetRoute!);
+              return;
+            }
+
+            // Fallback: type-based navigation (backward compatibility)
             if (notification.type == NotificationType.follow) {
               final currentUserId = getIt<FeedRepository>().getCurrentUserId();
               if (currentUserId != null) {
-                context.push('/connections/$currentUserId?initialIndex=1');
+                context.go('/connections/$currentUserId?initialIndex=1');
               }
             } else if (notification.type == NotificationType.like ||
                 notification.type == NotificationType.comment ||
                 notification.type == NotificationType.mention) {
               if (notification.postId != null &&
                   notification.postOwnerId != null) {
-                context.push(
+                context.go(
                   '/user-feed/${notification.postOwnerId}?postId=${notification.postId}',
                 );
               }
             } else if (notification.type == NotificationType.chatMessage) {
-              // Navega de volta para a tela de chat
-              context.pop();
+              // Navigate to the correct chat screen using available IDs
+              if (notification.grupoId != null) {
+                context.go('/chat-group/${notification.grupoId}');
+              } else if (notification.batepapoId != null) {
+                context.go('/chat-direct/${notification.batepapoId}');
+              }
+            } else if (notification.type == NotificationType.missionUpdate ||
+                notification.type == NotificationType.guideAlert) {
+              if (notification.grupoId != null) {
+                context.go('/itinerary/${notification.grupoId}');
+              }
+            } else if (notification.type == NotificationType.documentApproved ||
+                notification.type == NotificationType.documentRejected ||
+                notification.type == NotificationType.documentPending) {
+              context.go('/documents');
             }
           },
           child: Padding(

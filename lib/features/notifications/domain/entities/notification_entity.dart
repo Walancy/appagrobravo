@@ -32,5 +32,6 @@ abstract class NotificationEntity with _$NotificationEntity {
     required String message,
     required DateTime createdAt,
     @Default(false) bool isRead,
+    String? targetRoute,
   }) = _NotificationEntity;
 }
