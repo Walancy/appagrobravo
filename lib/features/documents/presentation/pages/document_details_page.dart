@@ -11,7 +11,8 @@ import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
 import 'package:agrobravo/core/di/injection.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'package:agrobravo/core/components/document_preview_page.dart';
 import '../cubit/documents_cubit.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
@@ -84,39 +85,42 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         !widget.currentDocument!.imageUrl!.toLowerCase().contains('/pdf');
 
     if (hasLocalPdf) {
-      launchUrl(
-        Uri.file(_selectedFile!.path),
-        mode: LaunchMode.externalApplication,
+      // Abrir PDF local in-app
+      DocumentPreviewPage.show(
+        context,
+        filePath: _selectedFile!.path,
+        title: widget.type.label,
       );
       return;
     }
 
     if (hasRemotePdf) {
-      final uri = Uri.tryParse(remoteUrl);
-      if (uri != null) {
-        launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      // Abrir PDF remoto in-app
+      DocumentPreviewPage.show(
+        context,
+        url: remoteUrl,
+        title: widget.type.label,
+      );
       return;
     }
 
     if (!hasLocalImage && !hasRemoteImage) return;
 
-    final ImageProvider imageProvider;
     if (hasLocalImage) {
-      imageProvider = FileImage(_selectedFile!);
+      // Abrir imagem local in-app
+      DocumentPreviewPage.show(
+        context,
+        filePath: _selectedFile!.path,
+        title: widget.type.label,
+      );
     } else {
-      imageProvider = NetworkImage(widget.currentDocument!.imageUrl!);
+      // Abrir imagem remota in-app
+      DocumentPreviewPage.show(
+        context,
+        url: widget.currentDocument!.imageUrl!,
+        title: widget.type.label,
+      );
     }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FullScreenImagePage(
-          imageProvider: imageProvider,
-          title: widget.type.label,
-        ),
-      ),
-    );
   }
 
   void _showDatePickerBottomSheet() {

@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:agrobravo/core/components/document_preview_page.dart';
 
 class TravelDataPage extends StatefulWidget {
   final ItineraryGroupEntity group;
@@ -748,7 +749,9 @@ class _MaterialTile extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Icon(
-                  Icons.open_in_new_rounded,
+                  _canPreviewInApp
+                      ? Icons.visibility_outlined
+                      : Icons.open_in_new_rounded,
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
@@ -789,7 +792,24 @@ class _MaterialTile extends StatelessWidget {
     return fileName.split('.').last;
   }
 
+  /// Retorna true se o arquivo pode ser pré-visualizado in-app (PDF ou imagem).
+  bool get _canPreviewInApp {
+    final ext = _extension;
+    return ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'gif'].contains(ext);
+  }
+
   Future<void> _openMaterial(BuildContext context) async {
+    if (_canPreviewInApp) {
+      // Abrir preview in-app
+      DocumentPreviewPage.show(
+        context,
+        url: material.url,
+        title: material.name,
+      );
+      return;
+    }
+
+    // Fallback: abrir externamente para formatos não suportados
     final uri = Uri.tryParse(material.url);
     if (uri == null) return;
 
