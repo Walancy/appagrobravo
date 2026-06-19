@@ -36,10 +36,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     return message.replaceAll('Exception: ', '');
   }
 
-  Future<void> loadItinerary(String groupId) async {
-    debugPrint('[CUBIT] loadItinerary: groupId=$groupId');
-    dev.log('[CUBIT] loadItinerary: groupId=$groupId', name: 'itinerary');
-    emit(const ItineraryState.loading());
+  Future<void> loadItinerary(String groupId, {bool silent = false}) async {
+    debugPrint('[CUBIT] loadItinerary: groupId=$groupId silent=$silent');
+    dev.log('[CUBIT] loadItinerary: groupId=$groupId silent=$silent', name: 'itinerary');
+    if (!silent) {
+      emit(const ItineraryState.loading());
+    }
 
     final groupResult = await _repository.getGroupDetails(groupId);
 
@@ -166,8 +168,20 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   Future<void> loadUserItinerary() async {
     debugPrint('[CUBIT] loadUserItinerary: chamado. state=${state.runtimeType}');
     dev.log('[CUBIT] loadUserItinerary: chamado. state=${state.runtimeType}', name: 'itinerary');
-    emit(const ItineraryState.loading());
-    dev.log('[CUBIT] loadUserItinerary: emitido loading', name: 'itinerary');
+
+    // If we already have data loaded, do a silent refresh (no loading spinner,
+    // no navbar flicker). Only show loading on the very first load.
+    final isSilent = state.maybeWhen(
+      loaded: (_, __, ___, ____) => true,
+      orElse: () => false,
+    );
+
+    if (!isSilent) {
+      emit(const ItineraryState.loading());
+      dev.log('[CUBIT] loadUserItinerary: emitido loading', name: 'itinerary');
+    } else {
+      dev.log('[CUBIT] loadUserItinerary: refresh silencioso (já tem dados)', name: 'itinerary');
+    }
 
     // Single source of truth: re-evaluate the onboarding gate on every load.
     // The router (refreshListenable) reacts and routes to /onboarding when
@@ -209,9 +223,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
               (groups) => activeGroups = groups,
             );
           }
-          debugPrint('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...');
-          dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId)...', name: 'itinerary');
-          await loadItinerary(groupId);
+          debugPrint('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId, silent=$isSilent)...');
+          dev.log('[CUBIT] loadUserItinerary: chamando loadItinerary($groupId, silent=$isSilent)...', name: 'itinerary');
+          await loadItinerary(groupId, silent: isSilent);
         }
       },
     );
