@@ -26,7 +26,7 @@ class ChatCubit extends Cubit<ChatState> {
     emit(const ChatState.loading());
     final result = await _repository.getChatData(groupId: groupId);
     result.fold(
-      (error) => emit(ChatState.error(error.toString())),
+      (error) => emit(ChatState.error(error.toString().replaceFirst('Exception: ', ''))),
       (data) => emit(ChatState.loaded(data)),
     );
   }
@@ -38,12 +38,12 @@ class ChatCubit extends Cubit<ChatState> {
       (result) {
         if (isClosed) return;
         result.fold(
-          (error) => emit(ChatState.error(error.toString())),
+          (error) => emit(ChatState.error(error.toString().replaceFirst('Exception: ', ''))),
           (data) => emit(ChatState.loaded(data)),
         );
       },
       onError: (error) {
-        if (!isClosed) emit(ChatState.error(error.toString()));
+        if (!isClosed) emit(ChatState.error(error.toString().replaceFirst('Exception: ', '')));
       },
     );
   }

@@ -64,9 +64,9 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
   void _scrollListener() {
     if (!_scrollController.hasClients) return;
 
-    final maxScroll = _scrollController.position.maxScrollExtent;
+    // With reverse:true, position 0 = bottom (newest messages)
     final currentScroll = _scrollController.position.pixels;
-    final isAtBottom = maxScroll - currentScroll <= 200;
+    final isAtBottom = currentScroll <= 200;
 
     if (isAtBottom && _showScrollToBottom) {
       setState(() => _showScrollToBottom = false);
@@ -77,8 +77,9 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
+      // With reverse:true, position 0 = bottom (newest messages)
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -273,7 +274,9 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                           loaded: (messages) {
                             if (!_showScrollToBottom) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) _scrollToBottom();
+                                if (mounted && _scrollController.hasClients) {
+                                  _scrollController.jumpTo(0);
+                                }
                               });
                             }
                           },
@@ -302,12 +305,16 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                                 .toList();
                             final allMessages = [...messages, ...stillPending];
 
+                            // Reverse list so newest is at index 0 (bottom of reverse ListView)
+                            final reversed = allMessages.reversed.toList();
+
                             return ListView.builder(
                               controller: _scrollController,
+                              reverse: true,
                               padding: const EdgeInsets.symmetric(vertical: 10),
-                              itemCount: allMessages.length,
+                              itemCount: reversed.length,
                               itemBuilder: (context, index) {
-                                final msg = allMessages[index];
+                                final msg = reversed[index];
                                 final isPending = _pendingMessages.any((p) => p.id == msg.id);
                                 final isSelected = _selectedMessageIds.contains(
                                   msg.id,

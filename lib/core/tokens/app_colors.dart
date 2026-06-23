@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Cores Principais
-  static const Color primary = Color(0xFF08B078); // Verde Principal
-  static const Color secondary = Color(0xFF094EF8); // Azul Accent
+  // Cores Principais — Brandbook AgroBravo Enterprise
+  static const Color primary = Color(0xFF679436); // Green — Growth, Nature, Prosperity
+  static const Color secondary = Color(0xFF07B68D); // Blue/Teal — Trust, Stability, Professionalism
+  static const Color deepBlue = Color(0xFF00458A); // Deep Blue — Strength, Depth, Leadership
   static const Color primaryDark = Color(
-    0xFF056F4C,
-  ); // Verde Escuro para variações
+    0xFF4A6B27,
+  ); // Green Escuro (derivado para variações)
 
   // Cores Neutras
   static const Color background = Color(0xFFF8F9FA); // Fundo claro mais suave
@@ -21,7 +22,7 @@ class AppColors {
   static const Color backgroundLightDark = Color(
     0xFF1E1E1E,
   ); // Cinza Escuro Fundo (Elevado)
-  static const Color chatBackground = Color(0xFFE5F0EB); // Fundo Chat
+  static const Color chatBackground = Color(0xFFE8F0E0); // Fundo Chat (tint 20% Green)
   static const Color chatBackgroundDark = Color(
     0xFF121212,
   ); // Fundo Chat Grafite Escuro

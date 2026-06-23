@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:bloc/bloc.dart';
@@ -45,8 +46,8 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
             ));
           },
           onError: (error) {
-            emit(ChatDetailState.error(error.toString()));
-            print('Error in loadMessages: $error');
+            emit(ChatDetailState.error(error.toString().replaceFirst('Exception: ', '')));
+            if (kDebugMode) debugPrint('[ChatDetail] loadMessages error: $error');
           },
         );
   }
@@ -145,7 +146,7 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
       );
     } catch (e) {
       _removePending(pending.id);
-      print('Error sending message: $e');
+      if (kDebugMode) debugPrint('[ChatDetail] sendMessage error: $e');
     }
   }
 
@@ -169,7 +170,7 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
       );
     } catch (e) {
       _removePending(pending.id);
-      print('Error sending audio: $e');
+      if (kDebugMode) debugPrint('[ChatDetail] sendAudio error: $e');
     }
   }
 
@@ -177,7 +178,7 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
     try {
       await _repository.editMessage(messageId, newText);
     } catch (e) {
-      print('Error editing message: $e');
+      if (kDebugMode) debugPrint('[ChatDetail] editMessage error: $e');
     }
   }
 
@@ -185,7 +186,7 @@ class ChatDetailCubit extends Cubit<ChatDetailState> {
     try {
       await _repository.deleteMessages(messageIds);
     } catch (e) {
-      print('Error deleting messages: $e');
+      if (kDebugMode) debugPrint('[ChatDetail] deleteMessages error: $e');
     }
   }
 }

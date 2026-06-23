@@ -120,8 +120,13 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      pageBuilder: (context, state) =>
-          const NoTransitionPage(child: HomePage()),
+      pageBuilder: (context, state) {
+        final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '');
+        final groupId = state.uri.queryParameters['groupId'];
+        return NoTransitionPage(
+          child: HomePage(initialTab: tab, initialGroupId: groupId),
+        );
+      },
     ),
     GoRoute(
       path: '/create-post',

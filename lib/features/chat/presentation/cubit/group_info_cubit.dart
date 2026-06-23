@@ -16,7 +16,7 @@ class GroupInfoCubit extends Cubit<GroupInfoState> {
     emit(const GroupInfoState.loading());
     final result = await _chatRepository.getGroupDetails(groupId);
     result.fold(
-      (error) => emit(GroupInfoState.error(error.toString())),
+      (error) => emit(GroupInfoState.error(error.toString().replaceFirst('Exception: ', ''))),
       (details) => emit(GroupInfoState.loaded(details)),
     );
   }

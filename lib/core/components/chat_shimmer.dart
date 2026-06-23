@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:agrobravo/core/tokens/app_spacing.dart';
 
 class ChatShimmer extends StatelessWidget {
   const ChatShimmer({super.key});
@@ -11,27 +10,29 @@ class ChatShimmer extends StatelessWidget {
     final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
     final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: MediaQuery.of(context).padding.top), // Header spacer
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // HeaderSpacer equivalent
+            SizedBox(height: MediaQuery.of(context).padding.top),
 
-          // History tile
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Shimmer.fromColors(
-              baseColor: baseColor,
-              highlightColor: highlightColor,
+            // History tile — matches _buildHistoryTile
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: Container(
-                height: 72,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.07)
+                        : Colors.grey.withValues(alpha: 0.15),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -43,35 +44,35 @@ class ChatShimmer extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            width: 160,
-                            height: 14,
+                            width: 140,
+                            height: 12,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Container(
-                            width: 120,
-                            height: 11,
+                            width: 100,
+                            height: 10,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      width: 20,
-                      height: 20,
+                      width: 16,
+                      height: 16,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(4),
@@ -81,99 +82,123 @@ class ChatShimmer extends StatelessWidget {
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: 20),
 
-          // Section label
-          Padding(
-            padding: const EdgeInsets.only(left: AppSpacing.md),
-            child: Shimmer.fromColors(
-              baseColor: baseColor,
-              highlightColor: highlightColor,
+            // Section label — matches _buildSectionLabel
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Container(
-                width: 100,
-                height: 12,
+                width: 110,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+
+            // Chat list items — matches _ChatListItem (ListTile)
+            // Using a fixed list instead of ListView.builder to avoid
+            // nested scroll issues
+            for (int i = 0; i < 3; i++)
+              _buildListItemShimmer(i),
+
+            const SizedBox(height: 20),
+
+            // Second section label (Guias)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Container(
+                width: 60,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+
+            // Guide list items
+            for (int i = 0; i < 2; i++)
+              _buildListItemShimmer(i, isGuide: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListItemShimmer(int index, {bool isGuide = false}) {
+    // Vary widths to look more natural
+    final titleWidths = [160.0, 120.0, 180.0, 140.0, 100.0];
+    final subtitleWidths = [200.0, 160.0, 140.0, 180.0, 120.0];
+    final titleW = titleWidths[index % titleWidths.length];
+    final subtitleW = subtitleWidths[index % subtitleWidths.length];
+
+    return Padding(
+      // Match ListTile contentPadding
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Avatar — CircleAvatar radius:24
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Title & subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: titleW,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: subtitleW,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Trailing: time + optional badge
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                width: 32,
+                height: 8,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          // Chat list items
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 4,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: 12,
-              ),
-              child: Shimmer.fromColors(
-                baseColor: baseColor,
-                highlightColor: highlightColor,
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.white,
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 140,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            width: 200,
-                            height: 11,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              if (index == 0) ...[
+                const SizedBox(height: 8),
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-            ),
+              ],
+            ],
           ),
         ],
       ),

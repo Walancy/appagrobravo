@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:agrobravo/features/notifications/data/models/notification_model.dart';
 import 'package:agrobravo/features/notifications/domain/entities/notification_entity.dart';
 import 'package:agrobravo/features/notifications/domain/repositories/notifications_repository.dart';
@@ -204,7 +205,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       if (cached.isNotEmpty) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao buscar notificações: $e'));
+      if (kDebugMode) debugPrint('[Notifications] getNotifications error: $e');
+      return Left(Exception('Não foi possível carregar as notificações. Tente novamente.'));
     }
   }
 
@@ -217,7 +219,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
           .eq('id', notificationId);
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao marcar como lida: $e'));
+      if (kDebugMode) debugPrint('[Notifications] markAsRead error: $e');
+      return Left(Exception('Não foi possível marcar notificação. Tente novamente.'));
     }
   }
 
@@ -234,7 +237,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
           .eq('lido', false);
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao marcar todas como lidas: $e'));
+      if (kDebugMode) debugPrint('[Notifications] markAllAsRead error: $e');
+      return Left(Exception('Não foi possível marcar as notificações. Tente novamente.'));
     }
   }
 
@@ -255,7 +259,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao limpar notificações: $e'));
+      if (kDebugMode) debugPrint('[Notifications] clearAll error: $e');
+      return Left(Exception('Não foi possível limpar as notificações. Tente novamente.'));
     }
   }
 
@@ -289,7 +294,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao responder solicitação: $e'));
+      if (kDebugMode) debugPrint('[Notifications] respondFollowRequest error: $e');
+      return Left(Exception('Não foi possível responder a solicitação. Tente novamente.'));
     }
   }
 }

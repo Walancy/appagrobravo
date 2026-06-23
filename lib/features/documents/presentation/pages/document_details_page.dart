@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
@@ -263,8 +264,9 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         await document.close();
       } catch (e) {
         if (mounted) {
+          if (kDebugMode) debugPrint('[Documents] Erro ao converter PDF: $e');
           setState(() {
-            _ocrError = 'Erro ao converter PDF para IA: $e';
+            _ocrError = 'Não foi possível processar o PDF. Tente com uma imagem.';
             _isProcessingOcr = false;
           });
         }
@@ -279,12 +281,13 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
 
     result.fold(
       (error) {
+        if (kDebugMode) debugPrint('[Documents] OCR error: $error');
         setState(() {
-          _ocrError = error.toString();
+          _ocrError = 'Não foi possível extrair os dados automaticamente. Preencha manualmente.';
           _isProcessingOcr = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha ao extrair dados por IA: $error')),
+          const SnackBar(content: Text('Não foi possível extrair os dados. Preencha manualmente.')),
         );
       },
       (data) {
@@ -426,9 +429,10 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
+      ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Não foi possível salvar o documento. Tente novamente.')));
+        if (kDebugMode) debugPrint('[Documents] _onSave error: $e');
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);

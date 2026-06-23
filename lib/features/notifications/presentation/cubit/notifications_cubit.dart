@@ -17,7 +17,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     result.fold(
       (failure) {
         if (isClosed) return;
-        emit(NotificationsState.error(failure.toString()));
+        emit(NotificationsState.error(failure.toString().replaceFirst('Exception: ', '')));
       },
       (notifications) {
         if (isClosed) return;

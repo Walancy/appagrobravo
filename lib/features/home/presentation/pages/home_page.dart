@@ -41,14 +41,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int? initialTab;
+  final String? initialGroupId;
+
+  const HomePage({super.key, this.initialTab, this.initialGroupId});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
-  int _selectedIndex = -1;
+  late int _selectedIndex = widget.initialTab ?? -1;
 
   @override
   void initState() {
@@ -72,10 +75,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final itineraryCubit = context.read<ItineraryCubit>();
       dev.log('[HOME] initState: chamando listenToGroupChanges + loadUserItinerary', name: 'home');
       itineraryCubit.listenToGroupChanges();
-      // Always reload on home entry — the singleton cubit may retain a stale
-      // 'loaded' state from a previous session, which would prevent the
-      // onboarding gate and itinerary/chat tabs from appearing correctly.
-      itineraryCubit.loadUserItinerary();
+
+      // Deep-link from notification: switch to the specific group.
+      if (widget.initialGroupId != null) {
+        dev.log('[HOME] initState: deep-link groupId=${widget.initialGroupId}', name: 'home');
+        itineraryCubit.switchGroup(widget.initialGroupId!);
+      } else {
+        // Always reload on home entry — the singleton cubit may retain a stale
+        // 'loaded' state from a previous session, which would prevent the
+        // onboarding gate and itinerary/chat tabs from appearing correctly.
+        itineraryCubit.loadUserItinerary();
+      }
 
       // Start watching chat data so the navbar badge stays up to date.
       context.read<ChatCubit>().watchChatData();

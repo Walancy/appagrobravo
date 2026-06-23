@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:agrobravo/features/profile/domain/entities/profile_entity.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -402,7 +403,8 @@ class ChatRepositoryImpl implements ChatRepository {
       if (cached != null) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao carregar chat: $e'));
+      if (kDebugMode) debugPrint('[Chat] getChatData error: $e');
+      return Left(Exception('Não foi possível carregar o chat. Tente novamente.'));
     }
   }
 
@@ -1132,7 +1134,8 @@ class ChatRepositoryImpl implements ChatRepository {
       if (cached != null) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao carregar detalhes do grupo: $e'));
+      if (kDebugMode) debugPrint('[Chat] getGroupDetails error: $e');
+      return Left(Exception('Não foi possível carregar os detalhes do grupo. Tente novamente.'));
     }
   }
 

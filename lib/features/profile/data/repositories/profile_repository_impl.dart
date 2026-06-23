@@ -56,7 +56,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       };
       await prefs.setString('cached_profile_${profile.id}', jsonEncode(json));
     } catch (e) {
-      debugPrint('Erro ao salvar perfil no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar perfil no cache: $e');
     }
   }
 
@@ -107,7 +107,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         );
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar perfil do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar perfil do cache: $e');
     }
     return null;
   }
@@ -207,7 +207,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           }
         }
       } catch (e) {
-        debugPrint('Error fetching mission/group: $e');
+        if (kDebugMode) debugPrint('Error fetching mission/group: $e');
       }
 
       final profile = ProfileEntity(
@@ -256,12 +256,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(profile);
     } catch (e) {
-      debugPrint('Erro ao buscar perfil online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('Erro ao buscar perfil online: $e. Tentando cache.');
       final cachedProfile = await _getProfileFromCache(userId);
       if (cachedProfile != null) {
         return Right(cachedProfile);
       }
-      return Left(Exception('Erro ao buscar perfil e sem cache: $e'));
+      return Left(Exception('Não foi possível carregar o perfil. Tente novamente.'));
     }
   }
 
@@ -273,7 +273,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cached_user_posts_$userId', jsonEncode(jsonList));
     } catch (e) {
-      debugPrint('Erro ao salvar posts do usuário no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar posts do usuário no cache: $e');
     }
   }
 
@@ -308,7 +308,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         }).toList();
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar posts do usuário do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar posts do usuário do cache: $e');
     }
     return [];
   }
@@ -341,7 +341,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .toList();
       await prefs.setString('cached_connections_$userId', jsonEncode(jsonList));
     } catch (e) {
-      debugPrint('Erro ao salvar conexões no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar conexões no cache: $e');
     }
   }
 
@@ -394,7 +394,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
             .toList();
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar conexões do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar conexões do cache: $e');
     }
     return [];
   }
@@ -448,12 +448,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(posts);
     } catch (e) {
-      debugPrint('Erro ao buscar posts do usuário online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('Erro ao buscar posts do usuário online: $e. Tentando cache.');
       final cachedPosts = await _getUserPostsFromCache(userId);
       if (cachedPosts.isNotEmpty) {
         return Right(cachedPosts);
       }
-      return Left(Exception('Erro ao buscar posts do usuário: $e'));
+      return Left(Exception('Não foi possível carregar posts. Tente novamente.'));
     }
   }
 
@@ -478,7 +478,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(url);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar foto: $e'));
+      return Left(Exception('Não foi possível atualizar a foto. Tente novamente.'));
     }
   }
 
@@ -504,7 +504,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(url);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar capa: $e'));
+      return Left(Exception('Não foi possível atualizar a capa. Tente novamente.'));
     }
   }
 
@@ -542,12 +542,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return result;
     } catch (e) {
-      debugPrint('Erro ao buscar conexões online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('Erro ao buscar conexões online: $e. Tentando cache.');
       final cached = await _getConnectionsFromCache(userId);
       if (cached.isNotEmpty) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao buscar conexões: $e'));
+      return Left(Exception('Não foi possível carregar conexões. Tente novamente.'));
     }
   }
 
@@ -572,7 +572,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .toList();
       await prefs.setString('cached_requests_$userId', jsonEncode(jsonList));
     } catch (e) {
-      debugPrint('Erro ao salvar solicitações no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar solicitações no cache: $e');
     }
   }
 
@@ -625,7 +625,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
             .toList();
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar solicitações do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar solicitações do cache: $e');
     }
     return [];
   }
@@ -659,12 +659,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return result;
     } catch (e) {
-      debugPrint('Erro ao buscar solicitações online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('Erro ao buscar solicitações online: $e. Tentando cache.');
       final cached = await _getRequestsFromCache(userId);
       if (cached.isNotEmpty) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao buscar solicitações: $e'));
+      return Left(Exception('Não foi possível carregar solicitações. Tente novamente.'));
     }
   }
 
@@ -679,7 +679,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       });
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao solicitar conexão: $e'));
+      return Left(Exception('Não foi possível enviar solicitação. Tente novamente.'));
     }
   }
 
@@ -694,7 +694,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('seguido_id', userId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao cancelar solicitação: $e'));
+      return Left(Exception('Não foi possível cancelar a solicitação. Tente novamente.'));
     }
   }
 
@@ -709,7 +709,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('seguido_id', currentUserId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao aceitar conexão: $e'));
+      return Left(Exception('Não foi possível aceitar a conexão. Tente novamente.'));
     }
   }
 
@@ -724,7 +724,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('seguido_id', currentUserId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao rejeitar conexão: $e'));
+      return Left(Exception('Não foi possível recusar a conexão. Tente novamente.'));
     }
   }
 
@@ -740,7 +740,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           );
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao remover conexão: $e'));
+      return Left(Exception('Não foi possível remover a conexão. Tente novamente.'));
     }
   }
 
@@ -830,7 +830,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       return Right(profiles);
     } catch (e) {
-      return Left(Exception('Erro ao buscar informações dos usuários: $e'));
+      return Left(Exception('Não foi possível carregar informações. Tente novamente.'));
     }
   }
 
@@ -846,7 +846,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('id', userId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar preferências alimentares: $e'));
+      return Left(Exception('Não foi possível salvar preferências. Tente novamente.'));
     }
   }
 
@@ -862,7 +862,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .eq('id', userId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar restrições médicas: $e'));
+      return Left(Exception('Não foi possível salvar informações médicas. Tente novamente.'));
     }
   }
 
@@ -903,7 +903,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       await _supabaseClient.from('users').update(dbData).eq('id', userId);
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar dados da conta: $e'));
+      return Left(Exception('Não foi possível atualizar os dados. Tente novamente.'));
     }
   }
 
@@ -921,7 +921,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Right(null);
     } catch (e) {
       return Left(
-        Exception('Erro ao salvar preferências de notificação localmente: $e'),
+        Exception('Não foi possível salvar preferências. Tente novamente.'),
       );
     }
   }
@@ -947,7 +947,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       });
     } catch (e) {
       return Left(
-        Exception('Erro ao carregar preferências de notificação: $e'),
+        Exception('Não foi possível carregar preferências. Tente novamente.'),
       );
     }
   }

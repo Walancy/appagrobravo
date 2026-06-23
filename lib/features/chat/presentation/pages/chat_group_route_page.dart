@@ -46,7 +46,7 @@ class _ChatGroupRoutePageState extends State<ChatGroupRoutePage> {
       // Fetch group info
       final groupRow = await supabase
           .from('grupos')
-          .select('id, nome, imagem')
+          .select('id, nome, logo')
           .eq('id', resolvedGroupId)
           .maybeSingle();
 
@@ -71,7 +71,7 @@ class _ChatGroupRoutePageState extends State<ChatGroupRoutePage> {
         id: groupRow['id'] as String,
         title: (groupRow['nome'] as String?) ?? 'Grupo',
         subtitle: '$memberCount participantes',
-        imageUrl: groupRow['imagem'] as String?,
+        imageUrl: groupRow['logo'] as String?,
         memberCount: memberCount,
       );
 

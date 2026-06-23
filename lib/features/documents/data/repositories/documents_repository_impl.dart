@@ -71,7 +71,8 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
       if (cachedDocs.isNotEmpty) {
         return Right(cachedDocs);
       }
-      return Left(Exception('Erro ao buscar documentos: $e'));
+      if (kDebugMode) debugPrint('[Documents] getDocuments error: $e');
+      return Left(Exception('Não foi possível carregar os documentos. Tente novamente.'));
     }
   }
 
@@ -134,7 +135,8 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao enviar documento: $e'));
+      if (kDebugMode) debugPrint('[Documents] uploadDocument error: $e');
+      return Left(Exception('Não foi possível enviar o documento. Tente novamente.'));
     }
   }
 
@@ -192,7 +194,8 @@ Rules:
     try {
       final apiKey = dotenv.env['OPENAI_API_KEY'];
       if (apiKey == null || apiKey.isEmpty) {
-        return Left(Exception('OpenAI API key não encontrada no .env do app.'));
+        if (kDebugMode) debugPrint('[Documents] OpenAI API key não configurada.');
+        return Left(Exception('Não foi possível processar o documento. Preencha os dados manualmente.'));
       }
 
       final bytes = await file.readAsBytes();
@@ -239,12 +242,15 @@ Rules:
           final Map<String, dynamic> parsedData = jsonDecode(content);
           return Right(parsedData);
         }
-        return Left(Exception('Formato de resposta da OpenAI inválido.'));
+        if (kDebugMode) debugPrint('[Documents] OpenAI response format invalid: $jsonResponse');
+        return Left(Exception('Não foi possível extrair os dados do documento. Preencha manualmente.'));
       } else {
-        return Left(Exception('Erro da OpenAI: ${response.statusCode} - ${response.body}'));
+        if (kDebugMode) debugPrint('[Documents] OpenAI HTTP error: ${response.statusCode}');
+        return Left(Exception('Não foi possível processar o documento com IA. Tente novamente ou preencha manualmente.'));
       }
     } catch (e) {
-      return Left(Exception('Falha no processamento direto com a OpenAI: $e'));
+      if (kDebugMode) debugPrint('[Documents] _parseDocumentDirectOpenAI error: $e');
+      return Left(Exception('Não foi possível processar o documento com IA. Tente novamente ou preencha manualmente.'));
     }
   }
 
@@ -277,7 +283,7 @@ Rules:
       throw Exception('HTTP error code: ${response.statusCode}');
     } catch (e) {
       // 2. Fallback: Se der erro de conexão, timeout ou qualquer outro, roda o OCR direto no app
-      debugPrint('Falha de conexão com o painel ($e). Executando processamento local direto com OpenAI...');
+      if (kDebugMode) debugPrint('[Documents] Painel indisponível, usando OpenAI direto: $e');
       return await _parseDocumentDirectOpenAI(type: type, file: file);
     }
   }

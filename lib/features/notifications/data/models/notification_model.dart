@@ -153,7 +153,7 @@ abstract class NotificationModel with _$NotificationModel {
           break;
         case NotificationType.missionUpdate:
         case NotificationType.guideAlert:
-          if (grupoId != null) resolvedRoute = '/itinerary/$grupoId';
+          if (grupoId != null) resolvedRoute = '/home?tab=0&groupId=$grupoId';
           break;
         case NotificationType.documentApproved:
         case NotificationType.documentRejected:

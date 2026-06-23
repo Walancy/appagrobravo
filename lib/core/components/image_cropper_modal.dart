@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 
@@ -171,8 +172,12 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
     } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);
+        if (kDebugMode) debugPrint('[ImageCropper] _performCrop error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text('Não foi possível processar a imagem. Tente novamente.'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

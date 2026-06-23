@@ -30,7 +30,7 @@ import 'package:agrobravo/core/services/notification_navigation_service.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  log('FCM background message: ${message.messageId}');
+  if (kDebugMode) log('FCM background message: ${message.messageId}');
 }
 
 /// Solicita permissão de push e salva o token FCM em public.users.
@@ -48,7 +48,7 @@ Future<void> setupFCM() async {
     provisional: false,
   );
 
-  log('FCM permission: ${settings.authorizationStatus}');
+  if (kDebugMode) log('FCM permission: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized ||
       settings.authorizationStatus == AuthorizationStatus.provisional) {
@@ -68,7 +68,7 @@ Future<void> _getFcmTokenAndSave(FirebaseMessaging messaging) async {
       final token = await messaging.getToken();
       if (token != null) _saveFcmToken(token);
     } catch (e) {
-      log('Erro ao obter FCM token (Android): $e');
+      if (kDebugMode) log('Erro ao obter FCM token (Android): $e');
     }
     return;
   }
@@ -89,7 +89,7 @@ Future<void> _getFcmTokenAndSave(FirebaseMessaging messaging) async {
     await Future.delayed(Duration(milliseconds: 500 * attempt));
   }
 
-  log('FCM: APNS token não disponível após 10 tentativas. Push pode não funcionar.');
+  if (kDebugMode) log('FCM: APNS token não disponível após 10 tentativas. Push pode não funcionar.');
 }
 
 void _saveFcmToken(String token) {
@@ -99,8 +99,8 @@ void _saveFcmToken(String token) {
       .from('users')
       .update({'fcm_token': token})
       .eq('id', userId)
-      .then((_) => log('FCM token salvo: $token'))
-      .catchError((e) => log('Erro ao salvar FCM token: $e'));
+      .then((_) => { if (kDebugMode) log('FCM token salvo') })
+      .catchError((e) => { if (kDebugMode) log('Erro ao salvar FCM token: $e') });
 }
 
 void main() async {
@@ -123,7 +123,7 @@ void main() async {
     try {
       await Firebase.initializeApp();
     } catch (e) {
-      log('Erro ao inicializar Firebase: $e');
+      if (kDebugMode) log('Erro ao inicializar Firebase: $e');
     }
   }
 
@@ -151,7 +151,7 @@ void main() async {
       ),
     ));
   } catch (e) {
-    log('Audio context setup failed: $e');
+    if (kDebugMode) log('Audio context setup failed: $e');
   }
 
   // Solicita permissão de push em paralelo — não bloqueia o app
@@ -161,7 +161,7 @@ void main() async {
       setupFCM();
       NotificationNavigationService.initialize();
     } catch (e) {
-      log('Erro ao configurar FCM: $e');
+      if (kDebugMode) log('Erro ao configurar FCM: $e');
     }
   }
 
@@ -244,7 +244,7 @@ class _AgroBravoAppState extends State<AgroBravoApp> {
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: base,
-      textTheme: GoogleFonts.poppinsTextTheme(),
+      textTheme: GoogleFonts.barlowTextTheme(),
       dividerTheme: const DividerThemeData(color: AppColors.backgroundLight, space: 1),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -328,7 +328,7 @@ class _AgroBravoAppState extends State<AgroBravoApp> {
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.backgroundDark,
       colorScheme: base,
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+      textTheme: GoogleFonts.barlowTextTheme(ThemeData.dark().textTheme),
       dividerTheme: const DividerThemeData(color: Color(0xFF2A2A2A), space: 1),
       cardTheme: CardThemeData(
         elevation: 0,

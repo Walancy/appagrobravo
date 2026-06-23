@@ -594,8 +594,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _supabaseClient.rpc('delete_user_account');
       return const Right(null);
     } catch (e) {
-      log('Erro ao excluir conta: $e');
-      return Left(Exception('Erro ao excluir conta no servidor: $e'));
+      if (kDebugMode) log('Erro ao excluir conta: $e');
+      return Left(Exception('Não foi possível excluir sua conta. Tente novamente.'));
     }
   }
 }

@@ -88,12 +88,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(posts.map((e) => e.toEntity()).toList());
     } catch (e) {
-      debugPrint('Erro ao buscar feed online: $e. Tentando cache offline.');
+      if (kDebugMode) debugPrint('[Feed] getFeed error: $e');
       final cachedPosts = await _getFeedFromCache();
       if (cachedPosts.isNotEmpty) {
         return Right(cachedPosts.map((e) => e.toEntity()).toList());
       }
-      return Left(Exception('Erro ao buscar feed e sem cache disponível: $e'));
+      return Left(Exception('Não foi possível carregar o feed. Tente novamente.'));
     }
   }
 
@@ -217,7 +217,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
         return Right(entities);
       }
-      return Left(Exception('Erro ao buscar comentários: $e'));
+      if (kDebugMode) debugPrint('[Feed] getComments error: $e');
+      return Left(Exception('Não foi possível carregar os comentários. Tente novamente.'));
     }
   }
 
@@ -234,7 +235,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao curtir post: $e'));
+      if (kDebugMode) debugPrint('[Feed] likePost error: $e');
+      return Left(Exception('Não foi possível curtir o post. Tente novamente.'));
     }
   }
 
@@ -251,7 +253,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao remover curtida: $e'));
+      if (kDebugMode) debugPrint('[Feed] unlikePost error: $e');
+      return Left(Exception('Não foi possível remover curtida. Tente novamente.'));
     }
   }
 
@@ -268,7 +271,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao curtir comentário: $e'));
+      if (kDebugMode) debugPrint('[Feed] likeComment error: $e');
+      return Left(Exception('Não foi possível curtir o comentário. Tente novamente.'));
     }
   }
 
@@ -285,7 +289,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao remover curtida do comentário: $e'));
+      if (kDebugMode) debugPrint('[Feed] unlikeComment error: $e');
+      return Left(Exception('Não foi possível remover curtida do comentário. Tente novamente.'));
     }
   }
 
@@ -320,7 +325,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(model.toEntity());
     } catch (e) {
-      return Left(Exception('Erro ao comentar: $e'));
+      if (kDebugMode) debugPrint('[Feed] addComment error: $e');
+      return Left(Exception('Não foi possível adicionar o comentário. Tente novamente.'));
     }
   }
 
@@ -336,7 +342,8 @@ class FeedRepositoryImpl implements FeedRepository {
           .eq('id', commentId);
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao atualizar comentário: $e'));
+      if (kDebugMode) debugPrint('[Feed] updateComment error: $e');
+      return Left(Exception('Não foi possível atualizar o comentário. Tente novamente.'));
     }
   }
 
@@ -346,7 +353,8 @@ class FeedRepositoryImpl implements FeedRepository {
       await _supabaseClient.from('comentarios').delete().eq('id', commentId);
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao excluir comentário: $e'));
+      if (kDebugMode) debugPrint('[Feed] deleteComment error: $e');
+      return Left(Exception('Não foi possível excluir o comentário. Tente novamente.'));
     }
   }
 
@@ -440,7 +448,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(model.toEntity());
     } catch (e) {
-      return Left(Exception('Erro ao criar post: $e'));
+      if (kDebugMode) debugPrint('[Feed] createPost error: $e');
+      return Left(Exception('Não foi possível publicar. Tente novamente.'));
     }
   }
 
@@ -550,7 +559,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(model.toEntity());
     } catch (e) {
-      return Left(Exception('Erro ao atualizar post: $e'));
+      if (kDebugMode) debugPrint('[Feed] updatePost error: $e');
+      return Left(Exception('Não foi possível salvar o post. Tente novamente.'));
     }
   }
 
@@ -603,12 +613,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(canPost);
     } catch (e) {
-      debugPrint('Erro ao verificar permissão online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('[Feed] canUserPost error: $e');
       final cached = await _getCanUserPostFromCache();
       if (cached != null) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao verificar permissão: $e'));
+      return Left(Exception('Não foi possível verificar permissões. Tente novamente.'));
     }
   }
 
@@ -809,12 +819,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(missions);
     } catch (e) {
-      debugPrint('Erro ao buscar missões do usuário: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('[Feed] getUserMissions error: $e');
       final cachedMissions = await _getUserMissionsFromCache();
       if (cachedMissions.isNotEmpty) {
         return Right(cachedMissions);
       }
-      return Left(Exception('Erro ao buscar missões do usuário: $e'));
+      return Left(Exception('Não foi possível carregar as missões. Tente novamente.'));
     }
   }
 
@@ -953,12 +963,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return Right(missionEntity);
     } catch (e) {
-      debugPrint('Erro ao buscar alerta de missão online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('[Feed] getLatestMissionAlert error: $e');
       final cachedAlert = await _getMissionAlertFromCache();
       if (cachedAlert != null) {
         return Right(cachedAlert);
       }
-      return Left(Exception('Erro ao buscar alerta de missão: $e'));
+      return Left(Exception('Não foi possível carregar informações. Tente novamente.'));
     }
   }
 
@@ -985,7 +995,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       return const Right(unit);
     } catch (e) {
-      return Left(Exception('Erro ao excluir post: $e'));
+      if (kDebugMode) debugPrint('[Feed] deletePost error: $e');
+      return Left(Exception('Não foi possível excluir o post. Tente novamente.'));
     }
   }
 

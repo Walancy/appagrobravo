@@ -468,16 +468,41 @@ class _NotificationItemState extends State<_NotificationItem> {
 
   static const int _collapsedMaxLines = 3;
 
+  /// Converts a target_route into the correct in-app navigation.
+  /// Routes like `/itinerary/:id` are converted to the itinerary tab inside
+  /// HomePage so the user sees the real tab, not the standalone page.
+  /// Detail routes (chat, user-feed, etc.) are pushed on top of the current
+  /// stack so the user can navigate back.
   void _pushRoute(BuildContext context, String route) {
+    debugPrint('[NOTIF-TAP] _pushRoute called with route="$route"');
     final uri = Uri.tryParse(route.trim());
-    final normalizedRoute = uri != null && uri.path.isNotEmpty && uri.path.startsWith('/')
-        ? uri.toString()
-        : '/notifications';
+    if (uri == null || uri.path.isEmpty || !uri.path.startsWith('/')) {
+      debugPrint('[NOTIF-TAP] _pushRoute: invalid route, staying on page');
+      return;
+    }
 
-    try {
+    final normalizedRoute = uri.toString();
+
+    // Intercept /itinerary/:groupId → navigate to itinerary tab in HomePage
+    final itineraryMatch = RegExp(r'^/itinerary/(.+)$').firstMatch(uri.path);
+    if (itineraryMatch != null) {
+      final groupId = itineraryMatch.group(1)!;
+      context.go('/home?tab=0&groupId=$groupId');
+      return;
+    }
+
+    // /home routes → replace (switch tabs)
+    if (uri.path == '/home') {
       context.go(normalizedRoute);
-    } catch (_) {
-      context.go('/notifications');
+      return;
+    }
+
+    // Detail routes → push on top so back button works
+    try {
+      context.push(normalizedRoute);
+      debugPrint('[NOTIF-TAP] _pushRoute: pushed "$normalizedRoute"');
+    } catch (e) {
+      debugPrint('[NOTIF-TAP] _pushRoute: ERROR $e');
     }
   }
 
@@ -566,6 +591,7 @@ class _NotificationItemState extends State<_NotificationItem> {
             }
 
             // Use targetRoute from DB/push when available
+            debugPrint('[NOTIF-TAP] onTap: targetRoute="${notification.targetRoute}" type=${notification.type}');
             if (notification.targetRoute != null &&
                 notification.targetRoute!.isNotEmpty) {
               _pushRoute(context, notification.targetRoute!);
@@ -597,7 +623,7 @@ class _NotificationItemState extends State<_NotificationItem> {
             } else if (notification.type == NotificationType.missionUpdate ||
                 notification.type == NotificationType.guideAlert) {
               if (notification.grupoId != null) {
-                context.go('/itinerary/${notification.grupoId}');
+                context.go('/home?tab=0&groupId=${notification.grupoId}');
               }
             } else if (notification.type == NotificationType.documentApproved ||
                 notification.type == NotificationType.documentRejected ||

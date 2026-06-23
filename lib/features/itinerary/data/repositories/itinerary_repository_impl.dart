@@ -52,7 +52,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           return Right(ItineraryGroupDto.fromJson(json).toEntity());
         }
       } catch (cacheError) {
-        debugPrint('Erro ao ler cache de grupo: $cacheError');
+        if (kDebugMode) debugPrint('Erro ao ler cache de grupo: $cacheError');
       }
       return Left(Exception(e.toString()));
     }
@@ -111,7 +111,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(items);
     } catch (e) {
-      debugPrint('[REPO] getItinerary error: $e');
+      if (kDebugMode) debugPrint('[REPO] getItinerary error: $e');
       // Try cache
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -124,7 +124,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           return Right(items);
         }
       } catch (cacheError) {
-        debugPrint('Erro ao ler cache de itinerário: $cacheError');
+        if (kDebugMode) debugPrint('Erro ao ler cache de itinerário: $cacheError');
       }
       return Left(Exception(e.toString()));
     }
@@ -138,7 +138,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cached_travel_times_$groupId', jsonEncode(list));
     } catch (e) {
-      debugPrint('Erro ao salvar tempos de deslocamento no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar tempos de deslocamento no cache: $e');
     }
   }
 
@@ -152,7 +152,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         return List<Map<String, dynamic>>.from(jsonDecode(jsonString));
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar tempos de deslocamento do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar tempos de deslocamento do cache: $e');
     }
     return [];
   }
@@ -170,7 +170,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         await prefs.setBool('cached_user_has_no_group', true);
       }
     } catch (e) {
-      debugPrint('Erro ao salvar ID do grupo no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar ID do grupo no cache: $e');
     }
   }
 
@@ -181,7 +181,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       if (owner != userId) return null; // cache belongs to a different user
       return prefs.getString('cached_user_group_id');
     } catch (e) {
-      debugPrint('Erro ao recuperar ID do grupo do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar ID do grupo do cache: $e');
     }
     return null;
   }
@@ -191,7 +191,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('cached_pending_docs', jsonEncode(docs));
     } catch (e) {
-      debugPrint('Erro ao salvar documentos pendentes no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar documentos pendentes no cache: $e');
     }
   }
 
@@ -203,7 +203,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         return List<String>.from(jsonDecode(jsonString));
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar documentos pendentes do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar documentos pendentes do cache: $e');
     }
     return [];
   }
@@ -220,7 +220,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         jsonEncode(jsonList),
       );
     } catch (e) {
-      debugPrint('Erro ao salvar materiais no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar materiais no cache: $e');
     }
   }
 
@@ -242,7 +242,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
             .toList();
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar materiais do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar materiais do cache: $e');
     }
     return [];
   }
@@ -258,7 +258,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       };
       await prefs.setString('cached_emergency_contacts', jsonEncode(json));
     } catch (e) {
-      debugPrint('Erro ao salvar contatos de emergência no cache: $e');
+      if (kDebugMode) debugPrint('Erro ao salvar contatos de emergência no cache: $e');
     }
   }
 
@@ -276,7 +276,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         );
       }
     } catch (e) {
-      debugPrint('Erro ao recuperar contatos de emergência do cache: $e');
+      if (kDebugMode) debugPrint('Erro ao recuperar contatos de emergência do cache: $e');
     }
     return null;
   }
@@ -297,21 +297,21 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(list);
     } catch (e) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         'Erro ao buscar tempos de deslocamento online: $e. Tentando cache.',
       );
       final cached = await _getTravelTimesFromCache(groupId);
       if (cached.isNotEmpty) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao buscar tempos de deslocamento: $e'));
+      return Left(Exception('Não foi possível carregar dados da viagem. Tente novamente.'));
     }
   }
 
   @override
   Future<Either<Exception, String?>> getUserGroupId() async {
     final userId = _supabaseClient.auth.currentUser?.id;
-    debugPrint('[REPO] getUserGroupId: userId=$userId');
+    if (kDebugMode) debugPrint('[REPO] getUserGroupId: userId=$userId');
     if (userId == null) return Left(Exception('Usuário não autenticado'));
     try {
 
@@ -323,13 +323,13 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           .eq('user_id', userId);
 
       final List<dynamic> rows = response as List<dynamic>;
-      debugPrint('[REPO] getUserGroupId: rows retornadas=${rows.length} rawData=$rows');
+      if (kDebugMode) debugPrint('[REPO] getUserGroupId: rows retornadas=${rows.length} rawData=$rows');
 
       String? groupId;
       if (rows.isNotEmpty) {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
-        debugPrint('[REPO] getUserGroupId: today=$today');
+        if (kDebugMode) debugPrint('[REPO] getUserGroupId: today=$today');
 
         // Only consider groups with data_fim >= today (active missions).
         // If user only has expired groups → treat as no active mission.
@@ -340,12 +340,12 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
               final dateStr = (gruposData as Map<String, dynamic>?)?['data_fim'] as String?;
               final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
               final isActive = date != null && !date.isBefore(today);
-              debugPrint('[REPO]   row grupo_id=${r['grupo_id']} grupos=$gruposData dateStr=$dateStr date=$date isActive=$isActive');
+              if (kDebugMode) debugPrint('[REPO]   row grupo_id=${r['grupo_id']} grupos=$gruposData dateStr=$dateStr date=$date isActive=$isActive');
               return isActive;
             })
             .toList();
 
-        debugPrint('[REPO] getUserGroupId: activeRows=${activeRows.length}');
+        if (kDebugMode) debugPrint('[REPO] getUserGroupId: activeRows=${activeRows.length}');
 
         if (activeRows.isNotEmpty) {
           // Sort active groups by data_fim desc — pick the most recent
@@ -362,7 +362,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
         // else: user has groups but all expired → groupId stays null
       }
 
-      debugPrint('[REPO] getUserGroupId: groupId final=$groupId');
+      if (kDebugMode) debugPrint('[REPO] getUserGroupId: groupId final=$groupId');
       await _saveUserGroupIdToCache(groupId);
 
       // INC-011: mark participant as notified (fire-and-forget, non-blocking).
@@ -382,10 +382,10 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(groupId);
     } catch (e, st) {
-      debugPrint('[REPO] getUserGroupId: ERRO=$e\n$st');
+      if (kDebugMode) debugPrint('[REPO] getUserGroupId: ERRO=$e\n$st');
       // Only use cache when it belongs to the current user
       final cached = await _getUserGroupIdFromCache(userId);
-      debugPrint('[REPO] getUserGroupId: usando cache=$cached');
+      if (kDebugMode) debugPrint('[REPO] getUserGroupId: usando cache=$cached');
       if (cached != null) {
         return Right(cached);
       }
@@ -441,7 +441,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(groups);
     } catch (e) {
-      return Left(Exception('Erro ao buscar grupos ativos: $e'));
+      return Left(Exception('Não foi possível carregar grupos. Tente novamente.'));
     }
   }
 
@@ -470,7 +470,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(docTypes);
     } catch (e) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         'Erro ao buscar documentos pendentes online: $e. Tentando cache.',
       );
       final cached = await _getPendingDocsFromCache();
@@ -526,7 +526,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
                     : m)
                 .toList();
           } catch (e) {
-            debugPrint('Erro ao verificar respostas dos forms: $e');
+            if (kDebugMode) debugPrint('Erro ao verificar respostas dos forms: $e');
           }
         }
       }
@@ -534,7 +534,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       await _saveMissionMaterialsToCache(groupId, materials);
       return Right(materials);
     } catch (e) {
-      debugPrint('Erro ao buscar materiais online: $e. Tentando cache.');
+      if (kDebugMode) debugPrint('Erro ao buscar materiais online: $e. Tentando cache.');
       final cached = await _getMissionMaterialsFromCache(groupId);
       if (cached.isNotEmpty) {
         return Right(cached);
@@ -652,14 +652,14 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(contacts);
     } catch (e) {
-      debugPrint(
+      if (kDebugMode) debugPrint(
         'Erro ao buscar contatos de emergência online: $e. Tentando cache.',
       );
       final cached = await _getEmergencyContactsFromCache();
       if (cached != null) {
         return Right(cached);
       }
-      return Left(Exception('Erro ao buscar contatos de emergência: $e'));
+      return Left(Exception('Não foi possível carregar contatos de emergência. Tente novamente.'));
     }
   }
 
@@ -706,7 +706,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return Right(items);
     } catch (e) {
-      return Left(Exception('Erro ao buscar checklist: $e'));
+      return Left(Exception('Não foi possível carregar o checklist. Tente novamente.'));
     }
   }
 
@@ -734,7 +734,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao salvar checklist: $e'));
+      return Left(Exception('Não foi possível salvar o checklist. Tente novamente.'));
     }
   }
 
@@ -775,7 +775,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
           .toList();
       return Right(fields);
     } catch (e) {
-      return Left(Exception('Erro ao buscar campos do formulário: $e'));
+      return Left(Exception('Não foi possível carregar o formulário. Tente novamente.'));
     }
   }
 
@@ -803,7 +803,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       }
       return Right(map);
     } catch (e) {
-      return Left(Exception('Erro ao buscar respostas do formulário: $e'));
+      return Left(Exception('Não foi possível carregar respostas. Tente novamente.'));
     }
   }
 
@@ -832,7 +832,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao salvar respostas: $e'));
+      return Left(Exception('Não foi possível salvar respostas. Tente novamente.'));
     }
   }
 
@@ -881,13 +881,13 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
                   ))
               .toList();
         } catch (e) {
-          debugPrint('Erro ao verificar respostas dos formulários: $e');
+          if (kDebugMode) debugPrint('Erro ao verificar respostas dos formulários: $e');
         }
       }
 
       return Right(formularios);
     } catch (e) {
-      return Left(Exception('Erro ao buscar formulários do grupo: $e'));
+      return Left(Exception('Não foi possível carregar formulários. Tente novamente.'));
     }
   }
 
@@ -914,7 +914,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
       }
       return const Right({});
     } catch (e) {
-      return Left(Exception('Erro ao buscar respostas do formulário: $e'));
+      return Left(Exception('Não foi possível carregar respostas. Tente novamente.'));
     }
   }
 
@@ -942,7 +942,7 @@ class ItineraryRepositoryImpl implements ItineraryRepository {
 
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Erro ao salvar respostas do formulário: $e'));
+      return Left(Exception('Não foi possível salvar respostas. Tente novamente.'));
     }
   }
 }

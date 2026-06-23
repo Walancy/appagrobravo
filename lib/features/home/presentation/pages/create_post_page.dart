@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
@@ -42,9 +43,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-      'CreatePostPage initialized with images: ${widget.initialImages}',
-    );
+    if (kDebugMode) debugPrint('CreatePostPage initialized with images: ${widget.initialImages}');
     if (_isEditing) {
       _images = List.from(widget.postToEdit!.images);
       _captionController.text = widget.postToEdit!.caption;
@@ -169,9 +168,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
         setState(() => _isSharing = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao ${_isEditing ? 'salvar' : 'publicar'}: $e'),
+            content: Text(_isEditing ? 'Não foi possível salvar a publicação. Tente novamente.' : 'Não foi possível publicar. Tente novamente.'),
           ),
         );
+        if (kDebugMode) debugPrint('[CreatePost] _savePost error: $e');
       },
       (success) {
         Navigator.pop(context, true);

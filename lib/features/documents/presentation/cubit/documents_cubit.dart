@@ -53,7 +53,8 @@ class DocumentsCubit extends Cubit<DocumentsState> {
     documentsResult.fold(
       (error) {
         if (isClosed) return;
-        emit(DocumentsState.error(error.toString()));
+        final msg = error.toString().replaceFirst('Exception: ', '');
+        emit(DocumentsState.error(msg));
       },
       (documents) {
         if (isClosed) return;
@@ -93,7 +94,8 @@ class DocumentsCubit extends Cubit<DocumentsState> {
     result.fold(
       (error) {
         if (isClosed) return;
-        emit(DocumentsState.error(error.toString()));
+        final msg = error.toString().replaceFirst('Exception: ', '');
+        emit(DocumentsState.error(msg));
       },
       (_) => loadDocuments(),
     );
