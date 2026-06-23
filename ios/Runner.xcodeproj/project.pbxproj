@@ -315,6 +315,21 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		9740EEB61CF901F6004384FC /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+		};
 		AA002201AA002201AA002201 /* Strip Simulator Platform from Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -330,21 +345,6 @@
 			shellPath = /bin/sh;
 			shellScript = "APP_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\nfind \"$APP_PATH\" -name '*.framework' -type d | while read -r FRAMEWORK; do\n  BINARY_NAME=$(defaults read \"$FRAMEWORK/Info.plist\" CFBundleExecutable 2>/dev/null)\n  BINARY_PATH=\"$FRAMEWORK/$BINARY_NAME\"\n  [ -f \"$BINARY_PATH\" ] || continue\n  if vtool -show-build \"$BINARY_PATH\" 2>&1 | grep -qi \"IOSSIMULATOR\"; then\n    echo \"warning: Corrigindo plataforma de simulador em: $BINARY_NAME\"\n    vtool -set-build-version ios 14.0 14.0 -replace -output \"$BINARY_PATH\" \"$BINARY_PATH\" || true\n  fi\ndone\n";
 			showEnvVarsInLog = 0;
-		};
-		9740EEB61CF901F6004384FC /* Run Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
 		};
 		FDF4695B7907CBFE08E339AC /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
