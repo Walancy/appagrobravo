@@ -61,3 +61,4 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 # Secrets
 .env
 .mcp.json
+supabase/functions/service-account.json
