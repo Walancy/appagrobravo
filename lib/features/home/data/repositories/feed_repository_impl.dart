@@ -233,6 +233,40 @@ class FeedRepositoryImpl implements FeedRepository {
         'user_id': userId,
       });
 
+      // Notifica o dono do post (falha silenciosa — não-crítico)
+      try {
+        final postData = await _supabaseClient
+            .from('posts')
+            .select('user_id')
+            .eq('id', postId)
+            .maybeSingle();
+        final postOwnerId = postData?['user_id'] as String?;
+
+        if (postOwnerId != null && postOwnerId != userId) {
+          final actorData = await _supabaseClient
+              .from('users')
+              .select('nome')
+              .eq('id', userId)
+              .maybeSingle();
+          final actorName =
+              (actorData?['nome'] as String?)?.split(' ').first ?? 'Alguém';
+
+          await _supabaseClient.from('notificacoes').insert({
+            'user_id': postOwnerId,
+            'titulo': actorName,
+            'mensagem': 'curtiu seu post',
+            'assunto': 'curtiu',
+            'tipo': 'like',
+            'post_id': postId,
+            'solicitacao_user_id': userId,
+            'lido': false,
+            'target_route': '/user-feed/$postOwnerId?postId=$postId',
+          });
+        }
+      } catch (_) {
+        // Falha silenciosa — notificação é não-crítica
+      }
+
       return const Right(unit);
     } catch (e) {
       if (kDebugMode) debugPrint('[Feed] likePost error: $e');
@@ -322,6 +356,36 @@ class FeedRepositoryImpl implements FeedRepository {
       final model = CommentModel.fromJson(
         response,
       ).copyWith(userName: user?['nome'], userAvatar: user?['foto']);
+
+      // Notifica o dono do post (falha silenciosa — não-crítico)
+      try {
+        final postData = await _supabaseClient
+            .from('posts')
+            .select('user_id')
+            .eq('id', postId)
+            .maybeSingle();
+        final postOwnerId = postData?['user_id'] as String?;
+
+        if (postOwnerId != null && postOwnerId != userId) {
+          final actorName =
+              (user?['nome'] as String?)?.split(' ').first ?? 'Alguém';
+          final preview = text.length > 60 ? '${text.substring(0, 60)}...' : text;
+
+          await _supabaseClient.from('notificacoes').insert({
+            'user_id': postOwnerId,
+            'titulo': actorName,
+            'mensagem': 'comentou no seu post: "$preview"',
+            'assunto': 'comentou',
+            'tipo': 'comment',
+            'post_id': postId,
+            'solicitacao_user_id': userId,
+            'lido': false,
+            'target_route': '/user-feed/$postOwnerId?postId=$postId',
+          });
+        }
+      } catch (_) {
+        // Falha silenciosa — notificação é não-crítica
+      }
 
       return Right(model.toEntity());
     } catch (e) {

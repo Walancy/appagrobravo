@@ -53,15 +53,66 @@ class NotificationNavigationService {
       name: 'push',
     );
 
-    final route = _normalizeRoute(targetRoute);
-    if (route == null) return;
+    // Usa target_route da edge function como fonte primária.
+    // Caso seja genérico (/home) ou ausente, tenta resolver localmente
+    // usando os campos auxiliares presentes no payload FCM.
+    String? resolvedRoute = _normalizeRoute(targetRoute);
+    if (resolvedRoute == null || resolvedRoute == '/home') {
+      resolvedRoute = _resolveRouteFromData(data) ?? resolvedRoute;
+    }
+
+    if (resolvedRoute == null) return;
 
     if (!_routerReady) {
-      _pendingRoute = route;
+      _pendingRoute = resolvedRoute;
       return;
     }
 
-    _navigateTo(route);
+    _navigateTo(resolvedRoute);
+  }
+
+  /// Fallback local: resolve a rota a partir dos campos auxiliares do FCM
+  /// para cobrir cenários onde a edge function retornou /home genérico.
+  static String? _resolveRouteFromData(Map<String, dynamic> data) {
+    final assunto = data['assunto']?.toString().toLowerCase() ?? '';
+    final tipo = data['tipo']?.toString().toLowerCase() ?? '';
+    final kind = assunto.isNotEmpty ? assunto : tipo;
+
+    final postId = data['post_id']?.toString();
+    final grupoId = data['grupo_id']?.toString();
+    final batepapoId = data['batepapo_id']?.toString();
+    final docId = data['doc_id']?.toString();
+    final solicitacaoUserId = data['solicitacao_user_id']?.toString();
+
+    // Chat de grupo
+    if (kind == 'chatgrupo' || kind == 'chat_grupo') {
+      if (batepapoId != null && batepapoId.isNotEmpty) return '/chat-group/$batepapoId';
+      if (grupoId != null && grupoId.isNotEmpty) return '/chat-group/$grupoId';
+    }
+
+    // Chat direto
+    if (kind == 'chatdireto' || kind == 'chat_direto') {
+      if (batepapoId != null && batepapoId.isNotEmpty) return '/chat-direct/$batepapoId';
+    }
+
+    // Documentos
+    if (docId != null && docId.isNotEmpty) return '/documents';
+
+    // Missão / itinerário
+    if (grupoId != null && grupoId.isNotEmpty) return '/home?tab=0&groupId=$grupoId';
+
+    // Solicitação de conexão — rota já resolvida com user_id pelo edge function,
+    // mas por segurança mapeia também o campo solicitacao_user_id
+    if (solicitacaoUserId != null && solicitacaoUserId.isNotEmpty) {
+      // Sem o userId do destinatário disponível aqui; vai para conexões genéricas
+      return null;
+    }
+
+    // Post (like/comment): sem acesso ao postOwnerId no cliente, não é possível
+    // resolver sem network call. Mantém /home.
+    if (postId != null && postId.isNotEmpty) return null;
+
+    return null;
   }
 
   static String? _normalizeRoute(String? route) {
@@ -96,6 +147,11 @@ class NotificationNavigationService {
     // /notifications → Home community tab (2) + notifications
     if (uri.path == '/notifications') {
       return ('/home', route);
+    }
+
+    // /profile/:userId → Home community tab (2) + social profile
+    if (uri.path.startsWith('/profile/')) {
+      return ('/home?tab=2', route);
     }
 
     // /user-feed/:id → Home community tab (2) + user feed

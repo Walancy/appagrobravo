@@ -68,7 +68,7 @@ class ChatBubble extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bgColor = isMe
-        ? const Color(0xFF00AA6C)
+        ? AppColors.primary
         : (isDark
             ? Theme.of(context).colorScheme.surfaceContainerHigh
             : Colors.white);
@@ -270,7 +270,7 @@ class ChatBubble extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color: const Color(0xFF00AA6C),
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -300,7 +300,7 @@ class ChatBubble extends StatelessWidget {
           border: Border(
             left: BorderSide(
               color:
-                  isMe ? Colors.white.withOpacity(0.8) : const Color(0xFF00AA6C),
+                  isMe ? Colors.white.withOpacity(0.8) : AppColors.primary,
               width: 3,
             ),
           ),
@@ -311,7 +311,7 @@ class ChatBubble extends StatelessWidget {
             Text(
               repliedUserName ?? 'Usuário',
               style: AppTextStyles.bodySmall.copyWith(
-                color: isMe ? Colors.white : const Color(0xFF00AA6C),
+                color: isMe ? Colors.white : AppColors.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -591,7 +591,7 @@ class ChatBubble extends StatelessWidget {
   }
 
   Color _getUserColor(String name) {
-    if (name.isEmpty) return const Color(0xFF00AA6C);
+    if (name.isEmpty) return AppColors.primary;
     const colors = [
       Color(0xFFE91E63),
       Color(0xFF9C27B0),

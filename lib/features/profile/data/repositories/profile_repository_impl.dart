@@ -677,6 +677,31 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'seguido_id': userId,
         'aprovou': false,
       });
+
+      // Notifica o usuário alvo da solicitação (falha silenciosa — não-crítico)
+      try {
+        final actorData = await _supabaseClient
+            .from('users')
+            .select('nome')
+            .eq('id', currentUserId)
+            .maybeSingle();
+        final actorName =
+            (actorData?['nome'] as String?)?.split(' ').first ?? 'Alguém';
+
+        await _supabaseClient.from('notificacoes').insert({
+          'user_id': userId,
+          'titulo': actorName,
+          'mensagem': 'quer se conectar com você',
+          'assunto': 'solicitacao',
+          'tipo': 'follow',
+          'solicitacao_user_id': currentUserId,
+          'lido': false,
+          'target_route': '/connections/$userId?initialIndex=1',
+        });
+      } catch (_) {
+        // Falha silenciosa — notificação é não-crítica
+      }
+
       return const Right(null);
     } catch (e) {
       return Left(Exception('Não foi possível enviar solicitação. Tente novamente.'));
@@ -707,6 +732,31 @@ class ProfileRepositoryImpl implements ProfileRepository {
           .update({'aprovou': true})
           .eq('seguidor_id', userId)
           .eq('seguido_id', currentUserId);
+
+      // Notifica o solicitante que foi aceito (falha silenciosa — não-crítico)
+      try {
+        final acceptorData = await _supabaseClient
+            .from('users')
+            .select('nome')
+            .eq('id', currentUserId)
+            .maybeSingle();
+        final acceptorName =
+            (acceptorData?['nome'] as String?)?.split(' ').first ?? 'Alguém';
+
+        await _supabaseClient.from('notificacoes').insert({
+          'user_id': userId, // quem enviou a solicitação recebe a notificação
+          'titulo': acceptorName,
+          'mensagem': 'aceitou sua solicitação de conexão',
+          'assunto': 'conexao_aceita',
+          'tipo': 'follow',
+          'solicitacao_user_id': currentUserId,
+          'lido': false,
+          'target_route': '/profile/$currentUserId',
+        });
+      } catch (_) {
+        // Falha silenciosa — notificação é não-crítica
+      }
+
       return const Right(null);
     } catch (e) {
       return Left(Exception('Não foi possível aceitar a conexão. Tente novamente.'));

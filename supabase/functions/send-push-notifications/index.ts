@@ -26,8 +26,9 @@ async function resolveTargetRoute(record: any): Promise<string> {
   const kind = getNotificationKind(record)
   const batepapoId = asString(record.batepapo_id).trim()
   const grupoId = asString(record.grupo_id).trim()
+  const postId = asString(record.post_id).trim()
 
-  console.log('[ROUTE_RESOLVE] kind=', kind, 'batepapoId=', batepapoId, 'grupoId=', grupoId, 'target_route=', record.target_route)
+  console.log('[ROUTE_RESOLVE] kind=', kind, 'postId=', postId, 'batepapoId=', batepapoId, 'grupoId=', grupoId)
 
   // ── Chat de grupo ──────────────────────────────────────────────
   if (kind === 'chatgrupo' || kind === 'chat_grupo') {
@@ -42,17 +43,64 @@ async function resolveTargetRoute(record: any): Promise<string> {
     return '/home'
   }
 
-  // ── Rota explícita do banco ────────────────────────────────────
+  // ── Rota explícita do banco (fonte primária) ───────────────────
+  // Todos os novos inserts definem target_route; usamos direto sem queries extras.
   const explicitRoute = normalizeRoute(record.target_route)
   if (explicitRoute) {
     console.log('[ROUTE_RESOLVE] using explicit target_route=', explicitRoute)
     return explicitRoute
   }
 
-  // ── Fallbacks por tipo ─────────────────────────────────────────
+  // ── Fallbacks para notificações legadas (sem target_route) ────
+
+  // Social: Likes, Comentários, Menções → /user-feed/:postOwnerId?postId=:postId
+  const isPostInteraction =
+    kind.includes('curtiu') ||
+    kind.includes('like') ||
+    kind.includes('comentou') ||
+    kind.includes('comment') ||
+    kind.includes('mencionou') ||
+    kind.includes('mention')
+
+  if (isPostInteraction && postId) {
+    try {
+      const { data: post, error } = await supabase
+        .from('posts')
+        .select('user_id')
+        .eq('id', postId)
+        .maybeSingle()
+
+      if (!error && post?.user_id) {
+        const route = `/user-feed/${post.user_id}?postId=${postId}`
+        console.log('[ROUTE_RESOLVE] legacy post interaction route=', route)
+        return route
+      }
+    } catch (e) {
+      console.error('[ROUTE_RESOLVE] error fetching post owner:', e)
+    }
+    return '/home'
+  }
+
+  // Follow / Conexão → /connections/:userId?initialIndex=1
+  const isFollowKind =
+    kind.includes('follow') ||
+    kind.includes('conexão') ||
+    kind.includes('conexao') ||
+    kind.includes('solicitação') ||
+    kind.includes('solicitacao') ||
+    kind.includes('seguir')
+  const hasSolicitacaoUser = asString(record.solicitacao_user_id).trim()
+
+  if (isFollowKind || hasSolicitacaoUser) {
+    const recipientId = asString(record.user_id).trim()
+    if (recipientId) return `/connections/${recipientId}?initialIndex=1`
+    return '/home'
+  }
+
+  // ── Documentos ─────────────────────────────────────────────────
   if (record.doc_id) return '/documents'
 
-  // Missão/itinerário → aba de itinerário na HomePage (tab 0)
+  // ── Missão/itinerário → aba de itinerário na HomePage (tab 0) ──
   if (grupoId) {
     const route = `/home?tab=0&groupId=${grupoId}`
     console.log('[ROUTE_RESOLVE] fallback itinerary route=', route)
