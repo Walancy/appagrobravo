@@ -154,6 +154,16 @@ class NotificationNavigationService {
       return ('/home?tab=2', route);
     }
 
+    // /travel-data/:groupId → Home itinerary tab (0) + travel data
+    if (uri.path.startsWith('/travel-data/')) {
+      return ('/home?tab=0', route);
+    }
+
+    // /travel-guide/:groupId → Home itinerary tab (0) + travel guide
+    if (uri.path.startsWith('/travel-guide/')) {
+      return ('/home?tab=0', route);
+    }
+
     // /user-feed/:id → Home community tab (2) + user feed
     if (uri.path.startsWith('/user-feed/')) {
       return ('/home?tab=2', route);

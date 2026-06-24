@@ -30,6 +30,8 @@ import 'package:agrobravo/features/profile/presentation/pages/social_profile_pag
 import 'package:agrobravo/features/auth/presentation/widgets/auth_mode.dart';
 import 'package:agrobravo/features/chat/presentation/pages/chat_group_route_page.dart';
 import 'package:agrobravo/features/chat/presentation/pages/chat_direct_route_page.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/travel_data_route_page.dart';
+import 'package:agrobravo/features/itinerary/presentation/pages/travel_guide_route_page.dart';
 
 /// Rotas que NÃO precisam de autenticação (login, criar conta, esqueceu senha).
 const _publicPaths = <String>{'/', '/reset-password'};
@@ -278,6 +280,24 @@ final appRouter = GoRouter(
         final guideId = state.pathParameters['guideId']!;
         return NoTransitionPage(
           child: ChatDirectRoutePage(guideId: guideId),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/travel-data/:groupId',
+      pageBuilder: (context, state) {
+        final groupId = state.pathParameters['groupId']!;
+        return NoTransitionPage(
+          child: TravelDataRoutePage(groupId: groupId),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/travel-guide/:groupId',
+      pageBuilder: (context, state) {
+        final groupId = state.pathParameters['groupId']!;
+        return NoTransitionPage(
+          child: TravelGuideRoutePage(groupId: groupId),
         );
       },
     ),

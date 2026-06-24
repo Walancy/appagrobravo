@@ -164,7 +164,10 @@ class _ItineraryContentState extends State<_ItineraryContent> {
             onTravelGuideTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => TravelGuidePage(group: widget.group),
+                  builder: (_) => TravelGuidePage(
+                    groupId: widget.group.id,
+                    groupName: widget.group.name,
+                  ),
                 ),
               );
             },
