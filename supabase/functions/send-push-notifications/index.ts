@@ -43,6 +43,18 @@ async function resolveTargetRoute(record: any): Promise<string> {
     return '/home'
   }
 
+  // ── Guia de viagem ─────────────────────────────────────────────
+  if (kind === 'guia_viagem') {
+    if (grupoId) return `/travel-guide/${grupoId}`
+    return '/home'
+  }
+
+  // ── Material (formulários, checklists, arquivos) ───────────────
+  if (kind === 'material') {
+    if (grupoId) return `/travel-data/${grupoId}`
+    return '/home'
+  }
+
   // ── Rota explícita do banco (fonte primária) ───────────────────
   // Todos os novos inserts definem target_route; usamos direto sem queries extras.
   const explicitRoute = normalizeRoute(record.target_route)
@@ -123,10 +135,30 @@ Deno.serve(async (req) => {
     return json({ error: 'Invalid JSON payload' }, 400)
   }
 
-  const record = payload.record ?? payload
+  const webhookRecord = payload.record ?? payload
 
   console.log('[FULL_PAYLOAD]', JSON.stringify(payload))
-  console.log('[RECORD]', JSON.stringify(record))
+  console.log('[WEBHOOK_RECORD]', JSON.stringify(webhookRecord))
+
+  // Re-fetch the record from the DB to guarantee we have the latest version.
+  // The webhook fires on INSERT, but target_route (and other fields) may have
+  // been set in the same transaction after the row was created, so the webhook
+  // payload can arrive with nulls that are already filled in the DB.
+  const notificationId = asString(webhookRecord.id).trim()
+  let record = webhookRecord
+  if (notificationId) {
+    const { data: freshRecord, error: fetchErr } = await supabase
+      .from('notificacoes')
+      .select('*')
+      .eq('id', notificationId)
+      .maybeSingle()
+    if (!fetchErr && freshRecord) {
+      record = freshRecord
+      console.log('[FRESH_RECORD]', JSON.stringify(record))
+    } else {
+      console.warn('[FRESH_RECORD_FAILED]', fetchErr?.message)
+    }
+  }
 
   const userId = asString(record.user_id ?? record.recipient_id).trim()
   const title = asString(record.titulo ?? record.title, 'AgroBravo')

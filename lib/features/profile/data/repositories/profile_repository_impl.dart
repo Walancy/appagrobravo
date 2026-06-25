@@ -692,7 +692,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           'user_id': userId,
           'titulo': actorName,
           'mensagem': 'quer se conectar com você',
-          'assunto': 'solicitacao',
+          'assunto': 'SOLICITACAO',
           'tipo': 'follow',
           'solicitacao_user_id': currentUserId,
           'lido': false,
@@ -747,7 +747,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           'user_id': userId, // quem enviou a solicitação recebe a notificação
           'titulo': acceptorName,
           'mensagem': 'aceitou sua solicitação de conexão',
-          'assunto': 'conexao_aceita',
+          'assunto': 'CONEXAO_ACEITA',
           'tipo': 'follow',
           'solicitacao_user_id': currentUserId,
           'lido': false,

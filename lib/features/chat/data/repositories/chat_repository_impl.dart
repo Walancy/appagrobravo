@@ -908,10 +908,10 @@ class ChatRepositoryImpl implements ChatRepository {
             .maybeSingle();
         final groupName = groupRow?['nome'] as String? ?? 'Grupo';
         notifTitle = groupName;
-        notifAssunto = 'chatGrupo';
+        notifAssunto = 'CHAT_GRUPO';
       } else {
         notifTitle = senderName;
-        notifAssunto = 'chatDireto';
+        notifAssunto = 'CHAT_DIRETO';
       }
 
       // Insere uma notificação por destinatário em lote

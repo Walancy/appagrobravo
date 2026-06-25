@@ -81,19 +81,22 @@ abstract class NotificationModel with _$NotificationModel {
         type = NotificationType.documentPending;
       }
     } else if (postId != null) {
-      if (subject.contains('curtiu')) {
+      if (subject.contains('curtiu') || subject == 'curtiu') {
         type = NotificationType.like;
-      } else if (subject.contains('comentou')) {
+      } else if (subject.contains('comentou') || subject == 'comentou') {
         type = NotificationType.comment;
-      } else if (subject.contains('mencionou')) {
+      } else if (subject.contains('mencionou') || subject == 'mencionou') {
         type = NotificationType.mention;
       } else {
         type = NotificationType.like;
       }
-    } else if (subject == 'chatgrupo' || subject == 'chatdireto') {
+    } else if (subject == 'chat_grupo' || subject == 'chatgrupo') {
+      type = NotificationType.chatMessage;
+    } else if (subject == 'chat_direto' || subject == 'chatdireto') {
       type = NotificationType.chatMessage;
     } else if (solicitacaoUserId != null) {
       final isFollowKeyword =
+          subject.contains('solicitacao') ||
           subject.contains('solicitação') ||
           subject.contains('conexo') ||
           subject.contains('seguir') ||
@@ -108,8 +111,12 @@ abstract class NotificationModel with _$NotificationModel {
       } else {
         type = NotificationType.missionUpdate;
       }
+    } else if (subject == 'guia_viagem' || subject.contains('guia')) {
+      type = NotificationType.guideAlert;
+    } else if (subject == 'material') {
+      type = NotificationType.missionUpdate;
     } else if (missionId != null || grupoId != null) {
-      if (subject.contains('guia') || title.contains('guia')) {
+      if (title.contains('guia')) {
         type = NotificationType.guideAlert;
       } else {
         type = NotificationType.missionUpdate;

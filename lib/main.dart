@@ -105,6 +105,7 @@ void _saveFcmToken(String token) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('[NOTIF] main() started');
 
   await dotenv.load(fileName: ".env");
   await Future.wait([
@@ -154,12 +155,19 @@ void main() async {
     if (kDebugMode) log('Audio context setup failed: $e');
   }
 
-  // Solicita permissão de push em paralelo — não bloqueia o app
-  // O token FCM será salvo quando disponível (após APNS token do iOS ser emitido)
   if (isFirebaseSupported) {
     try {
       setupFCM();
       NotificationNavigationService.initialize();
+
+      // Capture the cold-start notification synchronously before runApp() so
+      // the Android launch Intent is guaranteed to be available.
+      // getInitialMessage() is a fast platform-channel call at this point.
+      final coldMsg = await FirebaseMessaging.instance.getInitialMessage();
+      if (coldMsg != null) {
+        if (kDebugMode) log('[push] Cold-start message in main: ${coldMsg.data}');
+        NotificationNavigationService.setColdStartMessage(coldMsg);
+      }
     } catch (e) {
       if (kDebugMode) log('Erro ao configurar FCM: $e');
     }
@@ -188,8 +196,13 @@ class _AgroBravoAppState extends State<AgroBravoApp> {
   @override
   void initState() {
     super.initState();
+    // Wait two frames: first renders the initial route (possibly login/home),
+    // second ensures GoRouter has finished any auth-triggered redirect before
+    // we attempt deep-link navigation from a cold-start push notification.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      NotificationNavigationService.markRouterReady();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        NotificationNavigationService.markRouterReady();
+      });
     });
   }
 
