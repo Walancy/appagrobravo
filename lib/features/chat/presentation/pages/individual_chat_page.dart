@@ -44,8 +44,6 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
   bool _showScrollToBottom = false;
   String? _editingMessageId;
   final Set<String> _selectedMessageIds = {};
-  // Mensagens otimistas (enviadas mas ainda não confirmadas pelo servidor)
-  final List<MessageEntity> _pendingMessages = [];
 
   @override
   void initState() {
@@ -298,15 +296,9 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                             if (messages.isEmpty) {
                               return const Center(child: Text('Sem mensagens'));
                             }
-                            // Filtra pendentes já confirmados pelo servidor
-                            final confirmedIds = messages.map((m) => m.id).toSet();
-                            final stillPending = _pendingMessages
-                                .where((p) => !confirmedIds.contains(p.id))
-                                .toList();
-                            final allMessages = [...messages, ...stillPending];
 
                             // Reverse list so newest is at index 0 (bottom of reverse ListView)
-                            final reversed = allMessages.reversed.toList();
+                            final reversed = messages.reversed.toList();
 
                             return ListView.builder(
                               controller: _scrollController,
@@ -315,7 +307,7 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                               itemCount: reversed.length,
                               itemBuilder: (context, index) {
                                 final msg = reversed[index];
-                                final isPending = _pendingMessages.any((p) => p.id == msg.id);
+                                final isPending = msg.isPending;
                                 final isSelected = _selectedMessageIds.contains(
                                   msg.id,
                                 );
@@ -414,28 +406,13 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                 onImagePicked: () => _pickImage(ImageSource.gallery),
                 onCameraPicked: () => _pickImage(ImageSource.camera),
                 onAudioRecorded: (path, durationMs) {
-                  // Feedback otimista para áudio
-                  final tempId = 'pending_audio_${DateTime.now().millisecondsSinceEpoch}';
-                  final pendingMsg = MessageEntity(
-                    id: tempId,
-                    text: '',
-                    timestamp: DateTime.now(),
-                    type: MessageType.me,
-                    audioUrl: path, // usa o path local temporariamente
-                    audioDurationMs: durationMs,
-                    isEdited: false,
-                    isDeleted: false,
-                  );
-                  setState(() => _pendingMessages.add(pendingMsg));
                   WidgetsBinding.instance.addPostFrameCallback(
                     (_) { if (mounted) _scrollToBottom(); },
                   );
                   context.read<ChatDetailCubit>().sendAudioMessage(
                     path,
                     audioDurationMs: durationMs,
-                  ).then((_) {
-                    if (mounted) setState(() => _pendingMessages.remove(pendingMsg));
-                  });
+                  );
                 },
                 onSendMessage: (text) {
                   if (_editingMessageId != null) {
@@ -447,23 +424,10 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                       _editingMessageId = null;
                     });
                   } else {
-                    // Feedback otimista para texto
-                    final tempId = 'pending_${DateTime.now().millisecondsSinceEpoch}';
-                    final pendingMsg = MessageEntity(
-                      id: tempId,
-                      text: text,
-                      timestamp: DateTime.now(),
-                      type: MessageType.me,
-                      isEdited: false,
-                      isDeleted: false,
-                    );
-                    setState(() => _pendingMessages.add(pendingMsg));
                     WidgetsBinding.instance.addPostFrameCallback(
                       (_) { if (mounted) _scrollToBottom(); },
                     );
-                    context.read<ChatDetailCubit>().sendMessage(text).then((_) {
-                      if (mounted) setState(() => _pendingMessages.remove(pendingMsg));
-                    });
+                    context.read<ChatDetailCubit>().sendMessage(text);
                   }
                 },
               ),

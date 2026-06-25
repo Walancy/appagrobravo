@@ -957,6 +957,39 @@ class _GuideStepState extends State<_GuideStep> {
 
   @override
   Widget build(BuildContext context) {
+    // React automatically to ProfileCubit and DocumentsCubit state changes.
+    // This ensures the guide cards update immediately when the user saves
+    // account data (or uploads documents) and the cubit emits a new loaded
+    // state — without requiring a page-pop first.
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ProfileCubit, ProfileState>(
+          listenWhen: (prev, curr) => curr != prev,
+          listener: (context, state) {
+            state.maybeWhen(
+              loaded: (profile, _, __, ___) {
+                if (mounted) {
+                  setState(() => _profileComplete = profile.isComplete);
+                }
+              },
+              orElse: () {},
+            );
+          },
+        ),
+        BlocListener<DocumentsCubit, DocumentsState>(
+          listenWhen: (prev, curr) => curr != prev,
+          listener: (context, state) {
+            if (mounted) {
+              setState(() => _docsComplete = state.areDocumentsComplete);
+            }
+          },
+        ),
+      ],
+      child: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final allDone = _canFinish;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
