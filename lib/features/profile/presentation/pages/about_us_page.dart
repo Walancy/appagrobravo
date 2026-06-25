@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
@@ -18,7 +17,7 @@ class AboutUsPage extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.xxl),
-            SvgPicture.asset('assets/images/logo_colorida.svg', height: 100),
+            Image.asset('assets/images/logo_colorida.png', height: 100),
             const SizedBox(height: AppSpacing.xl),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),

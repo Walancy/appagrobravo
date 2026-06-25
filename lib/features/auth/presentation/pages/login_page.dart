@@ -207,8 +207,8 @@ class _LoginPageState extends State<LoginPage>
                     alignment: _logoAlignmentAnimation.value,
                     child: Opacity(
                       opacity: _logoFadeAnimation.value,
-                      child: SvgPicture.asset(
-                        Assets.images.logoBranca,
+                      child: Image.asset(
+                        'assets/images/logo_branca.png',
                         width: 110,
                       ),
                     ),

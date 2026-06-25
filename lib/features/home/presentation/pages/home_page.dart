@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
@@ -257,7 +256,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   PreferredSizeWidget _buildHeader(BuildContext context) {
     return AppHeader(
       mode: HeaderMode.home,
-      logo: SvgPicture.asset(Assets.images.logoColorida, height: 32),
+      logo: Image.asset('assets/images/logo_colorida.png', height: 32),
       actions: [
         if (_selectedIndex == 2)
           BlocBuilder<FeedCubit, FeedState>(
