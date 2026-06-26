@@ -12,6 +12,7 @@ import 'package:agrobravo/features/chat/presentation/widgets/chat_bubble.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:agrobravo/features/chat/presentation/widgets/image_preview_page.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:intl/intl.dart';
 
 class IndividualChatPage extends StatelessWidget {
   final GuideEntity guide;
@@ -311,52 +312,113 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
                                 final isSelected = _selectedMessageIds.contains(
                                   msg.id,
                                 );
-                                return Opacity(
-                                  opacity: isPending ? 0.6 : 1.0,
-                                  child: ChatBubble(
-                                    message: msg.text,
-                                    time:
-                                        '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
-                                    type: _mapMessageType(msg.type),
-                                    userName: msg.userName,
-                                    userAvatarUrl: msg.userAvatarUrl,
-                                    guideRole: msg.guideRole,
-                                    attachmentUrl: msg.attachmentUrl,
-                                    audioUrl: msg.audioUrl,
-                                    audioDurationMs: msg.audioDurationMs,
-                                    isGroupChat: false,
-                                    showAvatar: false,
-                                    isEdited: msg.isEdited,
-                                    isDeleted: msg.isDeleted,
-                                    isSelected: isSelected,
-                                    onLongPress:
-                                        msg.type == MessageType.me &&
-                                            !msg.isDeleted &&
-                                            !isPending
-                                        ? () {
-                                            setState(() {
-                                              _selectedMessageIds.add(msg.id);
-                                            });
-                                          }
-                                        : null,
-                                    onTap:
-                                        _selectedMessageIds.isNotEmpty &&
+
+                                // In reversed list, the "next" message in
+                                // chronological order is at index-1
+                                bool showDateHeader = false;
+                                final chronologicalIndex = reversed.length - 1 - index;
+                                if (chronologicalIndex == 0) {
+                                  showDateHeader = true;
+                                } else {
+                                  // Previous message in chronological order
+                                  final prevMsg = reversed[index + 1];
+                                  final currentDate = DateTime(
+                                    msg.timestamp.year,
+                                    msg.timestamp.month,
+                                    msg.timestamp.day,
+                                  );
+                                  final prevDate = DateTime(
+                                    prevMsg.timestamp.year,
+                                    prevMsg.timestamp.month,
+                                    prevMsg.timestamp.day,
+                                  );
+                                  if (currentDate.isAfter(prevDate)) {
+                                    showDateHeader = true;
+                                  }
+                                }
+
+                                return Column(
+                                  children: [
+                                    if (showDateHeader)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16.0,
+                                        ),
+                                        child: Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.withOpacity(
+                                                0.2,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              _formatDateHeader(msg.timestamp),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.6),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    Opacity(
+                                      opacity: isPending ? 0.6 : 1.0,
+                                      child: ChatBubble(
+                                        message: msg.text,
+                                        time:
+                                            '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                        type: _mapMessageType(msg.type),
+                                        userName: msg.userName,
+                                        userAvatarUrl: msg.userAvatarUrl,
+                                        guideRole: msg.guideRole,
+                                        attachmentUrl: msg.attachmentUrl,
+                                        audioUrl: msg.audioUrl,
+                                        audioDurationMs: msg.audioDurationMs,
+                                        isGroupChat: false,
+                                        showAvatar: false,
+                                        isEdited: msg.isEdited,
+                                        isDeleted: msg.isDeleted,
+                                        isSelected: isSelected,
+                                        onLongPress:
                                             msg.type == MessageType.me &&
-                                            !msg.isDeleted &&
-                                            !isPending
-                                        ? () {
-                                            setState(() {
-                                              if (isSelected) {
-                                                _selectedMessageIds.remove(
-                                                  msg.id,
-                                                );
-                                              } else {
-                                                _selectedMessageIds.add(msg.id);
+                                                !msg.isDeleted &&
+                                                !isPending
+                                            ? () {
+                                                setState(() {
+                                                  _selectedMessageIds.add(msg.id);
+                                                });
                                               }
-                                            });
-                                          }
-                                        : null,
-                                  ),
+                                            : null,
+                                        onTap:
+                                            _selectedMessageIds.isNotEmpty &&
+                                                msg.type == MessageType.me &&
+                                                !msg.isDeleted &&
+                                                !isPending
+                                            ? () {
+                                                setState(() {
+                                                  if (isSelected) {
+                                                    _selectedMessageIds.remove(
+                                                      msg.id,
+                                                    );
+                                                  } else {
+                                                    _selectedMessageIds.add(msg.id);
+                                                  }
+                                                });
+                                              }
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
                                 );
                               },
                             );
@@ -446,6 +508,21 @@ class _IndividualChatViewState extends State<_IndividualChatView> {
         return ChatBubbleType.other;
       case MessageType.guide:
         return ChatBubbleType.guide;
+    }
+  }
+
+  String _formatDateHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    final messageDate = DateTime(date.year, date.month, date.day);
+
+    if (messageDate == today) {
+      return 'Hoje';
+    } else if (messageDate == yesterday) {
+      return 'Ontem';
+    } else {
+      return DateFormat('dd/MM/yyyy').format(date);
     }
   }
 }

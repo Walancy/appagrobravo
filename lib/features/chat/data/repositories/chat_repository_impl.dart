@@ -759,16 +759,6 @@ class ChatRepositoryImpl implements ChatRepository {
       'id_mensagem_respondida': replyToId,
       // 'created_at' omitted — Supabase sets UTC now() by default
     });
-
-    // Dispara notificações in-app após enviar a mensagem
-    await _dispatchChatNotifications(
-      senderId: user.id,
-      realChatId: realChatId,
-      chatId: chatId,
-      isGroup: isGroup,
-      messageText: text,
-      hasImage: imageUrl != null,
-    );
   }
 
   @override
@@ -807,136 +797,9 @@ class ChatRepositoryImpl implements ChatRepository {
     });
 
     try { await File(audioPath).delete(); } catch (_) {}
-
-    await _dispatchChatNotifications(
-      senderId: user.id,
-      realChatId: realChatId,
-      chatId: chatId,
-      isGroup: isGroup,
-      messageText: '',
-      hasImage: false,
-      hasAudio: true,
-    );
   }
 
-  /// Envia notificações in-app para os destinatários da mensagem.
-  ///
-  /// - Chat individual (DM com guia): notifica apenas o guia (`lider_id`).
-  /// - Chat de grupo: notifica todos os participantes + líderes, exceto o remetente.
-  Future<void> _dispatchChatNotifications({
-    required String senderId,
-    required String realChatId,
-    required String chatId,
-    required bool isGroup,
-    required String messageText,
-    required bool hasImage,
-    bool hasAudio = false,
-  }) async {
-    try {
-      // Busca o nome do remetente
-      final senderData = await _supabaseClient
-          .from('users')
-          .select('nome')
-          .eq('id', senderId)
-          .maybeSingle();
 
-      final senderName = (senderData?['nome'] as String?)?.split(' ').first ?? 'Alguém';
-      final msgPreview = hasImage
-          ? '$senderName enviou uma foto'
-          : hasAudio
-              ? '$senderName enviou um áudio'
-              : messageText.length > 60
-                  ? '${messageText.substring(0, 60)}...'
-                  : messageText;
-
-      final List<String> recipientIds = [];
-
-      if (!isGroup) {
-        // ─── Chat individual: destinatário é o guia ───────────────────
-        // batePapo tem lider_id e user_id; o outro lado é o destinatário
-        final chatRow = await _supabaseClient
-            .from('batePapo')
-            .select('lider_id, user_id')
-            .eq('id', realChatId)
-            .maybeSingle();
-
-        if (chatRow != null) {
-          final liderId = chatRow['lider_id'] as String?;
-          final userId = chatRow['user_id'] as String?;
-          // O destinatário é quem NÃO é o remetente
-          if (liderId != null && liderId != senderId) recipientIds.add(liderId);
-          if (userId != null && userId != senderId) recipientIds.add(userId);
-        }
-      } else {
-        // ─── Chat de grupo: todos os participantes + líderes ─────────
-        // 1. Membros do grupo
-        final membersResp = await _supabaseClient
-            .from('gruposParticipantes')
-            .select('user_id')
-            .eq('grupo_id', chatId);
-
-        for (final row in (membersResp as List)) {
-          final uid = row['user_id'] as String?;
-          if (uid != null && uid != senderId) recipientIds.add(uid);
-        }
-
-        // 2. Líderes do grupo (podem não estar em gruposParticipantes)
-        final leadersResp = await _supabaseClient
-            .from('lideresGrupo')
-            .select('lider_id')
-            .eq('grupo_id', chatId);
-
-        for (final row in (leadersResp as List)) {
-          final lid = row['lider_id'] as String?;
-          if (lid != null && lid != senderId && !recipientIds.contains(lid)) {
-            recipientIds.add(lid);
-          }
-        }
-      }
-
-      if (recipientIds.isEmpty) return;
-
-      // Monta o título da notificação
-      String notifTitle;
-      String notifAssunto;
-      if (isGroup) {
-        // Busca nome do grupo
-        final groupRow = await _supabaseClient
-            .from('grupos')
-            .select('nome')
-            .eq('id', chatId)
-            .maybeSingle();
-        final groupName = groupRow?['nome'] as String? ?? 'Grupo';
-        notifTitle = groupName;
-        notifAssunto = 'CHAT_GRUPO';
-      } else {
-        notifTitle = senderName;
-        notifAssunto = 'CHAT_DIRETO';
-      }
-
-      // Insere uma notificação por destinatário em lote
-      final notifications = recipientIds
-          .map(
-            (uid) => {
-              'user_id': uid,
-              'titulo': notifTitle,
-              'mensagem': msgPreview,
-              'assunto': notifAssunto,
-              'batepapo_id': realChatId,
-              'grupo_id': isGroup ? chatId : null,
-              'lido': false,
-              'target_route': isGroup
-                  ? '/chat-group/$realChatId'
-                  : '/chat-direct/$realChatId',
-            },
-          )
-          .toList();
-
-      await _supabaseClient.from('notificacoes').insert(notifications);
-    } catch (_) {
-      // Falha silenciosa — notificação é não-crítica
-    }
-  }
 
   @override
 

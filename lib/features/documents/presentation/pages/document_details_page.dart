@@ -537,20 +537,6 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
                 ),
               ),
             ),
-            if (selectedFileName != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Novo arquivo: $selectedFileName',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.56),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
 
             const SizedBox(height: AppSpacing.lg),
             _buildFieldLabel('Nome no documento'),
@@ -559,12 +545,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               hintText: 'Ex: NELSON VIEIRA',
             ),
 
-            const SizedBox(height: AppSpacing.lg),
-            _buildFieldLabel('Número do documento'),
-            _DocumentTextField(
-              controller: _numberController,
-              hintText: 'Ex: CD123456',
-            ),
+
 
             const SizedBox(height: AppSpacing.lg),
             _buildFieldLabel('Data de validade'),
