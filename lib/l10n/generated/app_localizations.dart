@@ -2179,7 +2179,7 @@ abstract class AppLocalizations {
   /// No description provided for @itineraryTravelGuide.
   ///
   /// In pt, this message translates to:
-  /// **'Guia de viagem'**
+  /// **'Meu Checklist'**
   String get itineraryTravelGuide;
 }
 

@@ -18,6 +18,10 @@ class $AssetsImagesGen {
   AssetGenImage get adaptiveForegroundIcon =>
       const AssetGenImage('assets/images/adaptive_foreground_icon.png');
 
+  /// File path: assets/images/adaptive_foreground_icon.png.bak
+  String get adaptiveForegroundIconPng =>
+      'assets/images/adaptive_foreground_icon.png.bak';
+
   /// File path: assets/images/app_icon.png
   AssetGenImage get appIconPng =>
       const AssetGenImage('assets/images/app_icon.png');
@@ -28,6 +32,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/app_launcher_icon.png
   AssetGenImage get appLauncherIcon =>
       const AssetGenImage('assets/images/app_launcher_icon.png');
+
+  /// File path: assets/images/app_launcher_icon.png.bak
+  String get appLauncherIconPng => 'assets/images/app_launcher_icon.png.bak';
 
   /// File path: assets/images/apple_logo.svg
   String get appleLogo => 'assets/images/apple_logo.svg';
@@ -46,25 +53,37 @@ class $AssetsImagesGen {
   /// File path: assets/images/google_logo.svg
   String get googleLogo => 'assets/images/google_logo.svg';
 
+  /// File path: assets/images/logo_branca.png
+  AssetGenImage get logoBrancaPng =>
+      const AssetGenImage('assets/images/logo_branca.png');
+
   /// File path: assets/images/logo_branca.svg
-  String get logoBranca => 'assets/images/logo_branca.svg';
+  String get logoBrancaSvg => 'assets/images/logo_branca.svg';
+
+  /// File path: assets/images/logo_colorida.png
+  AssetGenImage get logoColoridaPng =>
+      const AssetGenImage('assets/images/logo_colorida.png');
 
   /// File path: assets/images/logo_colorida.svg
-  String get logoColorida => 'assets/images/logo_colorida.svg';
+  String get logoColoridaSvg => 'assets/images/logo_colorida.svg';
 
   /// List of all assets
   List<dynamic> get values => [
     adaptiveForegroundIcon,
+    adaptiveForegroundIconPng,
     appIconPng,
     appIconSvg,
     appLauncherIcon,
+    appLauncherIconPng,
     appleLogo,
     background,
     chatPattern,
     chatPatterns,
     googleLogo,
-    logoBranca,
-    logoColorida,
+    logoBrancaPng,
+    logoBrancaSvg,
+    logoColoridaPng,
+    logoColoridaSvg,
   ];
 }
 

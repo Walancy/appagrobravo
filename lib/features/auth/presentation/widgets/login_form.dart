@@ -210,11 +210,11 @@ class _LoginFormState extends State<LoginForm> {
                     child: Text(
                       'Reenviar e-mail de confirmação',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: const Color(0xFF2ECC71),
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                         decoration: TextDecoration.underline,
-                        decorationColor: const Color(0xFF2ECC71),
+                        decorationColor: AppColors.primary,
                       ),
                     ),
                   ),
@@ -305,7 +305,7 @@ class _LoginFormState extends State<LoginForm> {
             child: Text(
               'Esqueceu senha',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: const Color(0xFF2ECC71),
+                color: AppColors.primary,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -508,7 +508,7 @@ class _LoginFormState extends State<LoginForm> {
           child: Text(
             'Reenviar código',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: const Color(0xFF2ECC71),
+              color: AppColors.primary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
