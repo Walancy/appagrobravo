@@ -25,6 +25,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:agrobravo/core/services/notification_navigation_service.dart';
+import 'package:agrobravo/core/services/notification_permission_service.dart';
 
 /// Handler de mensagens em background (precisa ser top-level)
 @pragma('vm:entry-point')
@@ -33,27 +34,25 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (kDebugMode) log('FCM background message: ${message.messageId}');
 }
 
-/// Solicita permissão de push e salva o token FCM em public.users.
-Future<void> setupFCM() async {
+/// Registra handlers de FCM (background + token refresh) SEM pedir permissão.
+/// A permissão é solicitada pela NotificationPrimerPage.
+Future<void> initFCMListeners() async {
   final messaging = FirebaseMessaging.instance;
 
   // Registra handler de background
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Solicita permissão ao usuário (iOS mostra o diálogo nativo)
-  final settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-    provisional: false,
-  );
-
-  if (kDebugMode) log('FCM permission: ${settings.authorizationStatus}');
+  // Verifica permissão atual para saber se já podemos registrar o token
+  final settings = await messaging.getNotificationSettings();
+  if (kDebugMode) log('FCM permission status: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized ||
       settings.authorizationStatus == AuthorizationStatus.provisional) {
     await _getFcmTokenAndSave(messaging);
-    // Atualiza token quando ele rotacionar
+    messaging.onTokenRefresh.listen(_saveFcmToken);
+  } else {
+    // Token será registrado após o usuário conceder permissão via primer.
+    // Escuta onTokenRefresh para capturar quando o token for gerado.
     messaging.onTokenRefresh.listen(_saveFcmToken);
   }
 }
@@ -157,7 +156,7 @@ void main() async {
 
   if (isFirebaseSupported) {
     try {
-      setupFCM();
+      initFCMListeners();
       NotificationNavigationService.initialize();
 
       // Capture the cold-start notification synchronously before runApp() so

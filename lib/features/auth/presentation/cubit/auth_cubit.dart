@@ -10,6 +10,7 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/home/presentation/cubit/feed_cubit.dart';
 import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/core/services/notification_permission_service.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
@@ -37,6 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
         try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
         try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
         await OnboardingService.instance.initialize(user.id);
+        await NotificationPermissionService.instance.initialize();
         log('[ONB] checkAuthStatus done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
         emit(AuthState.authenticated(user));
       },
@@ -79,6 +81,7 @@ class AuthCubit extends Cubit<AuthState> {
         try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
         try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
         await OnboardingService.instance.initialize(user.id);
+        await NotificationPermissionService.instance.initialize();
         log('[ONB] login done user=${user.id} needsOnboarding=${OnboardingService.instance.needsOnboarding}');
         emit(AuthState.authenticated(user));
       },
@@ -145,6 +148,7 @@ class AuthCubit extends Cubit<AuthState> {
           try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
           try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
           await OnboardingService.instance.initialize(user.id);
+          await NotificationPermissionService.instance.initialize();
           emit(AuthState.authenticated(user));
         } else {
           log('AuthCubit.register: Sem sessão ativa. Solicitando confirmação de email.');
@@ -227,6 +231,7 @@ class AuthCubit extends Cubit<AuthState> {
             try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
             try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
             await OnboardingService.instance.initialize(user.id);
+            await NotificationPermissionService.instance.initialize();
             emit(AuthState.authenticated(user));
           },
         );
@@ -249,6 +254,7 @@ class AuthCubit extends Cubit<AuthState> {
             try { getIt<ProfileCubit>().loadProfile(user.id); } catch (_) {}
             try { getIt<DocumentsCubit>().loadDocuments(); } catch (_) {}
             await OnboardingService.instance.initialize(user.id);
+            await NotificationPermissionService.instance.initialize();
             emit(AuthState.authenticated(user));
           },
         );
@@ -276,6 +282,8 @@ class AuthCubit extends Cubit<AuthState> {
       getIt<FeedCubit>().reset();
     } catch (_) {}
     await _authRepository.signOut();
+    OnboardingService.instance.reset();
+    NotificationPermissionService.instance.reset();
     emit(const AuthState.unauthenticated());
   }
 
