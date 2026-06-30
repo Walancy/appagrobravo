@@ -77,6 +77,12 @@ class _NotificationPrimerPageState extends State<NotificationPrimerPage>
         '[PERM] requestPermission result: ${settings.authorizationStatus}',
         name: 'notification_primer',
       );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        // Dispara a busca e salvamento do token em background (sem await para não travar a UX)
+        NotificationPermissionService.instance.retrieveAndSaveToken();
+      }
     } catch (e) {
       dev.log('[PERM] requestPermission error: $e', name: 'notification_primer');
     }

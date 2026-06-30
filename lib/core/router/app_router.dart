@@ -142,8 +142,15 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) {
         final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '');
         final groupId = state.uri.queryParameters['groupId'];
+        final popupTitle = state.uri.queryParameters['popup_title'];
+        final popupBody = state.uri.queryParameters['popup_body'];
         return NoTransitionPage(
-          child: HomePage(initialTab: tab, initialGroupId: groupId),
+          child: HomePage(
+            initialTab: tab,
+            initialGroupId: groupId,
+            popupTitle: popupTitle,
+            popupBody: popupBody,
+          ),
         );
       },
     ),

@@ -26,6 +26,7 @@ import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:agrobravo/core/services/notification_navigation_service.dart';
 import 'package:agrobravo/core/services/notification_permission_service.dart';
+import 'package:agrobravo/core/services/local_notification_service.dart';
 
 /// Handler de mensagens em background (precisa ser top-level)
 @pragma('vm:entry-point')
@@ -39,8 +40,35 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> initFCMListeners() async {
   final messaging = FirebaseMessaging.instance;
 
+  // Habilita exibição nativa de notificação push em primeiro plano (principalmente iOS)
+  try {
+    await messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  } catch (e) {
+    if (kDebugMode) log('Erro ao setar ForegroundNotificationPresentationOptions: $e');
+  }
+
   // Registra handler de background
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Escuta mensagens recebidas em primeiro plano (foreground)
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (kDebugMode) log('FCM foreground message received: ${message.messageId}');
+    
+    // Apenas no Android disparamos a notificação local para exibir o banner
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final notification = message.notification;
+      if (notification != null) {
+        LocalNotificationService.showNotification(
+          notification.title ?? '',
+          notification.body ?? '',
+        );
+      }
+    }
+  });
 
   // Verifica permissão atual para saber se já podemos registrar o token
   final settings = await messaging.getNotificationSettings();
@@ -156,7 +184,8 @@ void main() async {
 
   if (isFirebaseSupported) {
     try {
-      initFCMListeners();
+      await LocalNotificationService.initialize();
+      await initFCMListeners();
       NotificationNavigationService.initialize();
 
       // Capture the cold-start notification synchronously before runApp() so

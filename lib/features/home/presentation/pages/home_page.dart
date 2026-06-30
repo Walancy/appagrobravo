@@ -27,6 +27,7 @@ import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.
 import 'package:agrobravo/features/documents/presentation/cubit/documents_state.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:agrobravo/features/notifications/presentation/cubit/notifications_state.dart';
+import 'package:agrobravo/features/notifications/presentation/widgets/notification_detail_dialog.dart';
 import 'package:agrobravo/features/itinerary/presentation/widgets/emergency_modal.dart';
 import 'package:agrobravo/core/components/feed_shimmer.dart';
 import 'package:agrobravo/features/home/presentation/pages/community_tab.dart';
@@ -42,8 +43,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class HomePage extends StatefulWidget {
   final int? initialTab;
   final String? initialGroupId;
+  final String? popupTitle;
+  final String? popupBody;
 
-  const HomePage({super.key, this.initialTab, this.initialGroupId});
+  const HomePage({
+    super.key,
+    this.initialTab,
+    this.initialGroupId,
+    this.popupTitle,
+    this.popupBody,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -51,6 +60,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late int _selectedIndex = widget.initialTab ?? -1;
+  String? _lastShownTitle;
+  String? _lastShownBody;
 
   @override
   void initState() {
@@ -106,6 +117,65 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           orElse: () {},
         );
       });
+
+      // Show notification modal if query params are present
+      if (widget.popupTitle != null && widget.popupTitle!.isNotEmpty) {
+        _showNotificationDialog(
+          widget.popupTitle!,
+          widget.popupBody ?? '',
+        );
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.popupTitle != null &&
+        widget.popupTitle!.isNotEmpty &&
+        (widget.popupTitle != oldWidget.popupTitle ||
+            widget.popupBody != oldWidget.popupBody)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showNotificationDialog(
+          widget.popupTitle!,
+          widget.popupBody ?? '',
+        );
+      });
+    }
+  }
+
+  void _showNotificationDialog(String title, String body) {
+    if (_lastShownTitle == title && _lastShownBody == body) return;
+    _lastShownTitle = title;
+    _lastShownBody = body;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'NotificationDetail',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return NotificationDetailDialog(
+          title: title,
+          body: body,
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        final curve = CurvedAnimation(parent: anim1, curve: Curves.easeInOutBack);
+        return ScaleTransition(
+          scale: curve,
+          child: FadeTransition(
+            opacity: anim1,
+            child: child,
+          ),
+        );
+      },
+    ).then((_) {
+      if (mounted) {
+        // Clean up the URL/GoRouter state by navigating back to standard /home
+        context.go('/home');
+      }
     });
   }
 

@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Gate singleton que controla se a tela de pré-permissão (primer)
 /// de notificações deve ser exibida.
@@ -74,6 +75,56 @@ class NotificationPermissionService extends ChangeNotifier {
     _needsPrimer = false;
     _initialized = false;
     // Não chama notifyListeners — o caller gerencia a navegação no logout.
+  }
+
+  /// Obtém o FCM token e salva no banco (Supabase).
+  /// Útil após a permissão ser concedida no dialog nativo.
+  Future<void> retrieveAndSaveToken() async {
+    if (!_isFirebaseSupported) return;
+    try {
+      final messaging = FirebaseMessaging.instance;
+      
+      // Android não precisa esperar APNS token
+      if (!defaultTargetPlatform.name.contains('iOS') &&
+          defaultTargetPlatform != TargetPlatform.iOS) {
+        final token = await messaging.getToken();
+        if (token != null) {
+          await _saveFcmToken(token);
+        }
+        return;
+      }
+
+      // iOS: aguarda APNS token com retry exponencial
+      for (int attempt = 1; attempt <= 10; attempt++) {
+        try {
+          final apnsToken = await messaging.getAPNSToken();
+          if (apnsToken != null) {
+            final token = await messaging.getToken();
+            if (token != null) {
+              await _saveFcmToken(token);
+            }
+            return;
+          }
+        } catch (_) {}
+        await Future.delayed(Duration(milliseconds: 500 * attempt));
+      }
+    } catch (e) {
+      dev.log('Erro ao obter e salvar FCM token: $e', name: 'notification_primer');
+    }
+  }
+
+  Future<void> _saveFcmToken(String token) async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return;
+      await Supabase.instance.client
+          .from('users')
+          .update({'fcm_token': token})
+          .eq('id', userId);
+      dev.log('FCM token salvo com sucesso via primer', name: 'notification_primer');
+    } catch (e) {
+      dev.log('Erro ao salvar FCM token no Supabase via primer: $e', name: 'notification_primer');
+    }
   }
 
   bool get _isFirebaseSupported =>
