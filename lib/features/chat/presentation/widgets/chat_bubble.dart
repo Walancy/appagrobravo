@@ -214,14 +214,16 @@ class ChatBubble extends StatelessWidget {
     BorderRadius borderRadius,
     bool isDark,
   ) {
-    return Column(
+    final bool showText = message.isNotEmpty && audioUrl == null;
+
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         // Sender name (group, other messages only)
         if (!isMe && isGroupChat && showAvatar)
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: _buildHeader(context),
           ),
 
@@ -244,10 +246,25 @@ class ChatBubble extends StatelessWidget {
           ),
 
         // Message text (caption below attachment or audio, or standalone)
-        if (message.isNotEmpty && audioUrl == null)
+        if (showText)
           _buildMessageText(context, textColor),
       ],
     );
+
+    if (showText) {
+      return Stack(
+        children: [
+          content,
+          Positioned(
+            bottom: 6,
+            right: 12,
+            child: _buildTimeRow(context, textColor),
+          ),
+        ],
+      );
+    }
+
+    return content;
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -424,37 +441,33 @@ class ChatBubble extends StatelessWidget {
 
   Widget _buildMessageText(BuildContext context, Color textColor) {
     final timeWidth = (isEdited ? 46.0 : 0.0) + 40.0;
+    final bool hasHeader = !isMe && isGroupChat && showAvatar;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
         12,
-        attachmentUrl != null ? 6 : 10,
-        8,
+        attachmentUrl != null ? 4 : (hasHeader ? 2 : 8),
+        12,
         6,
       ),
-      child: Stack(
-        children: [
-          RichText(
-            text: TextSpan(
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: textColor,
-                fontSize: 15,
-                height: 1.4,
-              ),
-              children: [
-                ..._buildMessageSpans(context, textColor),
-                WidgetSpan(
-                  child: SizedBox(width: timeWidth + 4),
-                ),
-              ],
+      child: RichText(
+        text: TextSpan(
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: textColor,
+            fontSize: 15,
+            height: 1.4,
+          ),
+          children: [
+            ..._buildMessageSpans(context, textColor),
+            const TextSpan(
+              text: '\n',
+              style: TextStyle(fontSize: 2, height: 1),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: _buildTimeRow(context, textColor),
-          ),
-        ],
+            WidgetSpan(
+              child: SizedBox(width: timeWidth, height: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
