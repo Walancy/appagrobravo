@@ -1082,6 +1082,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileActionCancel => 'Cancel';
 
   @override
+  String get profileActionSave => 'Save';
+
+  @override
   String get profileActionPublish => 'Publish';
 
   @override

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DocumentModel {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String? get tipo; String? get status;@JsonKey(name: 'foto_doc') String? get fotoDoc;@JsonKey(name: 'nome_documento') String? get nomeDocumento;@JsonKey(name: 'numero_documento') String? get numeroDocumento;@JsonKey(name: 'validade_doc') String? get validadeDoc;@JsonKey(name: 'data_envio') String? get dataEnvio;@JsonKey(name: 'motivoRecusa') String? get motivoRecusa;
+ String get id;@JsonKey(name: 'user_id') String get userId; String? get tipo; String? get status;@JsonKey(name: 'foto_doc') String? get fotoDoc;@JsonKey(name: 'nome_documento') String? get nomeDocumento;@JsonKey(name: 'numero_documento') String? get numeroDocumento;@JsonKey(name: 'validade_doc') String? get validadeDoc;@JsonKey(name: 'data_envio') String? get dataEnvio;@JsonKey(name: 'motivoRecusa') String? get motivoRecusa;@JsonKey(name: 'pais_visto') String? get paisVisto;
 /// Create a copy of DocumentModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DocumentModelCopyWith<DocumentModel> get copyWith => _$DocumentModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocumentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.status, status) || other.status == status)&&(identical(other.fotoDoc, fotoDoc) || other.fotoDoc == fotoDoc)&&(identical(other.nomeDocumento, nomeDocumento) || other.nomeDocumento == nomeDocumento)&&(identical(other.numeroDocumento, numeroDocumento) || other.numeroDocumento == numeroDocumento)&&(identical(other.validadeDoc, validadeDoc) || other.validadeDoc == validadeDoc)&&(identical(other.dataEnvio, dataEnvio) || other.dataEnvio == dataEnvio)&&(identical(other.motivoRecusa, motivoRecusa) || other.motivoRecusa == motivoRecusa));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocumentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.status, status) || other.status == status)&&(identical(other.fotoDoc, fotoDoc) || other.fotoDoc == fotoDoc)&&(identical(other.nomeDocumento, nomeDocumento) || other.nomeDocumento == nomeDocumento)&&(identical(other.numeroDocumento, numeroDocumento) || other.numeroDocumento == numeroDocumento)&&(identical(other.validadeDoc, validadeDoc) || other.validadeDoc == validadeDoc)&&(identical(other.dataEnvio, dataEnvio) || other.dataEnvio == dataEnvio)&&(identical(other.motivoRecusa, motivoRecusa) || other.motivoRecusa == motivoRecusa)&&(identical(other.paisVisto, paisVisto) || other.paisVisto == paisVisto));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,tipo,status,fotoDoc,nomeDocumento,numeroDocumento,validadeDoc,dataEnvio,motivoRecusa);
+int get hashCode => Object.hash(runtimeType,id,userId,tipo,status,fotoDoc,nomeDocumento,numeroDocumento,validadeDoc,dataEnvio,motivoRecusa,paisVisto);
 
 @override
 String toString() {
-  return 'DocumentModel(id: $id, userId: $userId, tipo: $tipo, status: $status, fotoDoc: $fotoDoc, nomeDocumento: $nomeDocumento, numeroDocumento: $numeroDocumento, validadeDoc: $validadeDoc, dataEnvio: $dataEnvio, motivoRecusa: $motivoRecusa)';
+  return 'DocumentModel(id: $id, userId: $userId, tipo: $tipo, status: $status, fotoDoc: $fotoDoc, nomeDocumento: $nomeDocumento, numeroDocumento: $numeroDocumento, validadeDoc: $validadeDoc, dataEnvio: $dataEnvio, motivoRecusa: $motivoRecusa, paisVisto: $paisVisto)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DocumentModelCopyWith<$Res>  {
   factory $DocumentModelCopyWith(DocumentModel value, $Res Function(DocumentModel) _then) = _$DocumentModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String? tipo, String? status,@JsonKey(name: 'foto_doc') String? fotoDoc,@JsonKey(name: 'nome_documento') String? nomeDocumento,@JsonKey(name: 'numero_documento') String? numeroDocumento,@JsonKey(name: 'validade_doc') String? validadeDoc,@JsonKey(name: 'data_envio') String? dataEnvio,@JsonKey(name: 'motivoRecusa') String? motivoRecusa
+ String id,@JsonKey(name: 'user_id') String userId, String? tipo, String? status,@JsonKey(name: 'foto_doc') String? fotoDoc,@JsonKey(name: 'nome_documento') String? nomeDocumento,@JsonKey(name: 'numero_documento') String? numeroDocumento,@JsonKey(name: 'validade_doc') String? validadeDoc,@JsonKey(name: 'data_envio') String? dataEnvio,@JsonKey(name: 'motivoRecusa') String? motivoRecusa,@JsonKey(name: 'pais_visto') String? paisVisto
 });
 
 
@@ -65,7 +65,7 @@ class _$DocumentModelCopyWithImpl<$Res>
 
 /// Create a copy of DocumentModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? tipo = freezed,Object? status = freezed,Object? fotoDoc = freezed,Object? nomeDocumento = freezed,Object? numeroDocumento = freezed,Object? validadeDoc = freezed,Object? dataEnvio = freezed,Object? motivoRecusa = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? tipo = freezed,Object? status = freezed,Object? fotoDoc = freezed,Object? nomeDocumento = freezed,Object? numeroDocumento = freezed,Object? validadeDoc = freezed,Object? dataEnvio = freezed,Object? motivoRecusa = freezed,Object? paisVisto = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -77,6 +77,7 @@ as String?,numeroDocumento: freezed == numeroDocumento ? _self.numeroDocumento :
 as String?,validadeDoc: freezed == validadeDoc ? _self.validadeDoc : validadeDoc // ignore: cast_nullable_to_non_nullable
 as String?,dataEnvio: freezed == dataEnvio ? _self.dataEnvio : dataEnvio // ignore: cast_nullable_to_non_nullable
 as String?,motivoRecusa: freezed == motivoRecusa ? _self.motivoRecusa : motivoRecusa // ignore: cast_nullable_to_non_nullable
+as String?,paisVisto: freezed == paisVisto ? _self.paisVisto : paisVisto // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa, @JsonKey(name: 'pais_visto')  String? paisVisto)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DocumentModel() when $default != null:
-return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa);case _:
+return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa,_that.paisVisto);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa, @JsonKey(name: 'pais_visto')  String? paisVisto)  $default,) {final _that = this;
 switch (_that) {
 case _DocumentModel():
-return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa);case _:
+return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa,_that.paisVisto);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String? tipo,  String? status, @JsonKey(name: 'foto_doc')  String? fotoDoc, @JsonKey(name: 'nome_documento')  String? nomeDocumento, @JsonKey(name: 'numero_documento')  String? numeroDocumento, @JsonKey(name: 'validade_doc')  String? validadeDoc, @JsonKey(name: 'data_envio')  String? dataEnvio, @JsonKey(name: 'motivoRecusa')  String? motivoRecusa, @JsonKey(name: 'pais_visto')  String? paisVisto)?  $default,) {final _that = this;
 switch (_that) {
 case _DocumentModel() when $default != null:
-return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa);case _:
+return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_that.nomeDocumento,_that.numeroDocumento,_that.validadeDoc,_that.dataEnvio,_that.motivoRecusa,_that.paisVisto);case _:
   return null;
 
 }
@@ -218,7 +219,7 @@ return $default(_that.id,_that.userId,_that.tipo,_that.status,_that.fotoDoc,_tha
 @JsonSerializable()
 
 class _DocumentModel extends DocumentModel {
-  const _DocumentModel({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.tipo, required this.status, @JsonKey(name: 'foto_doc') required this.fotoDoc, @JsonKey(name: 'nome_documento') required this.nomeDocumento, @JsonKey(name: 'numero_documento') required this.numeroDocumento, @JsonKey(name: 'validade_doc') required this.validadeDoc, @JsonKey(name: 'data_envio') required this.dataEnvio, @JsonKey(name: 'motivoRecusa') required this.motivoRecusa}): super._();
+  const _DocumentModel({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.tipo, required this.status, @JsonKey(name: 'foto_doc') required this.fotoDoc, @JsonKey(name: 'nome_documento') required this.nomeDocumento, @JsonKey(name: 'numero_documento') required this.numeroDocumento, @JsonKey(name: 'validade_doc') required this.validadeDoc, @JsonKey(name: 'data_envio') required this.dataEnvio, @JsonKey(name: 'motivoRecusa') required this.motivoRecusa, @JsonKey(name: 'pais_visto') this.paisVisto}): super._();
   factory _DocumentModel.fromJson(Map<String, dynamic> json) => _$DocumentModelFromJson(json);
 
 @override final  String id;
@@ -231,6 +232,7 @@ class _DocumentModel extends DocumentModel {
 @override@JsonKey(name: 'validade_doc') final  String? validadeDoc;
 @override@JsonKey(name: 'data_envio') final  String? dataEnvio;
 @override@JsonKey(name: 'motivoRecusa') final  String? motivoRecusa;
+@override@JsonKey(name: 'pais_visto') final  String? paisVisto;
 
 /// Create a copy of DocumentModel
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocumentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.status, status) || other.status == status)&&(identical(other.fotoDoc, fotoDoc) || other.fotoDoc == fotoDoc)&&(identical(other.nomeDocumento, nomeDocumento) || other.nomeDocumento == nomeDocumento)&&(identical(other.numeroDocumento, numeroDocumento) || other.numeroDocumento == numeroDocumento)&&(identical(other.validadeDoc, validadeDoc) || other.validadeDoc == validadeDoc)&&(identical(other.dataEnvio, dataEnvio) || other.dataEnvio == dataEnvio)&&(identical(other.motivoRecusa, motivoRecusa) || other.motivoRecusa == motivoRecusa));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocumentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.status, status) || other.status == status)&&(identical(other.fotoDoc, fotoDoc) || other.fotoDoc == fotoDoc)&&(identical(other.nomeDocumento, nomeDocumento) || other.nomeDocumento == nomeDocumento)&&(identical(other.numeroDocumento, numeroDocumento) || other.numeroDocumento == numeroDocumento)&&(identical(other.validadeDoc, validadeDoc) || other.validadeDoc == validadeDoc)&&(identical(other.dataEnvio, dataEnvio) || other.dataEnvio == dataEnvio)&&(identical(other.motivoRecusa, motivoRecusa) || other.motivoRecusa == motivoRecusa)&&(identical(other.paisVisto, paisVisto) || other.paisVisto == paisVisto));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,tipo,status,fotoDoc,nomeDocumento,numeroDocumento,validadeDoc,dataEnvio,motivoRecusa);
+int get hashCode => Object.hash(runtimeType,id,userId,tipo,status,fotoDoc,nomeDocumento,numeroDocumento,validadeDoc,dataEnvio,motivoRecusa,paisVisto);
 
 @override
 String toString() {
-  return 'DocumentModel(id: $id, userId: $userId, tipo: $tipo, status: $status, fotoDoc: $fotoDoc, nomeDocumento: $nomeDocumento, numeroDocumento: $numeroDocumento, validadeDoc: $validadeDoc, dataEnvio: $dataEnvio, motivoRecusa: $motivoRecusa)';
+  return 'DocumentModel(id: $id, userId: $userId, tipo: $tipo, status: $status, fotoDoc: $fotoDoc, nomeDocumento: $nomeDocumento, numeroDocumento: $numeroDocumento, validadeDoc: $validadeDoc, dataEnvio: $dataEnvio, motivoRecusa: $motivoRecusa, paisVisto: $paisVisto)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$DocumentModelCopyWith<$Res> implements $DocumentModelCopy
   factory _$DocumentModelCopyWith(_DocumentModel value, $Res Function(_DocumentModel) _then) = __$DocumentModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String? tipo, String? status,@JsonKey(name: 'foto_doc') String? fotoDoc,@JsonKey(name: 'nome_documento') String? nomeDocumento,@JsonKey(name: 'numero_documento') String? numeroDocumento,@JsonKey(name: 'validade_doc') String? validadeDoc,@JsonKey(name: 'data_envio') String? dataEnvio,@JsonKey(name: 'motivoRecusa') String? motivoRecusa
+ String id,@JsonKey(name: 'user_id') String userId, String? tipo, String? status,@JsonKey(name: 'foto_doc') String? fotoDoc,@JsonKey(name: 'nome_documento') String? nomeDocumento,@JsonKey(name: 'numero_documento') String? numeroDocumento,@JsonKey(name: 'validade_doc') String? validadeDoc,@JsonKey(name: 'data_envio') String? dataEnvio,@JsonKey(name: 'motivoRecusa') String? motivoRecusa,@JsonKey(name: 'pais_visto') String? paisVisto
 });
 
 
@@ -282,7 +284,7 @@ class __$DocumentModelCopyWithImpl<$Res>
 
 /// Create a copy of DocumentModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? tipo = freezed,Object? status = freezed,Object? fotoDoc = freezed,Object? nomeDocumento = freezed,Object? numeroDocumento = freezed,Object? validadeDoc = freezed,Object? dataEnvio = freezed,Object? motivoRecusa = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? tipo = freezed,Object? status = freezed,Object? fotoDoc = freezed,Object? nomeDocumento = freezed,Object? numeroDocumento = freezed,Object? validadeDoc = freezed,Object? dataEnvio = freezed,Object? motivoRecusa = freezed,Object? paisVisto = freezed,}) {
   return _then(_DocumentModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -294,6 +296,7 @@ as String?,numeroDocumento: freezed == numeroDocumento ? _self.numeroDocumento :
 as String?,validadeDoc: freezed == validadeDoc ? _self.validadeDoc : validadeDoc // ignore: cast_nullable_to_non_nullable
 as String?,dataEnvio: freezed == dataEnvio ? _self.dataEnvio : dataEnvio // ignore: cast_nullable_to_non_nullable
 as String?,motivoRecusa: freezed == motivoRecusa ? _self.motivoRecusa : motivoRecusa // ignore: cast_nullable_to_non_nullable
+as String?,paisVisto: freezed == paisVisto ? _self.paisVisto : paisVisto // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

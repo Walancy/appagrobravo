@@ -9,8 +9,11 @@ import 'package:url_launcher/url_launcher.dart';
 class ProfileActions extends StatelessWidget {
   final VoidCallback onEditProfile;
   final VoidCallback onPublish;
+  final VoidCallback? onSave;
   final bool isEditing;
   final bool isMe;
+  final bool isUploadingAvatar;
+  final bool isUploadingCover;
   final ConnectionStatus connectionStatus;
   final VoidCallback? onConnect;
   final VoidCallback? onCancelRequest;
@@ -23,8 +26,11 @@ class ProfileActions extends StatelessWidget {
     super.key,
     required this.onEditProfile,
     required this.onPublish,
+    this.onSave,
     this.isEditing = false,
     this.isMe = true,
+    this.isUploadingAvatar = false,
+    this.isUploadingCover = false,
     this.connectionStatus = ConnectionStatus.none,
     this.onConnect,
     this.onCancelRequest,
@@ -36,20 +42,69 @@ class ProfileActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isUploading = isUploadingAvatar || isUploadingCover;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Row(
         children: [
           if (isMe) ...[
-            Expanded(
-              child: _ActionButton(
-                label: isEditing ? context.l10n.profileActionCancel : context.l10n.profileActionEditProfile,
-                icon: isEditing ? Icons.close_rounded : Icons.edit_outlined,
-                style: isEditing ? _ActionStyle.outlined : _ActionStyle.filled,
-                onPressed: onEditProfile,
+            if (isEditing) ...[
+              // Cancelar
+              Expanded(
+                child: _ActionButton(
+                  label: context.l10n.profileActionCancel,
+                  icon: Icons.close_rounded,
+                  style: _ActionStyle.outlined,
+                  onPressed: isUploading ? null : onEditProfile,
+                ),
               ),
-            ),
-            if (!isEditing) ...[
+              const SizedBox(width: AppSpacing.sm),
+              // Salvar
+              Expanded(
+                child: isUploading
+                    ? SizedBox(
+                        height: 42,
+                        child: ElevatedButton.icon(
+                          onPressed: null,
+                          icon: const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          label: Text(context.l10n.profileActionSave),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            textStyle: AppTextStyles.button.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      )
+                    : _ActionButton(
+                        label: context.l10n.profileActionSave,
+                        icon: Icons.check_rounded,
+                        style: _ActionStyle.save,
+                        onPressed: onSave ?? onEditProfile,
+                      ),
+              ),
+            ] else ...[
+              Expanded(
+                child: _ActionButton(
+                  label: context.l10n.profileActionEditProfile,
+                  icon: Icons.edit_outlined,
+                  style: _ActionStyle.filled,
+                  onPressed: onEditProfile,
+                ),
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _ActionButton(
@@ -147,13 +202,13 @@ class ProfileActions extends StatelessWidget {
   }
 }
 
-enum _ActionStyle { filled, outlined, muted, whatsapp }
+enum _ActionStyle { filled, outlined, muted, whatsapp, save }
 
 class _ActionButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final _ActionStyle style;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _ActionButton({
     required this.label,
@@ -196,6 +251,23 @@ class _ActionButton extends StatelessWidget {
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: isDark ? 0.25 : 0.2),
               ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              textStyle: AppTextStyles.button.copyWith(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        );
+
+      case _ActionStyle.save:
+        return SizedBox(
+          height: 42,
+          child: ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 16),
+            label: Text(label),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               textStyle: AppTextStyles.button.copyWith(fontSize: 13, fontWeight: FontWeight.w600),
             ),

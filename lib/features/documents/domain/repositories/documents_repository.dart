@@ -12,6 +12,7 @@ abstract class DocumentsRepository {
     String? documentNumber,
     DateTime? expiryDate,
     String? documentName,
+    String? visaCountry,
   });
   Future<Either<Exception, Map<String, dynamic>>> parseDocument({
     required DocumentType type,

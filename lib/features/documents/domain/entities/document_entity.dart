@@ -15,5 +15,7 @@ abstract class DocumentEntity with _$DocumentEntity {
     required DateTime? expiryDate,
     required DateTime? uploadDate,
     required String? rejectionReason,
+    String? visaCountry, // Código ISO do país do visto (apenas para tipo visto)
   }) = _DocumentEntity;
 }
+

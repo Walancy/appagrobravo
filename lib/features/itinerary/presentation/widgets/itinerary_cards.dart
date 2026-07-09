@@ -55,14 +55,9 @@ class GenericEventCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (firstImage != null)
-            SizedBox(
+            _NetworkImageOrNothing(
+              url: firstImage,
               height: 120,
-              width: double.infinity,
-              child: Image.network(
-                firstImage,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              ),
             ),
           Padding(
             padding: const EdgeInsets.all(20),
@@ -353,6 +348,42 @@ class GenericEventCard extends StatelessWidget {
       default:
         return Icons.event_outlined;
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// _NetworkImageOrNothing — loads a network image without reserving space
+// when the image fails or has not loaded yet.
+// ---------------------------------------------------------------------------
+
+class _NetworkImageOrNothing extends StatefulWidget {
+  final String url;
+  final double height;
+  const _NetworkImageOrNothing({required this.url, required this.height});
+
+  @override
+  State<_NetworkImageOrNothing> createState() => _NetworkImageOrNothingState();
+}
+
+class _NetworkImageOrNothingState extends State<_NetworkImageOrNothing> {
+  bool _failed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_failed) return const SizedBox.shrink();
+    return Image.network(
+      widget.url,
+      height: widget.height,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) {
+        // Schedule state update after frame to avoid setState during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _failed = true);
+        });
+        return const SizedBox.shrink();
+      },
+    );
   }
 }
 

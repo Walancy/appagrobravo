@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,17 +17,18 @@ import 'package:agrobravo/features/profile/presentation/widgets/profile_actions.
 import 'package:agrobravo/features/profile/presentation/widgets/profile_post_grid.dart';
 import 'package:agrobravo/features/home/presentation/widgets/new_post_bottom_sheet.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
+import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
+import 'package:agrobravo/core/components/image_cropper_modal.dart';
 import 'package:agrobravo/core/components/profile_shimmer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:agrobravo/features/home/domain/repositories/feed_repository.dart';
 import 'package:agrobravo/features/home/domain/entities/mission_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agrobravo/core/extensions/build_context_l10n.dart';
-import 'package:agrobravo/core/tokens/app_colors.dart';
 
 class SocialProfilePage extends StatefulWidget {
   final String? userId;
@@ -39,6 +42,9 @@ class SocialProfilePage extends StatefulWidget {
 class _SocialProfilePageState extends State<SocialProfilePage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _postsKey = GlobalKey();
+
+  bool _isUploadingAvatar = false;
+  bool _isUploadingCover = false;
 
   @override
   void dispose() {
@@ -222,8 +228,9 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
               loading: () => const ProfileShimmer(),
               error: (message) => Center(child: Text(message)),
               loaded: (profile, posts, isMe, isEditing) {
+                // ── Pick, crop e upload — igual à tela de Configurações
                 Future<void> pickAndUploadImage(bool isAvatar) async {
-                  final picker = ImagePicker();
+                  // 1. Escolher fonte
                   final source = await showModalBottomSheet<ImageSource>(
                     context: context,
                     backgroundColor: Colors.transparent,
@@ -233,15 +240,62 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                           : context.l10n.socialProfileChangeCover,
                     ),
                   );
+                  if (source == null || !mounted) return;
 
-                  if (source != null) {
-                    final image = await picker.pickImage(source: source);
-                    if (image != null && context.mounted) {
-                      if (isAvatar) {
-                        context.read<ProfileCubit>().updateProfilePhoto(image);
-                      } else {
-                        context.read<ProfileCubit>().updateCoverPhoto(image);
-                      }
+                  // 2. Selecionar imagem
+                  final picker = ImagePicker();
+                  final XFile? pickedFile;
+                  try {
+                    pickedFile = await picker.pickImage(source: source);
+                  } catch (_) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(context.l10n.homeCameraError)),
+                      );
+                    }
+                    return;
+                  }
+                  if (pickedFile == null || !mounted) return;
+
+                  // 3. Abrir modal de crop
+                  final croppedBytes = await ImageCropperModal.show(
+                    context,
+                    imageProvider: FileImage(File(pickedFile.path)),
+                    cropShape: isAvatar
+                        ? CropShape.circle
+                        : CropShape.rectangle169,
+                  );
+                  if (croppedBytes == null || !mounted) return;
+
+                  // 4. Upload com loading state
+                  setState(() {
+                    if (isAvatar) {
+                      _isUploadingAvatar = true;
+                    } else {
+                      _isUploadingCover = true;
+                    }
+                  });
+                  final cubit = context.read<ProfileCubit>();
+                  try {
+                    final tempFile = XFile.fromData(
+                      croppedBytes,
+                      name: isAvatar ? 'avatar_cropped.png' : 'cover_cropped.png',
+                      mimeType: 'image/png',
+                    );
+                    if (isAvatar) {
+                      await cubit.updateProfilePhoto(tempFile);
+                    } else {
+                      await cubit.updateCoverPhoto(tempFile);
+                    }
+                  } finally {
+                    if (mounted) {
+                      setState(() {
+                        if (isAvatar) {
+                          _isUploadingAvatar = false;
+                        } else {
+                          _isUploadingCover = false;
+                        }
+                      });
                     }
                   }
                 }
@@ -287,6 +341,8 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                         avatarUrl: profile.avatarUrl,
                         isMe: isMe,
                         isEditing: isEditing,
+                        isUploadingAvatar: _isUploadingAvatar,
+                        isUploadingCover: _isUploadingCover,
                         onUpdateAvatar: () => pickAndUploadImage(true),
                         onUpdateCover: () => pickAndUploadImage(false),
                         statsWidget: Opacity(
@@ -323,6 +379,9 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                       ProfileActions(
                         isMe: isMe,
                         connectionStatus: profile.connectionStatus,
+                        isEditing: isEditing,
+                        isUploadingAvatar: _isUploadingAvatar,
+                        isUploadingCover: _isUploadingCover,
                         onConnect: () => context
                             .read<ProfileCubit>()
                             .requestConnection(profile.id),
@@ -340,8 +399,9 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                             .removeConnection(profile.id),
                         onEditProfile: () =>
                             context.read<ProfileCubit>().toggleEditing(),
+                        onSave: () =>
+                            context.read<ProfileCubit>().toggleEditing(),
                         onPublish: () => handleNewPost(context),
-                        isEditing: isEditing,
                         phone: profile.phone,
                       ),
                       const SizedBox(height: AppSpacing.lg),

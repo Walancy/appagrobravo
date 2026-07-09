@@ -11,6 +11,8 @@ import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/components/image_source_bottom_sheet.dart';
+import 'package:agrobravo/core/components/country_picker_bottom_sheet.dart';
+import 'package:agrobravo/core/data/countries.dart';
 import 'package:agrobravo/core/di/injection.dart';
 
 import 'package:agrobravo/core/components/document_preview_page.dart';
@@ -43,6 +45,7 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
   bool _isProcessingOcr = false;
   String? _ocrError;
   bool _fieldsModified = false;
+  CountryItem? _selectedCountry; // apenas para tipo visto
 
   @override
   void initState() {
@@ -51,6 +54,10 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
       _numberController.text = widget.currentDocument!.documentNumber ?? '';
       _nameController.text = widget.currentDocument!.title ?? '';
       _selectedDate = widget.currentDocument!.expiryDate;
+      // Carrega país salvo (só para visto)
+      if (widget.type == DocumentType.visto) {
+        _selectedCountry = countryByCode(widget.currentDocument!.visaCountry);
+      }
     }
     _numberController.addListener(_onFieldChanged);
     _nameController.addListener(_onFieldChanged);
@@ -319,6 +326,17 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
           if (visaNumber != null) {
             _numberController.text = visaNumber.toString();
           }
+          // Tenta extrair o país do visto via visa_origin ou country
+          final visaOrigin = data['visa_origin']?.toString();
+          final country = data['country']?.toString();
+          final detectedCountry =
+              countryByAny(visaOrigin) ?? countryByAny(country);
+          if (detectedCountry != null) {
+            setState(() {
+              _selectedCountry = detectedCountry;
+              _fieldsModified = true;
+            });
+          }
         }
 
         final givenName = data['given_name'];
@@ -422,6 +440,9 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         documentNumber: _numberController.text,
         expiryDate: _selectedDate,
         documentName: _nameController.text,
+        visaCountry: widget.type == DocumentType.visto
+            ? _selectedCountry?.code
+            : null,
       );
 
       if (mounted) {
@@ -538,13 +559,120 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
               ),
             ),
 
+            if (_hasDocumentNumber()) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _buildFieldLabel(_numberFieldLabel()),
+              _DocumentTextField(
+                controller: _numberController,
+                hintText: _numberFieldHint(),
+              ),
+            ],
+
+            // Campo de país — somente para visto
+            if (widget.type == DocumentType.visto) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _buildFieldLabel('País do Visto'),
+              InkWell(
+                onTap: () async {
+                  final picked = await CountryPickerBottomSheet.show(
+                    context,
+                    initialValue: _selectedCountry,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _selectedCountry = picked;
+                      _fieldsModified = true;
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 13,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.12),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.035),
+                  ),
+                  child: Row(
+                    children: [
+                      if (_selectedCountry != null) ...[
+                        Text(
+                          _flagEmoji(_selectedCountry!.code),
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _selectedCountry!.name,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCountry = null;
+                              _fieldsModified = true;
+                            });
+                          },
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ] else ...[
+                        const Icon(
+                          Icons.public_rounded,
+                          size: 20,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Selecionar país',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.35),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
             const SizedBox(height: AppSpacing.lg),
             _buildFieldLabel('Nome no documento'),
             _DocumentTextField(
               controller: _nameController,
-              hintText: 'Ex: NELSON VIEIRA',
             ),
-
 
 
             const SizedBox(height: AppSpacing.lg),
@@ -623,6 +751,53 @@ class _DocumentDetailsPageState extends State<DocumentDetailsPage> {
         ),
       ),
     );
+  }
+
+  /// Converte código ISO 2 letras em emoji de bandeira
+  String _flagEmoji(String code) {
+    const base = 0x1F1E6 - 0x41;
+    final chars = code.toUpperCase().codeUnits;
+    if (chars.length != 2) return '🏳';
+    return String.fromCharCode(base + chars[0]) +
+        String.fromCharCode(base + chars[1]);
+  }
+
+  bool _hasDocumentNumber() {
+
+    return widget.type == DocumentType.passaporte ||
+        widget.type == DocumentType.visto ||
+        widget.type == DocumentType.seguro ||
+        widget.type == DocumentType.carteiraMotorista;
+  }
+
+  String _numberFieldLabel() {
+    switch (widget.type) {
+      case DocumentType.passaporte:
+        return 'Número do Passaporte';
+      case DocumentType.visto:
+        return 'Número do Visto';
+      case DocumentType.carteiraMotorista:
+        return 'Número da CNH';
+      case DocumentType.seguro:
+        return 'Número da Apólice';
+      default:
+        return 'Número do documento';
+    }
+  }
+
+  String _numberFieldHint() {
+    switch (widget.type) {
+      case DocumentType.passaporte:
+        return 'Ex: AA123456';
+      case DocumentType.visto:
+        return 'Ex: V12345678';
+      case DocumentType.carteiraMotorista:
+        return 'Ex: 00000000000';
+      case DocumentType.seguro:
+        return 'Ex: AP-000000';
+      default:
+        return 'Ex: 000000';
+    }
   }
 
   Widget _buildStatusHeader() {
@@ -896,7 +1071,7 @@ class _DocumentTextField extends StatelessWidget {
 
   const _DocumentTextField({
     required this.controller,
-    required this.hintText,
+    this.hintText = '',
   });
 
   @override

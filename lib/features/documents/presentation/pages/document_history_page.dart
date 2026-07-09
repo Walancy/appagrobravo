@@ -9,6 +9,7 @@ import '../cubit/documents_cubit.dart';
 import '../cubit/documents_state.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
+import '../../../../core/data/countries.dart';
 
 class DocumentHistoryPage extends StatelessWidget {
   final DocumentType type;
@@ -78,12 +79,12 @@ class DocumentHistoryPage extends StatelessWidget {
           width: double.infinity,
           height: 46,
           child: ElevatedButton.icon(
-            onPressed: () => _openDetails(context, latestDocument),
-            icon: const Icon(Icons.upload_file_rounded, size: 20),
+            onPressed: () => _openDetails(context, null),
+            icon: const Icon(Icons.add_circle_outline, size: 20),
             label: Text(
               latestDocument == null
                   ? 'Enviar documento'
-                  : 'Atualizar documento',
+                  : 'Adicionar novo documento',
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -217,14 +218,71 @@ class DocumentHistoryPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      document.documentNumber?.isNotEmpty == true
-                          ? 'Nº ${document.documentNumber}'
-                          : 'Sem número',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.bold,
+                    Builder(builder: (context) {
+                      if (type == DocumentType.visto &&
+                          document.visaCountry?.isNotEmpty == true) {
+                        final country = countryByCode(document.visaCountry);
+                        if (country != null) {
+                          final flagChars = country.code.toUpperCase().codeUnits;
+                          final flag = flagChars.length == 2
+                              ? String.fromCharCode(0x1F1E6 - 0x41 + flagChars[0]) +
+                                  String.fromCharCode(
+                                      0x1F1E6 - 0x41 + flagChars[1])
+                              : '🏳';
+                          return Row(
+                            children: [
+                              Text(flag, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  country.name,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      }
+
+                      return Text(
+                        document.title?.isNotEmpty == true
+                            ? document.title!
+                            : type.label,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }),
+                    if (type == DocumentType.visto &&
+                        document.visaCountry?.isNotEmpty == true) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        document.title?.isNotEmpty == true
+                            ? document.title!
+                            : type.label,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                    ],
+                    if (document.documentNumber?.isNotEmpty == true) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Nº ${document.documentNumber}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       'Enviado em: ${document.uploadDate != null ? "${document.uploadDate!.day}/${document.uploadDate!.month}/${document.uploadDate!.year}" : "N/D"}',

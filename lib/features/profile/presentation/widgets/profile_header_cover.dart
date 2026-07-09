@@ -8,6 +8,8 @@ class ProfileHeaderCover extends StatelessWidget {
   final String? avatarUrl;
   final bool isMe;
   final bool isEditing;
+  final bool isUploadingAvatar;
+  final bool isUploadingCover;
   final VoidCallback? onUpdateAvatar;
   final VoidCallback? onUpdateCover;
   final Widget? statsWidget;
@@ -18,6 +20,8 @@ class ProfileHeaderCover extends StatelessWidget {
     this.avatarUrl,
     this.isMe = false,
     this.isEditing = false,
+    this.isUploadingAvatar = false,
+    this.isUploadingCover = false,
     this.onUpdateAvatar,
     this.onUpdateCover,
     this.statsWidget,
@@ -37,27 +41,44 @@ class ProfileHeaderCover extends StatelessWidget {
             left: 0,
             right: 0,
             height: 180,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: coverUrl != null
-                      ? CachedNetworkImageProvider(coverUrl!)
-                      : Assets.images.background.provider(),
-                  fit: BoxFit.cover,
+            child: GestureDetector(
+              onTap: (isEditing && !isUploadingCover) ? onUpdateCover : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: coverUrl != null
+                        ? CachedNetworkImageProvider(coverUrl!)
+                        : Assets.images.background.provider(),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  if (isEditing)
-                    Positioned(
-                      right: 16,
-                      bottom: 16,
-                      child: _buildCameraButton(
-                        context,
-                        onTap: onUpdateCover ?? () {},
+                child: Stack(
+                  children: [
+                    if (isUploadingCover)
+                      Container(
+                        color: Colors.black.withOpacity(0.45),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (isEditing)
+                      Positioned(
+                        right: 16,
+                        bottom: 16,
+                        child: _buildCameraButton(
+                          context,
+                          onTap: onUpdateCover ?? () {},
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -72,61 +93,80 @@ class ProfileHeaderCover extends StatelessWidget {
             left: 16,
             child: Stack(
               children: [
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[800]
-                        : Colors.grey[100],
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
-                      width: 4,
+                GestureDetector(
+                  onTap: (isEditing && !isUploadingAvatar) ? onUpdateAvatar : null,
+                  child: Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[800]
+                          : Colors.grey[100],
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 4,
+                      ),
                     ),
-                  ),
-                  child: ClipOval(
-                    child: (avatarUrl != null && avatarUrl!.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: avatarUrl!,
-                            fit: BoxFit.cover,
-                            height: 110,
-                            width: 110,
-                            placeholder: (context, url) => Container(
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
+                    child: ClipOval(
+                      child: isUploadingAvatar
+                          ? Container(
+                              color: Theme.of(context).brightness == Brightness.dark
                                   ? Colors.grey[800]
                                   : Colors.grey[200],
-                            ),
-                            errorWidget: (context, error, stackTrace) {
-                              return Center(
-                                child: Icon(
-                                  Icons.person,
-                                  size: 60,
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.grey[600]
-                                      : Colors.grey,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
                                 ),
-                              );
-                            },
-                          )
-                        : Center(
-                            child: Icon(
-                              Icons.person,
-                              size: 60,
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[600]
-                                  : Colors.grey,
-                            ),
-                          ),
+                              ),
+                            )
+                          : (avatarUrl != null && avatarUrl!.isNotEmpty)
+                              ? CachedNetworkImage(
+                                  imageUrl: avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  height: 110,
+                                  width: 110,
+                                  placeholder: (context, url) => Container(
+                                    color:
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[200],
+                                  ),
+                                  errorWidget: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.grey[600]
+                                            : Colors.grey,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color:
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.grey[600]
+                                        : Colors.grey,
+                                  ),
+                                ),
+                    ),
                   ),
                 ),
-                if (isEditing)
+                if (isEditing && !isUploadingAvatar)
                   Positioned(
                     right: 0,
                     bottom: 0,

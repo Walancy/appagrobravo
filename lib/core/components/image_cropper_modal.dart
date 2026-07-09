@@ -6,23 +6,32 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 
+/// Tipo de recorte: círculo (avatar) ou retângulo 16:9 (capa).
+enum CropShape { circle, rectangle169 }
+
 /// Full-screen image cropper — pinch to zoom, drag to pan, no distortion.
 /// Returns cropped PNG bytes, or null if cancelled.
 class ImageCropperModal extends StatefulWidget {
   final ImageProvider imageProvider;
+  final CropShape cropShape;
 
-  const ImageCropperModal({super.key, required this.imageProvider});
+  const ImageCropperModal({
+    super.key,
+    required this.imageProvider,
+    this.cropShape = CropShape.circle,
+  });
 
   static Future<Uint8List?> show(
     BuildContext context, {
     required ImageProvider imageProvider,
+    CropShape cropShape = CropShape.circle,
   }) {
     return Navigator.of(context).push<Uint8List>(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black,
         pageBuilder: (ctx, _, __) =>
-            ImageCropperModal(imageProvider: imageProvider),
+            ImageCropperModal(imageProvider: imageProvider, cropShape: cropShape),
         transitionsBuilder: (ctx, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
@@ -34,12 +43,12 @@ class ImageCropperModal extends StatefulWidget {
 }
 
 class _ImageCropperModalState extends State<ImageCropperModal> {
-  static const int _outputPx = 400;
+  static const int _outputPx = 800;
 
   ui.Image? _image;
   bool _isProcessing = false;
 
-  // The scale that makes the image just cover the crop circle (user zoom = 1×).
+  // The scale that makes the image just cover the crop area (user zoom = 1×).
   double _baseScale = 1.0;
   // Additional user zoom (1.0 = no extra zoom, max 4.0).
   double _userScale = 1.0;
@@ -51,8 +60,13 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
   Offset _gestureBaseTranslate = Offset.zero;
   Offset _gestureFocalStart = Offset.zero;
 
-  // Set in build() from MediaQuery.
+  // Set in build() from MediaQuery — usado para circular.
   double _cropRadius = 150;
+  // Para retangular 16:9
+  late double _cropW;
+  late double _cropH;
+
+  bool get _isRect => widget.cropShape == CropShape.rectangle169;
 
   @override
   void initState() {
@@ -76,11 +90,18 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
 
   void _initTransform() {
     if (_image == null) return;
-    final diameter = _cropRadius * 2;
-    _baseScale = max(
-      diameter / _image!.width,
-      diameter / _image!.height,
-    );
+    if (_isRect) {
+      _baseScale = max(
+        _cropW / _image!.width,
+        _cropH / _image!.height,
+      );
+    } else {
+      final diameter = _cropRadius * 2;
+      _baseScale = max(
+        diameter / _image!.width,
+        diameter / _image!.height,
+      );
+    }
     _userScale = 1.0;
     _translate = Offset.zero;
   }
@@ -94,9 +115,10 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
     if (_image == null) return Offset.zero;
     final displayW = _image!.width * _totalScale;
     final displayH = _image!.height * _totalScale;
-    final diameter = _cropRadius * 2;
-    final maxX = max(0.0, (displayW - diameter) / 2);
-    final maxY = max(0.0, (displayH - diameter) / 2);
+    final double areaW = _isRect ? _cropW : _cropRadius * 2;
+    final double areaH = _isRect ? _cropH : _cropRadius * 2;
+    final maxX = max(0.0, (displayW - areaW) / 2);
+    final maxY = max(0.0, (displayH - areaH) / 2);
     return Offset(t.dx.clamp(-maxX, maxX), t.dy.clamp(-maxY, maxY));
   }
 
@@ -139,32 +161,50 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
       final imgW = _image!.width.toDouble();
       final imgH = _image!.height.toDouble();
 
-      // Map the crop circle (centered in viewport) back to image pixel space.
-      // Image center in viewport = viewportCenter + _translate.
-      // Crop circle center = viewportCenter.
-      // So in image coords, crop center = image_center - translate/totalScale.
       final srcCenterX = imgW / 2 - _translate.dx / _totalScale;
       final srcCenterY = imgH / 2 - _translate.dy / _totalScale;
-      final srcRadius = _cropRadius / _totalScale;
 
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-      final out = _outputPx.toDouble();
 
-      canvas.drawImageRect(
-        _image!,
-        Rect.fromLTWH(
+      final int outW;
+      final int outH;
+      final Rect srcRect;
+
+      if (_isRect) {
+        // Crop retangular 16:9
+        final srcHalfW = _cropW / 2 / _totalScale;
+        final srcHalfH = _cropH / 2 / _totalScale;
+        srcRect = Rect.fromLTWH(
+          srcCenterX - srcHalfW,
+          srcCenterY - srcHalfH,
+          srcHalfW * 2,
+          srcHalfH * 2,
+        );
+        outW = _outputPx;
+        outH = (_outputPx * 9 / 16).round();
+      } else {
+        // Crop circular (quadrado recortado depois)
+        final srcRadius = _cropRadius / _totalScale;
+        srcRect = Rect.fromLTWH(
           srcCenterX - srcRadius,
           srcCenterY - srcRadius,
           srcRadius * 2,
           srcRadius * 2,
-        ),
-        Rect.fromLTWH(0, 0, out, out),
+        );
+        outW = _outputPx;
+        outH = _outputPx;
+      }
+
+      canvas.drawImageRect(
+        _image!,
+        srcRect,
+        Rect.fromLTWH(0, 0, outW.toDouble(), outH.toDouble()),
         Paint()..filterQuality = FilterQuality.high,
       );
 
       final picture = recorder.endRecording();
-      final cropped = await picture.toImage(_outputPx, _outputPx);
+      final cropped = await picture.toImage(outW, outH);
       final bytes = await cropped.toByteData(format: ui.ImageByteFormat.png);
 
       if (!mounted) return;
@@ -189,6 +229,8 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     _cropRadius = size.width * 0.43;
+    _cropW = size.width - 32;
+    _cropH = _cropW * 9 / 16;
 
     // Re-init if image just loaded or crop radius changed.
     if (_image != null && _baseScale == 1.0) _initTransform();
@@ -208,42 +250,34 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
                     onPressed:
                         _isProcessing ? null : () => Navigator.pop(context),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Ajustar foto',
+                      _isRect ? 'Ajustar capa' : 'Ajustar foto',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 17,
                       ),
                     ),
                   ),
-                  _isProcessing
-                      ? const SizedBox(
-                          width: 48,
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          ),
-                        )
-                      : TextButton(
-                          onPressed: _performCrop,
-                          child: Text(
-                            'Usar',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
+                  // Espaço para equilibrar o iconbutton
+                  if (_isProcessing)
+                    const SizedBox(
+                      width: 48,
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
                           ),
                         ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -258,12 +292,20 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
                       onScaleUpdate: _onScaleUpdate,
                       child: SizedBox.expand(
                         child: CustomPaint(
-                          painter: _CropPainter(
-                            image: _image!,
-                            translate: _translate,
-                            totalScale: _totalScale,
-                            cropRadius: _cropRadius,
-                          ),
+                          painter: _isRect
+                              ? _CropPainterRect(
+                                  image: _image!,
+                                  translate: _translate,
+                                  totalScale: _totalScale,
+                                  cropW: _cropW,
+                                  cropH: _cropH,
+                                )
+                              : _CropPainter(
+                                  image: _image!,
+                                  translate: _translate,
+                                  totalScale: _totalScale,
+                                  cropRadius: _cropRadius,
+                                ),
                         ),
                       ),
                     ),
@@ -271,13 +313,82 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
 
             // ── Hint ──────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
               child: Text(
                 'Belisque para dar zoom • Arraste para mover',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.45),
-                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
                 ),
+              ),
+            ),
+
+            // ── Action buttons ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+              child: Row(
+                children: [
+                  // Cancelar
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed:
+                            _isProcessing ? null : () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white38),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Confirmar
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isProcessing ? null : _performCrop,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              AppColors.primary.withValues(alpha: 0.5),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _isProcessing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Usar foto',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -287,7 +398,7 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
   }
 }
 
-/// Draws the image + overlay in a single pass — no distortion, no Widget tree overhead.
+/// Draws the image + circular overlay in a single pass.
 class _CropPainter extends CustomPainter {
   final ui.Image image;
   final Offset translate;
@@ -342,6 +453,79 @@ class _CropPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_CropPainter old) =>
+      old.translate != translate ||
+      old.totalScale != totalScale ||
+      old.image != image;
+}
+
+/// Draws the image + rectangular 16:9 overlay in a single pass.
+class _CropPainterRect extends CustomPainter {
+  final ui.Image image;
+  final Offset translate;
+  final double totalScale;
+  final double cropW;
+  final double cropH;
+
+  const _CropPainterRect({
+    required this.image,
+    required this.translate,
+    required this.totalScale,
+    required this.cropW,
+    required this.cropH,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+
+    // ── Draw image ────────────────────────────────────────────────────────
+    final displayW = image.width * totalScale;
+    final displayH = image.height * totalScale;
+    final imgRect = Rect.fromCenter(
+      center: center + translate,
+      width: displayW,
+      height: displayH,
+    );
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      imgRect,
+      Paint()..filterQuality = FilterQuality.medium,
+    );
+
+    // ── Dark overlay with rectangular hole ───────────────────────────────
+    final cropRect = Rect.fromCenter(center: center, width: cropW, height: cropH);
+    canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = Colors.black.withValues(alpha: 0.55),
+    );
+    canvas.drawRect(cropRect, Paint()..blendMode = BlendMode.clear);
+    canvas.restore();
+
+    // ── Rectangle border ──────────────────────────────────────────────────
+    canvas.drawRect(
+      cropRect,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // ── Rule-of-thirds guides ─────────────────────────────────────────────
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.2)
+      ..strokeWidth = 0.8;
+    for (int i = 1; i <= 2; i++) {
+      final x = cropRect.left + cropW * i / 3;
+      final y = cropRect.top + cropH * i / 3;
+      canvas.drawLine(Offset(x, cropRect.top), Offset(x, cropRect.bottom), gridPaint);
+      canvas.drawLine(Offset(cropRect.left, y), Offset(cropRect.right, y), gridPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CropPainterRect old) =>
       old.translate != translate ||
       old.totalScale != totalScale ||
       old.image != image;

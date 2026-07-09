@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DocumentEntity {
 
- String get id; DocumentType get type; DocumentStatus get status; String? get imageUrl; String? get title; String? get documentNumber; DateTime? get expiryDate; DateTime? get uploadDate; String? get rejectionReason;
+ String get id; DocumentType get type; DocumentStatus get status; String? get imageUrl; String? get title; String? get documentNumber; DateTime? get expiryDate; DateTime? get uploadDate; String? get rejectionReason; String? get visaCountry;
 /// Create a copy of DocumentEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $DocumentEntityCopyWith<DocumentEntity> get copyWith => _$DocumentEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocumentEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.documentNumber, documentNumber) || other.documentNumber == documentNumber)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.uploadDate, uploadDate) || other.uploadDate == uploadDate)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocumentEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.documentNumber, documentNumber) || other.documentNumber == documentNumber)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.uploadDate, uploadDate) || other.uploadDate == uploadDate)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.visaCountry, visaCountry) || other.visaCountry == visaCountry));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,type,status,imageUrl,title,documentNumber,expiryDate,uploadDate,rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,type,status,imageUrl,title,documentNumber,expiryDate,uploadDate,rejectionReason,visaCountry);
 
 @override
 String toString() {
-  return 'DocumentEntity(id: $id, type: $type, status: $status, imageUrl: $imageUrl, title: $title, documentNumber: $documentNumber, expiryDate: $expiryDate, uploadDate: $uploadDate, rejectionReason: $rejectionReason)';
+  return 'DocumentEntity(id: $id, type: $type, status: $status, imageUrl: $imageUrl, title: $title, documentNumber: $documentNumber, expiryDate: $expiryDate, uploadDate: $uploadDate, rejectionReason: $rejectionReason, visaCountry: $visaCountry)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $DocumentEntityCopyWith<$Res>  {
   factory $DocumentEntityCopyWith(DocumentEntity value, $Res Function(DocumentEntity) _then) = _$DocumentEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, DocumentType type, DocumentStatus status, String? imageUrl, String? title, String? documentNumber, DateTime? expiryDate, DateTime? uploadDate, String? rejectionReason
+ String id, DocumentType type, DocumentStatus status, String? imageUrl, String? title, String? documentNumber, DateTime? expiryDate, DateTime? uploadDate, String? rejectionReason, String? visaCountry
 });
 
 
@@ -62,7 +62,7 @@ class _$DocumentEntityCopyWithImpl<$Res>
 
 /// Create a copy of DocumentEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? status = null,Object? imageUrl = freezed,Object? title = freezed,Object? documentNumber = freezed,Object? expiryDate = freezed,Object? uploadDate = freezed,Object? rejectionReason = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? status = null,Object? imageUrl = freezed,Object? title = freezed,Object? documentNumber = freezed,Object? expiryDate = freezed,Object? uploadDate = freezed,Object? rejectionReason = freezed,Object? visaCountry = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,7 @@ as String?,documentNumber: freezed == documentNumber ? _self.documentNumber : do
 as String?,expiryDate: freezed == expiryDate ? _self.expiryDate : expiryDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,uploadDate: freezed == uploadDate ? _self.uploadDate : uploadDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,visaCountry: freezed == visaCountry ? _self.visaCountry : visaCountry // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -158,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason,  String? visaCountry)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DocumentEntity() when $default != null:
-return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason);case _:
+return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason,_that.visaCountry);case _:
   return orElse();
 
 }
@@ -179,10 +180,10 @@ return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason,  String? visaCountry)  $default,) {final _that = this;
 switch (_that) {
 case _DocumentEntity():
-return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason);case _:
+return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason,_that.visaCountry);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +200,10 @@ return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DocumentType type,  DocumentStatus status,  String? imageUrl,  String? title,  String? documentNumber,  DateTime? expiryDate,  DateTime? uploadDate,  String? rejectionReason,  String? visaCountry)?  $default,) {final _that = this;
 switch (_that) {
 case _DocumentEntity() when $default != null:
-return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason);case _:
+return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_that.documentNumber,_that.expiryDate,_that.uploadDate,_that.rejectionReason,_that.visaCountry);case _:
   return null;
 
 }
@@ -214,7 +215,7 @@ return $default(_that.id,_that.type,_that.status,_that.imageUrl,_that.title,_tha
 
 
 class _DocumentEntity implements DocumentEntity {
-  const _DocumentEntity({required this.id, required this.type, required this.status, required this.imageUrl, required this.title, required this.documentNumber, required this.expiryDate, required this.uploadDate, required this.rejectionReason});
+  const _DocumentEntity({required this.id, required this.type, required this.status, required this.imageUrl, required this.title, required this.documentNumber, required this.expiryDate, required this.uploadDate, required this.rejectionReason, this.visaCountry});
   
 
 @override final  String id;
@@ -226,6 +227,7 @@ class _DocumentEntity implements DocumentEntity {
 @override final  DateTime? expiryDate;
 @override final  DateTime? uploadDate;
 @override final  String? rejectionReason;
+@override final  String? visaCountry;
 
 /// Create a copy of DocumentEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +239,16 @@ _$DocumentEntityCopyWith<_DocumentEntity> get copyWith => __$DocumentEntityCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocumentEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.documentNumber, documentNumber) || other.documentNumber == documentNumber)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.uploadDate, uploadDate) || other.uploadDate == uploadDate)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocumentEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.documentNumber, documentNumber) || other.documentNumber == documentNumber)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.uploadDate, uploadDate) || other.uploadDate == uploadDate)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.visaCountry, visaCountry) || other.visaCountry == visaCountry));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,type,status,imageUrl,title,documentNumber,expiryDate,uploadDate,rejectionReason);
+int get hashCode => Object.hash(runtimeType,id,type,status,imageUrl,title,documentNumber,expiryDate,uploadDate,rejectionReason,visaCountry);
 
 @override
 String toString() {
-  return 'DocumentEntity(id: $id, type: $type, status: $status, imageUrl: $imageUrl, title: $title, documentNumber: $documentNumber, expiryDate: $expiryDate, uploadDate: $uploadDate, rejectionReason: $rejectionReason)';
+  return 'DocumentEntity(id: $id, type: $type, status: $status, imageUrl: $imageUrl, title: $title, documentNumber: $documentNumber, expiryDate: $expiryDate, uploadDate: $uploadDate, rejectionReason: $rejectionReason, visaCountry: $visaCountry)';
 }
 
 
@@ -257,7 +259,7 @@ abstract mixin class _$DocumentEntityCopyWith<$Res> implements $DocumentEntityCo
   factory _$DocumentEntityCopyWith(_DocumentEntity value, $Res Function(_DocumentEntity) _then) = __$DocumentEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, DocumentType type, DocumentStatus status, String? imageUrl, String? title, String? documentNumber, DateTime? expiryDate, DateTime? uploadDate, String? rejectionReason
+ String id, DocumentType type, DocumentStatus status, String? imageUrl, String? title, String? documentNumber, DateTime? expiryDate, DateTime? uploadDate, String? rejectionReason, String? visaCountry
 });
 
 
@@ -274,7 +276,7 @@ class __$DocumentEntityCopyWithImpl<$Res>
 
 /// Create a copy of DocumentEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? status = null,Object? imageUrl = freezed,Object? title = freezed,Object? documentNumber = freezed,Object? expiryDate = freezed,Object? uploadDate = freezed,Object? rejectionReason = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? status = null,Object? imageUrl = freezed,Object? title = freezed,Object? documentNumber = freezed,Object? expiryDate = freezed,Object? uploadDate = freezed,Object? rejectionReason = freezed,Object? visaCountry = freezed,}) {
   return _then(_DocumentEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -285,6 +287,7 @@ as String?,documentNumber: freezed == documentNumber ? _self.documentNumber : do
 as String?,expiryDate: freezed == expiryDate ? _self.expiryDate : expiryDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,uploadDate: freezed == uploadDate ? _self.uploadDate : uploadDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,visaCountry: freezed == visaCountry ? _self.visaCountry : visaCountry // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

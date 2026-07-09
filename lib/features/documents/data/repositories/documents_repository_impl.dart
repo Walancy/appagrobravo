@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import '../../../../core/data/countries.dart';
 import '../../domain/entities/document_entity.dart';
 import '../../domain/entities/document_enums.dart';
 import '../../domain/repositories/documents_repository.dart';
@@ -84,6 +85,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
     String? documentNumber,
     DateTime? expiryDate,
     String? documentName,
+    String? visaCountry,
   }) async {
     try {
       final userId = _supabaseClient.auth.currentUser?.id;
@@ -91,7 +93,6 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
       String? publicUrl;
 
-      // Only upload file if a new one is provided
       if (file != null) {
         final fileName =
             '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
@@ -111,21 +112,20 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
         'validade_doc': expiryDate?.toIso8601String(),
         'data_envio': DateTime.now().toIso8601String(),
         'nome_documento': documentName ?? type.label,
+        if (type == DocumentType.visto && visaCountry != null)
+          'pais_visto': visaCountry,
       };
 
-      // Only include foto_doc if we have a new file
       if (publicUrl != null) {
         docData['foto_doc'] = publicUrl;
       }
 
       if (id != null) {
-        // Update existing document in history
         await _supabaseClient
             .from('documentos')
             .update(docData)
             .eq('id', id);
       } else {
-        // Insert new document — requires a file
         if (publicUrl == null) {
           return Left(Exception('Arquivo é obrigatório para novo documento.'));
         }

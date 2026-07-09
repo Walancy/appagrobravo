@@ -1084,6 +1084,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileActionCancel => 'Cancelar';
 
   @override
+  String get profileActionSave => 'Salvar';
+
+  @override
   String get profileActionPublish => 'Publicar';
 
   @override

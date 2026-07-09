@@ -467,6 +467,7 @@
   "profileStatsMissions": "missions",
   "profileActionEditProfile": "Edit profile",
   "profileActionCancel": "Cancel",
+  "profileActionSave": "Save",
   "profileActionPublish": "Publish",
   "profileActionConnect": "Connect",
   "profileActionRequested": "Requested",

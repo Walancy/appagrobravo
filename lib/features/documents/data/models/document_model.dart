@@ -18,6 +18,7 @@ abstract class DocumentModel with _$DocumentModel {
     @JsonKey(name: 'validade_doc') required String? validadeDoc,
     @JsonKey(name: 'data_envio') required String? dataEnvio,
     @JsonKey(name: 'motivoRecusa') required String? motivoRecusa,
+    @JsonKey(name: 'pais_visto') String? paisVisto,
   }) = _DocumentModel;
 
   factory DocumentModel.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +37,8 @@ abstract class DocumentModel with _$DocumentModel {
       expiryDate: validadeDoc != null ? DateTime.tryParse(validadeDoc!) : null,
       uploadDate: dataEnvio != null ? DateTime.tryParse(dataEnvio!) : null,
       rejectionReason: motivoRecusa,
+      visaCountry: paisVisto,
     );
   }
 }
+

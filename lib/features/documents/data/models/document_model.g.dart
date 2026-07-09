@@ -18,6 +18,7 @@ _DocumentModel _$DocumentModelFromJson(Map<String, dynamic> json) =>
       validadeDoc: json['validade_doc'] as String?,
       dataEnvio: json['data_envio'] as String?,
       motivoRecusa: json['motivoRecusa'] as String?,
+      paisVisto: json['pais_visto'] as String?,
     );
 
 Map<String, dynamic> _$DocumentModelToJson(_DocumentModel instance) =>
@@ -32,4 +33,5 @@ Map<String, dynamic> _$DocumentModelToJson(_DocumentModel instance) =>
       'validade_doc': instance.validadeDoc,
       'data_envio': instance.dataEnvio,
       'motivoRecusa': instance.motivoRecusa,
+      'pais_visto': instance.paisVisto,
     };

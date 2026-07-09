@@ -2068,6 +2068,12 @@ abstract class AppLocalizations {
   /// **'Cancelar'**
   String get profileActionCancel;
 
+  /// No description provided for @profileActionSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar'**
+  String get profileActionSave;
+
   /// No description provided for @profileActionPublish.
   ///
   /// In pt, this message translates to:
