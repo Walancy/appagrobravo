@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,6 +19,8 @@ class DocumentsCubit extends Cubit<DocumentsState> {
   final ProfileRepository _profileRepository;
   final FeedRepository _feedRepository;
   final SupabaseClient _supabaseClient;
+
+  RealtimeChannel? _documentsSubscription;
 
   DocumentsCubit(
     this._repository,
@@ -72,6 +75,43 @@ class DocumentsCubit extends Cubit<DocumentsState> {
     );
   }
 
+  /// Subscribes to Realtime changes on the `documentos` table for the current
+  /// user. Automatically reloads documents when a row is inserted, updated,
+  /// or deleted (e.g. admin refuses a document). This keeps the "pending
+  /// documents" banner and badges up to date without manual navigation.
+  void listenToDocumentChanges() {
+    final userId = _supabaseClient.auth.currentUser?.id;
+    if (userId == null) return;
+
+    // Avoid duplicate subscriptions
+    _documentsSubscription?.unsubscribe();
+
+    _documentsSubscription = _supabaseClient
+        .channel('public:documentos:$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'documentos',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: userId,
+          ),
+          callback: (payload) {
+            if (kDebugMode) {
+              debugPrint('[DocumentsCubit] Realtime: documentos changed. event=${payload.eventType}');
+            }
+            // Silently refresh — loadDocuments emits loading then loaded.
+            loadDocuments();
+          },
+        )
+        .subscribe((status, [error]) {
+          if (kDebugMode) {
+            debugPrint('[DocumentsCubit] Realtime subscription status=$status error=$error');
+          }
+        });
+  }
+
   Future<void> uploadDocument({
     String? id,
     required DocumentType type,
@@ -120,6 +160,14 @@ class DocumentsCubit extends Cubit<DocumentsState> {
   }
 
   void reset() {
+    _documentsSubscription?.unsubscribe();
+    _documentsSubscription = null;
     emit(const DocumentsState.initial());
+  }
+
+  @override
+  Future<void> close() {
+    _documentsSubscription?.unsubscribe();
+    return super.close();
   }
 }

@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:agrobravo/core/router/app_router.dart';
+import 'package:agrobravo/core/di/injection.dart';
+import 'package:agrobravo/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:agrobravo/features/documents/presentation/cubit/documents_cubit.dart';
 
 void _log(String msg) {
   debugPrint('[NOTIF] $msg');
@@ -13,9 +16,10 @@ void _log(String msg) {
 /// Centralizes handling of FCM notification taps so the app navigates to the
 /// correct screen based on the `target_route` metadata sent by the edge function.
 ///
-/// Handles two scenarios:
-/// 1. App in background → user taps notification → `onMessageOpenedApp`
-/// 2. App terminated → notification opened the app → `getInitialMessage`
+/// Handles three scenarios:
+/// 1. App in foreground → push arrives → `onMessage` → refresh cubits
+/// 2. App in background → user taps notification → `onMessageOpenedApp`
+/// 3. App terminated → notification opened the app → `getInitialMessage`
 class NotificationNavigationService {
   NotificationNavigationService._();
 
@@ -36,13 +40,51 @@ class NotificationNavigationService {
     if (_initialized) return;
     _initialized = true;
 
-    // App was in background and user tapped notification.
+    // 1. App in FOREGROUND — push arrives silently (no system tray on Android
+    //    by default). Refresh the cubits so badges/banners update instantly.
+    FirebaseMessaging.onMessage.listen((msg) {
+      _log('onMessage (foreground) fired: ${msg.data}');
+      _handleForegroundMessage(msg);
+    });
+
+    // 2. App was in background and user tapped notification.
     FirebaseMessaging.onMessageOpenedApp.listen((msg) {
       _log('onMessageOpenedApp fired: ${msg.data}');
       _handleMessage(msg);
     });
 
     _log('NotificationNavigationService initialized');
+  }
+
+  /// Called when a push notification arrives while the app is in the foreground.
+  /// Refreshes the relevant cubits so the UI updates immediately (badge, banners).
+  static void _handleForegroundMessage(RemoteMessage message) {
+    try {
+      // Always refresh notifications so the badge appears immediately.
+      final notificationsCubit = getIt<NotificationsCubit>();
+      if (!notificationsCubit.isClosed) {
+        notificationsCubit.loadNotifications();
+        _log('_handleForegroundMessage: refreshed NotificationsCubit');
+      }
+
+      // If the push is related to documents, also refresh documents.
+      final data = message.data;
+      final assunto = data['assunto']?.toString().toLowerCase() ?? '';
+      final docId = data['doc_id']?.toString() ?? '';
+      final isDocumentRelated = docId.isNotEmpty ||
+          assunto.contains('documento') ||
+          assunto.contains('document');
+
+      if (isDocumentRelated) {
+        final documentsCubit = getIt<DocumentsCubit>();
+        if (!documentsCubit.isClosed) {
+          documentsCubit.loadDocuments();
+          _log('_handleForegroundMessage: refreshed DocumentsCubit (document-related push)');
+        }
+      }
+    } catch (e) {
+      _log('_handleForegroundMessage: error refreshing cubits: $e');
+    }
   }
 
   /// Call after MaterialApp.router has mounted so cold-start notification taps

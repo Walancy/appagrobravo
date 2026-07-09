@@ -60,16 +60,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _checkFirstAccessPrompt();
 
       final documentsCubit = context.read<DocumentsCubit>();
-      documentsCubit.state.maybeMap(
-        initial: (_) => documentsCubit.loadDocuments(),
-        orElse: () {},
-      );
+      documentsCubit.loadDocuments();
+      documentsCubit.listenToDocumentChanges();
 
       final notificationsCubit = context.read<NotificationsCubit>();
-      notificationsCubit.state.maybeMap(
-        initial: (_) => notificationsCubit.loadNotifications(),
-        orElse: () {},
-      );
+      notificationsCubit.loadNotifications();
 
       final itineraryCubit = context.read<ItineraryCubit>();
       dev.log('[HOME] initState: chamando listenToGroupChanges + loadUserItinerary', name: 'home');
