@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:agrobravo/core/components/app_header.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/extensions/build_context_l10n.dart';
@@ -13,7 +15,9 @@ import 'package:agrobravo/features/onboarding/data/models/grupo_formulario_model
 import 'package:dartz/dartz.dart' show Either;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:agrobravo/core/components/document_preview_page.dart';
@@ -747,16 +751,35 @@ class _MaterialTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  _canPreviewInApp
-                      ? Icons.visibility_outlined
-                      : Icons.open_in_new_rounded,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.38),
-                  size: 20,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.download_outlined,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.38),
+                        size: 20,
+                      ),
+                      onPressed: () => _downloadMaterial(context),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(
+                      _canPreviewInApp
+                          ? Icons.visibility_outlined
+                          : Icons.open_in_new_rounded,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.38),
+                      size: 20,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -818,6 +841,57 @@ class _MaterialTile extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.itineraryOpenMaterialError)),
       );
+    }
+  }
+
+  Future<void> _downloadMaterial(BuildContext context) async {
+    final uri = Uri.tryParse(material.url);
+    if (uri == null) return;
+
+    // Exibe feedback imediato ao usuário
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Baixando arquivo...'),
+          duration: Duration(seconds: 60),
+        ),
+      );
+    }
+
+    try {
+      // 1. Faz o download em bytes
+      final response = await http.get(uri);
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      // 2. Determina o nome do arquivo a partir da URL
+      final fileName = uri.pathSegments.isNotEmpty
+          ? Uri.decodeComponent(uri.pathSegments.last)
+          : 'arquivo_download';
+
+      // 3. Salva no diretório temporário do dispositivo
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(response.bodyBytes, flush: true);
+
+      // 4. Abre com o app nativo (Share Sheet no iOS / Intent no Android)
+      final fileUri = Uri.file(file.path);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+      final opened = await launchUrl(fileUri);
+      if (!opened && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.itineraryOpenMaterialError)),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.itineraryOpenMaterialError)),
+        );
+      }
     }
   }
 }

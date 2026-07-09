@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:agrobravo/core/router/go_router_refresh_stream.dart';
+import 'package:agrobravo/core/services/notification_permission_service.dart';
 import 'package:agrobravo/core/services/onboarding_service.dart';
 import 'package:agrobravo/features/auth/presentation/pages/login_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/home_page.dart';
+import 'package:agrobravo/features/notifications/presentation/pages/notification_primer_page.dart';
 import 'package:agrobravo/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:agrobravo/features/home/presentation/pages/create_post_page.dart';
 import 'package:agrobravo/features/home/domain/entities/post_entity.dart';
@@ -52,6 +54,7 @@ final _authRefresh = GoRouterRefreshStream(
 
 final _routerRefresh = _MultiListenable([
   OnboardingService.instance,
+  NotificationPermissionService.instance,
   _authRefresh,
 ]);
 
@@ -87,11 +90,25 @@ final appRouter = GoRouter(
       '/document-details',
       '/document-history',
       '/medical-restrictions',
+      '/notification-primer',
     };
     if (isAuthenticated &&
         OnboardingService.instance.needsOnboarding &&
         !onboardingAllowedPaths.contains(currentPath)) {
       return '/onboarding';
+    }
+
+    // Notification primer gate: exibido logo após o login (antes do /home)
+    // quando o usuário ainda não concedeu permissão de push.
+    if (isAuthenticated &&
+        NotificationPermissionService.instance.needsPrimer &&
+        currentPath != '/notification-primer' &&
+        !onboardingAllowedPaths.contains(currentPath)) {
+      dev.log(
+        '[PERM] redirect → /notification-primer (currentPath=$currentPath)',
+        name: 'router',
+      );
+      return '/notification-primer';
     }
 
     // Se JÁ está autenticado e está na tela de login → redireciona para home
@@ -125,8 +142,15 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) {
         final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '');
         final groupId = state.uri.queryParameters['groupId'];
+        final popupTitle = state.uri.queryParameters['popup_title'];
+        final popupBody = state.uri.queryParameters['popup_body'];
         return NoTransitionPage(
-          child: HomePage(initialTab: tab, initialGroupId: groupId),
+          child: HomePage(
+            initialTab: tab,
+            initialGroupId: groupId,
+            popupTitle: popupTitle,
+            popupBody: popupBody,
+          ),
         );
       },
     ),
@@ -291,6 +315,11 @@ final appRouter = GoRouter(
           child: TravelDataRoutePage(groupId: groupId),
         );
       },
+    ),
+    GoRoute(
+      path: '/notification-primer',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: NotificationPrimerPage()),
     ),
     GoRoute(
       path: '/travel-guide/:groupId',

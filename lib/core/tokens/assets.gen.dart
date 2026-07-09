@@ -22,12 +22,7 @@ class $AssetsImagesGen {
   String get adaptiveForegroundIconPng =>
       'assets/images/adaptive_foreground_icon.png.bak';
 
-  /// File path: assets/images/app_icon.png
-  AssetGenImage get appIconPng =>
-      const AssetGenImage('assets/images/app_icon.png');
 
-  /// File path: assets/images/app_icon.svg
-  String get appIconSvg => 'assets/images/app_icon.svg';
 
   /// File path: assets/images/app_launcher_icon.png
   AssetGenImage get appLauncherIcon =>
@@ -71,8 +66,7 @@ class $AssetsImagesGen {
   List<dynamic> get values => [
     adaptiveForegroundIcon,
     adaptiveForegroundIconPng,
-    appIconPng,
-    appIconSvg,
+
     appLauncherIcon,
     appLauncherIconPng,
     appleLogo,
