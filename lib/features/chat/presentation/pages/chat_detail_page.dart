@@ -158,8 +158,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? AppColors.chatBackgroundDark
           : AppColors.chatBackground,
       appBar: AppHeader(
@@ -534,7 +536,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   ChatBubbleType _mapMessageType(MessageType type) {
