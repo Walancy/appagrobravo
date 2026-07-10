@@ -131,13 +131,6 @@ class _ProfileTabState extends State<ProfileTab> {
                           title: context.l10n.settingsMedicalConditions,
                           onTap: () => context.push('/medical-restrictions'),
                         ),
-                        _buildTile(
-                          context,
-                          icon: Icons.notifications_none_rounded,
-                          iconColor: Colors.purple.shade400,
-                          title: context.l10n.settingsNotifications,
-                          onTap: () => context.push('/notification-preferences'),
-                        ),
                         BlocBuilder<ThemeCubit, ThemeMode>(
                           builder: (context, mode) => _buildThemeTile(context, mode),
                         ),
