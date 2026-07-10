@@ -5,6 +5,7 @@ import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/app_spacing.dart';
 import 'package:agrobravo/core/tokens/app_text_styles.dart';
 import 'package:agrobravo/core/utils/phone_countries.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 class PhoneField extends StatefulWidget {
   final TextEditingController controller;
@@ -254,7 +255,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               onChanged: _filter,
               style: TextStyle(color: onSurface),
               decoration: InputDecoration(
-                hintText: 'Buscar país ou código...',
+                hintText: context.l10n.phoneSearchHint,
                 hintStyle: TextStyle(
                   color: onSurface.withValues(alpha: 0.5),
                 ),

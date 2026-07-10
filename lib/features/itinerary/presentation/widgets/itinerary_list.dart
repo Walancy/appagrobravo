@@ -246,7 +246,7 @@ class ItineraryList extends StatelessWidget {
                     width: 2,
                     child: CustomPaint(
                       painter: DashedLineVerticalPainter(
-                        color: const Color(0xFF00BFA5).withValues(alpha: 0.5),
+                        color: AppColors.secondary.withValues(alpha: 0.5),
                       ),
                     ),
                   ),

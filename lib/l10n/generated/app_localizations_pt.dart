@@ -1147,4 +1147,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get itineraryTravelGuide => 'Meu Checklist';
+
+  @override
+  String get cropperAdjustPhoto => 'Ajustar foto';
+
+  @override
+  String get cropperAdjustCover => 'Ajustar capa';
+
+  @override
+  String get cropperGestureHint =>
+      'Belisque para dar zoom • Arraste para mover';
+
+  @override
+  String get cropperUsePhoto => 'Usar foto';
+
+  @override
+  String get cropperProcessError =>
+      'Não foi possível processar a imagem. Tente novamente.';
+
+  @override
+  String get phoneSearchHint => 'Buscar país ou código...';
 }

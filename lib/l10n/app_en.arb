@@ -500,5 +500,11 @@
   "connectionsConfirm": "Confirm",
   "connectionsRemove": "Remove",
   "connectionsConnect": "Connect",
-  "itineraryTravelGuide": "Travel guide"
+  "itineraryTravelGuide": "Travel guide",
+  "cropperAdjustPhoto": "Adjust photo",
+  "cropperAdjustCover": "Adjust cover",
+  "cropperGestureHint": "Pinch to zoom • Drag to move",
+  "cropperUsePhoto": "Use photo",
+  "cropperProcessError": "Could not process the image. Please try again.",
+  "phoneSearchHint": "Search country or code..."
 }

@@ -548,7 +548,7 @@ class _LoginFormState extends State<LoginForm> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             borderSide: const BorderSide(
-              color: Color(0xFF00E676),
+              color: AppColors.primary,
               width: 2,
             ),
           ),

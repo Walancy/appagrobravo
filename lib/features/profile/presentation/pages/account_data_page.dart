@@ -194,14 +194,13 @@ class _AccountDataPageState extends State<AccountDataPage> {
       _selectedCountry = match;
     }
 
-    // Nationality
+    // Nationality — dados legados foram salvos como texto livre
+    // ("Brasileira", "Americana"...); os novos são código ISO ("BR", "US").
+    // Sem match, deixa null para forçar re-seleção consciente (campo obrigatório)
+    // em vez de coagir silenciosamente para Brasil.
     final savedNationality = profile.nationality;
     if (savedNationality != null && savedNationality.isNotEmpty) {
-      final match = kAddressCountries.firstWhere(
-        (c) => c.code == savedNationality,
-        orElse: () => kDefaultAddressCountry,
-      );
-      _nationalityCountry = match;
+      _nationalityCountry = _matchNationality(savedNationality);
     }
 
     // State
@@ -230,6 +229,55 @@ class _AccountDataPageState extends State<AccountDataPage> {
 
     _initialized = true;
     _initialData = _getCurrentData();
+  }
+
+  AddressCountry? _matchNationality(String saved) {
+    final value = saved.trim();
+    final lower = value.toLowerCase();
+
+    // 1. Código ISO exato (formato novo)
+    for (final c in kAddressCountries) {
+      if (c.code == value.toUpperCase() && value.length == 2) return c;
+    }
+    // 2. Nome exato do país
+    for (final c in kAddressCountries) {
+      if (c.name.toLowerCase() == lower) return c;
+    }
+    // 3. Gentílicos comuns (dados legados em texto livre)
+    const gentilics = <String, String>{
+      'brasileir': 'BR',
+      'american': 'US',
+      'estadunidense': 'US',
+      'norte-american': 'US',
+      'portugu': 'PT',
+      'argentin': 'AR',
+      'italian': 'IT',
+      'espanhol': 'ES',
+      'alema': 'DE',
+      'alemã': 'DE',
+      'frances': 'FR',
+      'francês': 'FR',
+      'japones': 'JP',
+      'japonês': 'JP',
+      'chines': 'CN',
+      'chinês': 'CN',
+      'mexican': 'MX',
+      'canadense': 'CA',
+      'urugua': 'UY',
+      'paragua': 'PY',
+      'chilen': 'CL',
+      'colombian': 'CO',
+      'peruan': 'PE',
+      'bolivian': 'BO',
+    };
+    for (final entry in gentilics.entries) {
+      if (lower.startsWith(entry.key)) {
+        for (final c in kAddressCountries) {
+          if (c.code == entry.value) return c;
+        }
+      }
+    }
+    return null;
   }
 
   DateTime? _birthDate;

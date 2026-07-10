@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
@@ -82,11 +83,20 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
+  /// Extensão do arquivo para o storage. `XFile.fromData` tem `path` vazio,
+  /// então usa o `name` como fonte e cai para 'png' se não houver extensão.
+  String _fileExtension(XFile file) {
+    final source = file.path.isNotEmpty ? file.path : file.name;
+    final dotIndex = source.lastIndexOf('.');
+    if (dotIndex == -1 || dotIndex == source.length - 1) return 'png';
+    return source.substring(dotIndex + 1);
+  }
+
   Future<void> updateProfilePhoto(XFile file) async {
     state.maybeMap(
       loaded: (currentState) async {
         final bytes = await file.readAsBytes();
-        final extension = file.path.split('.').last;
+        final extension = _fileExtension(file);
         final result = await _profileRepository.updateProfilePhoto(
           bytes,
           extension,
@@ -116,7 +126,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     state.maybeMap(
       loaded: (currentState) async {
         final bytes = await file.readAsBytes();
-        final extension = file.path.split('.').last;
+        final extension = _fileExtension(file);
         final result = await _profileRepository.updateCoverPhoto(
           bytes,
           extension,
@@ -147,6 +157,68 @@ class ProfileCubit extends Cubit<ProfileState> {
       loaded: (currentState) {
         emit(currentState.copyWith(isEditing: !currentState.isEditing));
       },
+      orElse: () {},
+    );
+  }
+
+  /// Envia ao servidor as imagens selecionadas (bytes) e desliga o modo de
+  /// edição. Só é chamado quando o usuário toca em "Salvar" — antes disso as
+  /// imagens ficam apenas como preview local na tela.
+  Future<void> savePhotos({
+    Uint8List? avatarBytes,
+    Uint8List? coverBytes,
+  }) async {
+    if (avatarBytes != null) {
+      final result = await _profileRepository.updateProfilePhoto(
+        avatarBytes,
+        'png',
+      );
+      if (isClosed) return;
+      var failed = false;
+      result.fold(
+        (error) {
+          failed = true;
+          emit(ProfileState.error(_mapFailure(error)));
+        },
+        (newUrl) {
+          state.maybeMap(
+            loaded: (s) => emit(
+              s.copyWith(profile: s.profile.copyWith(avatarUrl: newUrl)),
+            ),
+            orElse: () {},
+          );
+        },
+      );
+      if (failed) return;
+    }
+
+    if (coverBytes != null) {
+      final result = await _profileRepository.updateCoverPhoto(
+        coverBytes,
+        'png',
+      );
+      if (isClosed) return;
+      var failed = false;
+      result.fold(
+        (error) {
+          failed = true;
+          emit(ProfileState.error(_mapFailure(error)));
+        },
+        (newUrl) {
+          state.maybeMap(
+            loaded: (s) => emit(
+              s.copyWith(profile: s.profile.copyWith(coverUrl: newUrl)),
+            ),
+            orElse: () {},
+          );
+        },
+      );
+      if (failed) return;
+    }
+
+    // Desliga o modo edição após salvar tudo com sucesso.
+    state.maybeMap(
+      loaded: (s) => emit(s.copyWith(isEditing: false)),
       orElse: () {},
     );
   }

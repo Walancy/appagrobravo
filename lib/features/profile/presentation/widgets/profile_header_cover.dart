@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
 import 'package:agrobravo/core/tokens/assets.gen.dart';
@@ -6,6 +7,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ProfileHeaderCover extends StatelessWidget {
   final String? coverUrl;
   final String? avatarUrl;
+  // Preview local (bytes) das imagens selecionadas mas ainda não salvas.
+  final Uint8List? pendingAvatar;
+  final Uint8List? pendingCover;
   final bool isMe;
   final bool isEditing;
   final bool isUploadingAvatar;
@@ -18,6 +22,8 @@ class ProfileHeaderCover extends StatelessWidget {
     super.key,
     this.coverUrl,
     this.avatarUrl,
+    this.pendingAvatar,
+    this.pendingCover,
     this.isMe = false,
     this.isEditing = false,
     this.isUploadingAvatar = false,
@@ -46,9 +52,11 @@ class ProfileHeaderCover extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: coverUrl != null
-                        ? CachedNetworkImageProvider(coverUrl!)
-                        : Assets.images.background.provider(),
+                    image: pendingCover != null
+                        ? MemoryImage(pendingCover!)
+                        : (coverUrl != null
+                            ? CachedNetworkImageProvider(coverUrl!)
+                            : Assets.images.background.provider()),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -125,6 +133,13 @@ class ProfileHeaderCover extends StatelessWidget {
                                 ),
                               ),
                             )
+                          : pendingAvatar != null
+                              ? Image.memory(
+                                  pendingAvatar!,
+                                  fit: BoxFit.cover,
+                                  height: 110,
+                                  width: 110,
+                                )
                           : (avatarUrl != null && avatarUrl!.isNotEmpty)
                               ? CachedNetworkImage(
                                   imageUrl: avatarUrl!,

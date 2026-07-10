@@ -7,6 +7,9 @@ import 'package:agrobravo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:agrobravo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:agrobravo/features/auth/presentation/cubit/auth_state.dart';
+import 'package:agrobravo/l10n/generated/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -15,6 +18,22 @@ class MockAuthCubit extends Mock implements AuthCubit {}
 void main() {
   late MockAuthRepository mockAuthRepository;
   late MockAuthCubit mockAuthCubit;
+
+  setUpAll(() async {
+    // O appRouter referencia Supabase.instance na inicialização top-level;
+    // inicializa uma instância fake (sem rede) para os testes poderem
+    // construir o router.
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    await Supabase.initialize(
+      url: 'http://localhost:54321',
+      anonKey: 'test-anon-key',
+      authOptions: const FlutterAuthClientOptions(
+        autoRefreshToken: false,
+        localStorage: EmptyLocalStorage(),
+      ),
+    );
+  });
 
   setUp(() {
     mockAuthRepository = MockAuthRepository();
@@ -26,7 +45,7 @@ void main() {
   });
 
   testWidgets(
-    'Deve exibir a tela de Nova Senha ao acessar a rota /reset-password',
+    'Deve exibir a tela de Verificação (OTP) ao acessar a rota /reset-password',
     (WidgetTester tester) async {
       when(() => mockAuthCubit.state).thenReturn(const AuthState.initial());
       when(() => mockAuthCubit.stream).thenAnswer((_) => const Stream.empty());
@@ -36,12 +55,19 @@ void main() {
       await tester.pumpWidget(
         BlocProvider<AuthCubit>.value(
           value: mockAuthCubit,
-          child: MaterialApp.router(routerConfig: appRouter),
+          child: MaterialApp.router(
+            routerConfig: appRouter,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('pt'),
+          ),
         ),
       );
 
       await tester.pumpAndSettle(const Duration(seconds: 3));
-      expect(find.text('Nova senha'), findsOneWidget);
+      // O fluxo de redefinição mudou: /reset-password abre primeiro a etapa
+      // de verificação do código OTP (AuthMode.otpVerification).
+      expect(find.text('Verificação'), findsOneWidget);
     },
   );
 
@@ -57,7 +83,12 @@ void main() {
       await tester.pumpWidget(
         BlocProvider<AuthCubit>.value(
           value: mockAuthCubit,
-          child: MaterialApp.router(routerConfig: appRouter),
+          child: MaterialApp.router(
+            routerConfig: appRouter,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('pt'),
+          ),
         ),
       );
 

@@ -2187,6 +2187,42 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Meu Checklist'**
   String get itineraryTravelGuide;
+
+  /// No description provided for @cropperAdjustPhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ajustar foto'**
+  String get cropperAdjustPhoto;
+
+  /// No description provided for @cropperAdjustCover.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ajustar capa'**
+  String get cropperAdjustCover;
+
+  /// No description provided for @cropperGestureHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Belisque para dar zoom • Arraste para mover'**
+  String get cropperGestureHint;
+
+  /// No description provided for @cropperUsePhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usar foto'**
+  String get cropperUsePhoto;
+
+  /// No description provided for @cropperProcessError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível processar a imagem. Tente novamente.'**
+  String get cropperProcessError;
+
+  /// No description provided for @phoneSearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar país ou código...'**
+  String get phoneSearchHint;
 }
 
 class _AppLocalizationsDelegate

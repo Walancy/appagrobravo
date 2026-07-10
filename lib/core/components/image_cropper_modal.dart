@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:agrobravo/core/tokens/app_colors.dart';
+import 'package:agrobravo/core/extensions/build_context_l10n.dart';
 
 /// Tipo de recorte: círculo (avatar) ou retângulo 16:9 (capa).
 enum CropShape { circle, rectangle169 }
@@ -214,8 +215,8 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
         setState(() => _isProcessing = false);
         if (kDebugMode) debugPrint('[ImageCropper] _performCrop error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível processar a imagem. Tente novamente.'),
+          SnackBar(
+            content: Text(context.l10n.cropperProcessError),
             backgroundColor: Colors.red,
           ),
         );
@@ -252,7 +253,9 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
                   ),
                   Expanded(
                     child: Text(
-                      _isRect ? 'Ajustar capa' : 'Ajustar foto',
+                      _isRect
+                          ? context.l10n.cropperAdjustCover
+                          : context.l10n.cropperAdjustPhoto,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
@@ -315,7 +318,7 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8),
               child: Text(
-                'Belisque para dar zoom • Arraste para mover',
+                context.l10n.cropperGestureHint,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 11,
@@ -342,9 +345,9 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(
+                        child: Text(
+                          context.l10n.commonCancel,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
@@ -378,9 +381,9 @@ class _ImageCropperModalState extends State<ImageCropperModal> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                'Usar foto',
-                                style: TextStyle(
+                            : Text(
+                                context.l10n.cropperUsePhoto,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 15,
                                 ),

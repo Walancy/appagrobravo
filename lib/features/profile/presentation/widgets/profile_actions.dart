@@ -174,7 +174,12 @@ class ProfileActions extends StatelessWidget {
                 style: _ActionStyle.whatsapp,
                 onPressed: () async {
                   final cleanPhone = phone!.replaceAll(RegExp(r'\D'), '');
-                  final url = Uri.parse('https://wa.me/55$cleanPhone');
+                  // Telefones novos já são salvos com DDI ("+55 (11) ...");
+                  // legados (sem "+") recebem o 55 do Brasil como fallback.
+                  final waNumber = phone!.trim().startsWith('+')
+                      ? cleanPhone
+                      : '55$cleanPhone';
+                  final url = Uri.parse('https://wa.me/$waNumber');
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   }

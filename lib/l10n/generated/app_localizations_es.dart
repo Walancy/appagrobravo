@@ -1151,4 +1151,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get itineraryTravelGuide => 'Guía de viaje';
+
+  @override
+  String get cropperAdjustPhoto => 'Ajustar foto';
+
+  @override
+  String get cropperAdjustCover => 'Ajustar portada';
+
+  @override
+  String get cropperGestureHint =>
+      'Pellizca para hacer zoom • Arrastra para mover';
+
+  @override
+  String get cropperUsePhoto => 'Usar foto';
+
+  @override
+  String get cropperProcessError =>
+      'No fue posible procesar la imagen. Inténtalo de nuevo.';
+
+  @override
+  String get phoneSearchHint => 'Buscar país o código...';
 }

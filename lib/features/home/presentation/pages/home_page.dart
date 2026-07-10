@@ -289,28 +289,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           child: Scaffold(
             extendBodyBehindAppBar: true,
             appBar: _buildHeader(context),
-            body: BlocBuilder<ProfileCubit, ProfileState>(
-              builder: (context, profileState) {
-                final isComplete = profileState.maybeMap(
-                  loaded: (s) => s.profile.isComplete,
-                  orElse: () => true,
-                );
-
-                if (_selectedIndex == -1) {
-                  return const Center(
+            body: _selectedIndex == -1
+                ? const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                }
-
-                if (_selectedIndex == -1) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                }
-
-                return _buildBody();
-              },
-            ),
+                  )
+                : _buildBody(),
             bottomNavigationBar: _buildBottomNav(),
           ),
         ),

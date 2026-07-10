@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,8 +44,11 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _postsKey = GlobalKey();
 
-  bool _isUploadingAvatar = false;
-  bool _isUploadingCover = false;
+  // Imagens selecionadas mas ainda não salvas (preview local em bytes).
+  // Só são enviadas ao servidor quando o usuário toca em "Salvar".
+  Uint8List? _pendingAvatar;
+  Uint8List? _pendingCover;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -228,8 +232,9 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
               loading: () => const ProfileShimmer(),
               error: (message) => Center(child: Text(message)),
               loaded: (profile, posts, isMe, isEditing) {
-                // ── Pick, crop e upload — igual à tela de Configurações
-                Future<void> pickAndUploadImage(bool isAvatar) async {
+                // ── Pick e crop — a imagem fica pendente (preview local) e só é
+                //    enviada ao servidor quando o usuário toca em "Salvar".
+                Future<void> pickImage(bool isAvatar) async {
                   // 1. Escolher fonte
                   final source = await showModalBottomSheet<ImageSource>(
                     context: context,
@@ -267,37 +272,44 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                   );
                   if (croppedBytes == null || !mounted) return;
 
-                  // 4. Upload com loading state
+                  // 4. Marca como pendente (NÃO envia ainda). O upload só
+                  //    acontece ao tocar em "Salvar".
                   setState(() {
                     if (isAvatar) {
-                      _isUploadingAvatar = true;
+                      _pendingAvatar = croppedBytes;
                     } else {
-                      _isUploadingCover = true;
+                      _pendingCover = croppedBytes;
                     }
                   });
-                  final cubit = context.read<ProfileCubit>();
-                  try {
-                    final tempFile = XFile.fromData(
-                      croppedBytes,
-                      name: isAvatar ? 'avatar_cropped.png' : 'cover_cropped.png',
-                      mimeType: 'image/png',
-                    );
-                    if (isAvatar) {
-                      await cubit.updateProfilePhoto(tempFile);
-                    } else {
-                      await cubit.updateCoverPhoto(tempFile);
-                    }
-                  } finally {
-                    if (mounted) {
-                      setState(() {
-                        if (isAvatar) {
-                          _isUploadingAvatar = false;
-                        } else {
-                          _isUploadingCover = false;
-                        }
-                      });
-                    }
+                }
+
+                Future<void> saveProfile() async {
+                  // Nada pendente: apenas sai do modo de edição.
+                  if (_pendingAvatar == null && _pendingCover == null) {
+                    context.read<ProfileCubit>().toggleEditing();
+                    return;
                   }
+                  final cubit = context.read<ProfileCubit>();
+                  setState(() => _isSaving = true);
+                  await cubit.savePhotos(
+                    avatarBytes: _pendingAvatar,
+                    coverBytes: _pendingCover,
+                  );
+                  if (mounted) {
+                    setState(() {
+                      _isSaving = false;
+                      _pendingAvatar = null;
+                      _pendingCover = null;
+                    });
+                  }
+                }
+
+                void cancelEditing() {
+                  setState(() {
+                    _pendingAvatar = null;
+                    _pendingCover = null;
+                  });
+                  context.read<ProfileCubit>().toggleEditing();
                 }
 
                 Future<void> handleNewPost(BuildContext context) async {
@@ -339,12 +351,14 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                       ProfileHeaderCover(
                         coverUrl: profile.coverUrl,
                         avatarUrl: profile.avatarUrl,
+                        pendingAvatar: _pendingAvatar,
+                        pendingCover: _pendingCover,
                         isMe: isMe,
                         isEditing: isEditing,
-                        isUploadingAvatar: _isUploadingAvatar,
-                        isUploadingCover: _isUploadingCover,
-                        onUpdateAvatar: () => pickAndUploadImage(true),
-                        onUpdateCover: () => pickAndUploadImage(false),
+                        isUploadingAvatar: _isSaving && _pendingAvatar != null,
+                        isUploadingCover: _isSaving && _pendingCover != null,
+                        onUpdateAvatar: () => pickImage(true),
+                        onUpdateCover: () => pickImage(false),
                         statsWidget: Opacity(
                           opacity: isEditing ? 0.3 : 1.0,
                           child: ProfileHeaderStats(
@@ -380,8 +394,8 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                         isMe: isMe,
                         connectionStatus: profile.connectionStatus,
                         isEditing: isEditing,
-                        isUploadingAvatar: _isUploadingAvatar,
-                        isUploadingCover: _isUploadingCover,
+                        isUploadingAvatar: _isSaving,
+                        isUploadingCover: _isSaving,
                         onConnect: () => context
                             .read<ProfileCubit>()
                             .requestConnection(profile.id),
@@ -397,10 +411,8 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
                         onDisconnect: () => context
                             .read<ProfileCubit>()
                             .removeConnection(profile.id),
-                        onEditProfile: () =>
-                            context.read<ProfileCubit>().toggleEditing(),
-                        onSave: () =>
-                            context.read<ProfileCubit>().toggleEditing(),
+                        onEditProfile: cancelEditing,
+                        onSave: saveProfile,
                         onPublish: () => handleNewPost(context),
                         phone: profile.phone,
                       ),
