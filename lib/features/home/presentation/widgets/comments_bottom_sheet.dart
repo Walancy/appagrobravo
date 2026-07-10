@@ -386,6 +386,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                           decoration: const InputDecoration(
                             hintText: 'Adicione um comentário',
                             border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
                             hintStyle: TextStyle(fontSize: 14),
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -478,6 +480,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                 ..onTap = () =>
                                     context.push('/profile/${comment.userId}'),
                               style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w600,
                                 fontSize: isReply ? 13 : 12,
                               ),
