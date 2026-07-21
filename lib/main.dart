@@ -25,7 +25,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:agrobravo/core/services/notification_navigation_service.dart';
-import 'package:agrobravo/core/services/notification_permission_service.dart';
 import 'package:agrobravo/core/services/local_notification_service.dart';
 
 /// Handler de mensagens em background (precisa ser top-level)
